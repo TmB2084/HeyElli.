@@ -8,7 +8,23 @@ export function usePopoverFocus({open,busy=false,step='',panel,trigger,onClose}:
   return()=>cancelAnimationFrame(frame);
  },[open,step,panel]);
  useEffect(()=>{if(!open)return;
-  function key(event:KeyboardEvent){if(event.key!=='Escape')return;if(!panel.current?.contains(event.target as Node)&&event.target!==trigger.current)return;event.preventDefault();event.stopPropagation();if(busy)return;close();trigger.current?.focus({preventScroll:true});}
+  function key(event:KeyboardEvent){
+   if(event.key==='Tab'&&!busy){
+    const node=panel.current;
+    const selector='button:not(:disabled),input:not(:disabled),select:not(:disabled),textarea:not(:disabled),a[href],[tabindex]:not([tabindex="-1"])';
+    const visible=(element:HTMLElement)=>element.tabIndex>=0&&!element.matches(':disabled,[inert], [inert] *')&&element.getClientRects().length>0;
+    const items=node?[...node.querySelectorAll<HTMLElement>(selector)].filter(visible):[];
+    const boundary=event.shiftKey?items[0]:items.at(-1);
+    if(node&&boundary&&event.target===boundary){
+     // Safari may send Tab directly to browser chrome without a focusin event.
+     // Close at the boundary and preserve the document's normal focus order.
+     const next=event.shiftKey?trigger.current:[...document.querySelectorAll<HTMLElement>(selector)].find(element=>visible(element)&&!node.contains(element)&&!!(node.compareDocumentPosition(element)&Node.DOCUMENT_POSITION_FOLLOWING));
+     close();
+     if(next){event.preventDefault();event.stopPropagation();next.focus({preventScroll:true});}
+    }
+    return;
+   }
+   if(event.key!=='Escape')return;if(!panel.current?.contains(event.target as Node)&&event.target!==trigger.current)return;event.preventDefault();event.stopPropagation();if(busy)return;close();trigger.current?.focus({preventScroll:true});}
   function outside(event:PointerEvent|FocusEvent){if(busy||panel.current?.contains(event.target as Node)||trigger.current?.contains(event.target as Node))return;close();}
   document.addEventListener('keydown',key,true);document.addEventListener('pointerdown',outside);document.addEventListener('focusin',outside);
   return()=>{document.removeEventListener('keydown',key,true);document.removeEventListener('pointerdown',outside);document.removeEventListener('focusin',outside);};

@@ -8,7 +8,7 @@
 .next strong { display: block; font-size: 14px; }
 .next small { display: block; color: var(--muted); font-size: 12px; margin-top: 2px; }
 .cal { width: 48px; border-radius: 10px; overflow: hidden; background: #fff; color: #1c1c1e; text-align: center; line-height: 1; box-shadow: var(--shadow-1); }
-.cal small { display: block; background: var(--primary); color: #fff; font-size: 10px; font-weight: 700; padding: 3px 0; margin: 0; }
+.cal small, .row .cal small { display: block; background: var(--primary); color: #fff; font-size: 10px; font-weight: 700; padding: 3px 0; margin: 0; }
 .cal b { display: block; font-size: 20px; padding: 4px 0 5px; }
 .status { font-size: 11px; font-weight: 650; padding: 3px 8px; border-radius: var(--radius-control); background: #30d15822; color: #7ee29b; white-space: nowrap; }
 .status[data-status='VORGEMERKT'] { background: #ffd60a22; color: #ffe36b; }
