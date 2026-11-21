@@ -1,0 +1,87 @@
+{
+  "format": 1,
+  "commit": "fce1681a212926aa0a2bf08b7bd15261c9b8efd0",
+  "sourceDigest": "23c4e0ae531f560650aa1d298666d1cf717ee504cc36a456f2af2dfe5a307f98",
+  "node": "v24.11.1",
+  "startedAt": "2026-11-21T22:47:03.025Z",
+  "finishedAt": "2026-11-21T22:55:50.533Z",
+  "status": "passed",
+  "steps": [
+    {
+      "name": "install",
+      "status": "passed",
+      "seconds": 15
+    },
+    {
+      "name": "unit",
+      "status": "passed",
+      "seconds": 12
+    },
+    {
+      "name": "platform",
+      "status": "passed",
+      "seconds": 121
+    },
+    {
+      "name": "chat",
+      "status": "passed",
+      "seconds": 2
+    },
+    {
+      "name": "lint",
+      "status": "passed",
+      "seconds": 13
+    },
+    {
+      "name": "build",
+      "status": "passed",
+      "seconds": 8
+    },
+    {
+      "name": "types",
+      "status": "passed",
+      "seconds": 4
+    },
+    {
+      "name": "browser",
+      "status": "passed",
+      "seconds": 313
+    },
+    {
+      "name": "browser-mutations",
+      "status": "passed",
+      "seconds": 38
+    },
+    {
+      "name": "dependencies",
+      "status": "passed",
+      "seconds": 1
+    }
+  ],
+  "browserSummary": {
+    "chromium": {
+      "passed": 58,
+      "failed": 0
+    },
+    "webkit": {
+      "passed": 57,
+      "failed": 0
+    }
+  },
+  "browserMutations": {
+    "status": "passed",
+    "results": [
+      {
+        "mutation": "navigation",
+        "case": "E04",
+        "detected": true
+      },
+      {
+        "mutation": "rights",
+        "case": "E02",
+        "detected": true
+      }
+    ]
+  },
+  "cleanup": "passed: main browser run and both mutation runs"
+}

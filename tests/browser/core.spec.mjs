@@ -16,7 +16,7 @@ async function calendar(page,writable=true){await enter(page,'/planboard');await
 async function axe(page,id){const result=await new AxeBuilder({page}).withTags(['wcag2a','wcag2aa','wcag21aa','wcag22aa']).analyze();await writeFile(join(artifacts,id+'.axe.json'),JSON.stringify({violations:result.violations.map(v=>({id:v.id,impact:v.impact,nodes:v.nodes.map(n=>n.target)}))}));expect(result.violations.map(v=>v.id)).toEqual([]);}
 
 test('E01 Anmeldung Abmeldung und geschützte Zurücknavigation',async({page})=>{
- await page.goto(fixture.base+'/servicehub');await expect(page).toHaveURL(/\/anmeldung/);await page.getByLabel('Benutzername',{exact:true}).fill(fixture.username);await page.getByLabel('Passwort',{exact:true}).fill(fixture.password);await page.getByRole('button',{name:'Anmelden',exact:true}).click();await expect(page).toHaveURL(/\/service$/);await expect(page.getByRole('navigation',{name:'Serviceansichten',exact:true})).toBeVisible();
+ await page.goto(fixture.base+'/servicehub');await expect(page).toHaveURL(/\/anmeldung/);await page.getByLabel('Benutzername',{exact:true}).fill(fixture.username);await page.getByLabel('Passwort',{exact:true}).fill(fixture.password);await page.getByRole('button',{name:'Anmelden',exact:true}).click();await expect(page).toHaveURL(/\/servicehub$/);await expect(page.getByRole('navigation',{name:'Serviceansichten',exact:true})).toBeVisible();
  await enter(page,'/benutzerkonto');await page.locator('.platform-account:visible > summary').click();await page.getByRole('button',{name:'Abmelden',exact:true}).click();await expect(page).toHaveURL(/\/anmeldung/);await expect(page.getByRole('button',{name:'Anmelden',exact:true})).toBeVisible();await page.goBack();await expect(page).toHaveURL(/\/anmeldung/);await expect(page.getByRole('button',{name:'Anmelden',exact:true})).toBeVisible();await page.reload();await expect(page).toHaveURL(/\/anmeldung/);expect(await page.getByRole('navigation',{name:'Serviceansichten',exact:true}).count()).toBe(0);
 });
 test('E02 Gemischte App-Rechte und direkter Schreibschutz',async({page,context})=>{
@@ -28,7 +28,7 @@ test('E03 Sitzungsablauf und Widerruf sperren direkte Links',async({page,context
 test('E04 App-Wechsel und Vor-Zurück ohne 404',async({page,context})=>{
  await authenticate(context);
  await test.step('Service und PlanBoard oeffnen',async()=>{await enter(page,'/servicehub');await page.getByRole('link',{name:'PlanBoard öffnen',exact:true}).click();await expect(page).toHaveURL(/\/planboard$/);await expect(page.getByRole('button',{name:'Neuer Termin',exact:true})).toBeVisible();});
- await test.step('Browser zurueck zu Service',async()=>{await page.goBack();await expect(page).toHaveURL(/\/service$/);await expect(page.locator('.platform-bar:visible')).toHaveCount(1);});
+ await test.step('Browser zurueck zu Service',async()=>{await page.goBack();await expect(page).toHaveURL(/\/servicehub$/);await expect(page.locator('.platform-bar:visible')).toHaveCount(1);});
  await test.step('Browser vor zu PlanBoard',async()=>{await page.goForward();await expect(page).toHaveURL(/\/planboard$/);await expect(page.locator('.platform-bar:visible')).toHaveCount(1);});
  await test.step('PlanBoard neu laden',async()=>{await page.reload();await expect(page.getByRole('button',{name:'Neuer Termin',exact:true})).toBeVisible();});
 });
@@ -49,7 +49,28 @@ test('E08 Integrationsfehler zeigen keine Geheimnisse und aktivieren nichts',asy
  await authenticate(context);await page.route('**/api/verwaltung/copilot',async route=>route.fulfill({status:503,contentType:'application/json',body:JSON.stringify({error:'Fiktive Verbindung vorübergehend unterbrochen.'})}));await enter(page,'/einstellungen?bereich=copilot&seite=copilot%3Aconnection');await expect(page.getByRole('alert').filter({hasText:/nicht erreichbar/})).toBeVisible();expect((await sql("SELECT enabled FROM platform.copilot_settings WHERE id='central'")).rows[0].enabled).toBe(false);
 });
 test('K01 Sammelausgabe nichtmodal Escape Tab und Fokus',async({page,context})=>{
- await authenticate(context);await calendar(page);const trigger=page.getByRole('button',{name:'Mobil ausgeben ⌄',exact:true});await expect(trigger).toBeEnabled();await trigger.focus();await page.keyboard.press('Enter');const panel=page.getByRole('dialog',{name:'Serviceaufträge mobil ausgeben',exact:true});await expect(panel.getByRole('button').first()).toBeFocused();await page.keyboard.press('Escape');await expect(panel).toBeHidden();await expect(trigger).toBeFocused();await trigger.press('Enter');await panel.getByRole('button',{name:'Alle Serviceaufträge ausgeben',exact:true}).click();await expect(panel.getByRole('button',{name:'Zurück',exact:true})).toBeFocused();await page.keyboard.press('Escape');await expect(trigger).toBeFocused();await trigger.press('Enter');await expect(panel.getByRole('button').first()).toBeFocused();await panel.getByRole('button').last().focus();await page.keyboard.press('Tab');await expect(panel).toBeHidden();await expect(trigger).not.toBeFocused();
+ await authenticate(context);await calendar(page);
+ const trigger=page.getByRole('button',{name:'Mobil ausgeben ⌄',exact:true});
+ const panel=page.getByRole('dialog',{name:'Serviceaufträge mobil ausgeben',exact:true});
+ await test.step('Oeffnen und Escape geben den Fokus zurueck',async()=>{
+  await expect(trigger).toBeEnabled();await trigger.focus();await page.keyboard.press('Enter');
+  await expect(panel.getByRole('button').first()).toBeFocused();await page.keyboard.press('Escape');
+  await expect(panel).toBeHidden();await expect(trigger).toBeFocused();
+ });
+ await test.step('Bestaetigung fokussiert Zurueck und Escape schliesst',async()=>{
+  await trigger.press('Enter');await panel.getByRole('button',{name:'Alle Serviceaufträge ausgeben',exact:true}).click();
+  await expect(panel.getByRole('button',{name:'Zurück',exact:true})).toBeFocused();
+  await page.keyboard.press('Escape');await expect(trigger).toBeFocused();
+ });
+ await test.step('Tab verlaesst das Menue vorwaerts ohne Fokusfalle',async()=>{
+  await trigger.press('Enter');await expect(panel.getByRole('button').first()).toBeFocused();
+  await panel.getByRole('button').last().focus();await page.keyboard.press('Tab');
+  await expect(panel).toBeHidden();await expect(page.getByRole('button',{name:'Neuer Termin',exact:true})).toBeFocused();
+ });
+ await test.step('Umschalt Tab verlaesst das Menue zum Ausloeser',async()=>{
+  await trigger.focus();await trigger.press('Enter');await expect(panel.getByRole('button').first()).toBeFocused();
+  await page.keyboard.press('Shift+Tab');await expect(panel).toBeHidden();await expect(trigger).toBeFocused();
+ });
 });
 test('K02 Kontext-Untermenü Escape und Rückkehr',async({page,context})=>{
  await authenticate(context);await calendar(page);const bar=page.getByRole('button',{name:/^Browser Alpha/}).first();await bar.press('Enter');const menu=page.getByRole('menu',{name:/Aktionen für Browser Alpha/});await expect(menu).toBeVisible();await page.keyboard.press('ArrowDown');await expect(menu.getByRole('menuitem',{name:/Umbenennen/})).toBeFocused();await page.keyboard.press('Enter');await expect(page.getByRole('textbox',{name:'Neuer Titel',exact:true})).toBeFocused();await page.keyboard.press('Escape');await expect(menu.getByRole('menuitem',{name:/Umbenennen/})).toBeFocused();await page.keyboard.press('End');await page.keyboard.press('Enter');const deletion=page.getByRole('dialog',{name:'Termin löschen',exact:true});await expect(deletion.getByRole('button',{name:'Abbrechen',exact:true})).toBeFocused();await page.keyboard.press('Escape');await expect(menu.getByRole('menuitem',{name:/^Löschen/})).toBeFocused();await page.keyboard.press('Escape');await expect(bar).toBeFocused();
@@ -186,7 +207,7 @@ test('E14 Persönliches Ausblenden bleibt nach erneutem Öffnen erhalten und ist
   await page.getByRole('button',{name:/Ausgeblendete Einträge · 1/}).click();await expect(page.getByRole('button',{name:unit.name+' wieder einblenden',exact:true})).toBeVisible();
   await page.getByRole('button',{name:unit.name+' wieder einblenden',exact:true}).click();await expect(page.getByText('Keine ausgeblendeten Einträge.',{exact:true})).toBeVisible();
   // Separate writes from two tabs must not replace each other's selections.
-  const save=(ctx,kind,id,hidden)=>ctx.request.post(endpoint,{headers:{origin:fixture.base},data:{owner:preferences.owner,source:preferences.source,kind,id,hidden}});
+  const save=async(ctx,kind,id,hidden)=>{const own=await (await ctx.request.get(endpoint)).json();return ctx.request.post(endpoint,{headers:{origin:fixture.base},data:{owner:own.owner,source:own.source,kind,id,hidden}});};
   const results=await Promise.all([save(context,'object',unit.id,true),save(reopened,'customer',customer.id,true)]);expect(results.map(row=>row.status())).toEqual([200,200]);
   await enter(page,'/servicehub?ansicht=files');await expect(page.getByRole('button',{name:/Ausgeblendete Einträge · 2/})).toBeVisible();
   await expect(page.getByRole('region',{name:'Serviceübersicht',exact:true}).getByText(customer.name,{exact:true})).toHaveCount(0);
@@ -258,17 +279,17 @@ test('E18 Einsatzmappe speichert Verweise und erhaelt Auswahl bei Ausfall ohne D
  const order='sim-order-1',api='/api/service/einsatzmappe',fileUrl='/servicehub?ansicht=orders&akte=order&id='+order;
  let revision,scope,key;
  await test.step('Aktuelle Akte und PDS-Auswahl laden',async()=>{
-  await enter(page,fileUrl);const pack=page.locator('details').filter({has:page.locator(':scope > summary',{hasText:'Einsatzmappe'})}).first();await expect(pack).toBeVisible();await pack.locator(':scope > summary').click();await pack.getByRole('button',{name:'Dokumente auswählen',exact:true}).click();await expect(pack.getByRole('switch',{name:/Einsatzhinweise Heizung/})).toBeEnabled();
+  await enter(page,fileUrl);const pack=page.locator('details').filter({has:page.locator(':scope > summary',{hasText:'Einsatzmappe'})}).first();await expect(pack).toBeVisible();await openRow(page,'Einsatzmappe');await expect(pack).toHaveJSProperty('open',true);await pack.getByRole('button',{name:'Dokumente auswählen',exact:true}).click();await expect(pack.getByRole('switch',{name:/Einsatzhinweise Heizung/})).toBeEnabled();
   const core=await (await context.request.get(fixture.base+'/api/service?kind=order&id='+order+'&part=base')).json();revision=core.sourceRevision;
   const selection=await (await context.request.get(fixture.base+api+'?'+new URLSearchParams({order,revision,section:'selection'}))).json();scope=selection.scope;
   const catalog=await (await context.request.get(fixture.base+api+'?'+new URLSearchParams({order,revision,section:'pds'}))).json();key=catalog.items[0].key;
   if(selection.selection.find(item=>item.key===key)?.selected)await pack.getByRole('switch',{name:/Einsatzhinweise Heizung/}).click();await expect(pack.getByRole('switch',{name:/Einsatzhinweise Heizung/})).not.toBeChecked();
-  await pack.getByRole('switch',{name:/Einsatzhinweise Heizung/}).click();await expect(pack.getByRole('switch',{name:/Einsatzhinweise Heizung/})).toBeChecked();await page.reload();await expect(page.getByText('1 ausgewählt',{exact:true})).toBeVisible();await expect(page.getByRole('link',{name:'Einsatzhinweise Heizung.txt ↗',exact:true})).toBeVisible();
+  await pack.getByRole('switch',{name:/Einsatzhinweise Heizung/}).click();await expect(pack.getByRole('switch',{name:/Einsatzhinweise Heizung/})).toBeChecked();await page.reload();await expect(pack).toHaveJSProperty('open',true);await expect(page.getByText('1 ausgewählt',{exact:true})).toBeVisible();await expect(page.getByRole('link',{name:'Einsatzhinweise Heizung.txt ↗',exact:true})).toBeVisible();
   const rows=(await sql('SELECT reference FROM platform.dispatch_pack_refs WHERE scope_key=$1 AND selected',[scope])).rows;expect(rows.length).toBe(1);expect(Object.keys(rows[0].reference).sort()).toEqual(['id','library','provider','target']);
  });
  await test.step('Download prueft Aktenzuordnung und Schreibrechte',async()=>{
   const url=fixture.base+api+'/dokument?'+new URLSearchParams({order,revision,key});const download=await context.request.get(url);expect(download.status()).toBe(200);expect(await download.text()).toMatch(/fiktiv/i);expect((await context.request.get(fixture.base+api+'/dokument?'+new URLSearchParams({order:'sim-order-2',revision,key}))).status()).toBe(404);
-  const id='dispatch-reader-'+crypto.randomUUID(),reader=await browser.newContext();try{await sql("INSERT INTO platform.users(id,display_name,role,enabled) VALUES($1,'Fiktiver Mappenleser','reader',true)",[id]);await authenticate(reader,id);expect((await reader.request.post(fixture.base+api+'?'+new URLSearchParams({order,revision}),{headers:{origin:fixture.base},data:{scope,key,target:'pds',selected:false,version:1}})).status()).toBe(403);const tab=await reader.newPage();await tab.bringToFront();await tab.goto(fixture.base+fileUrl);await tab.locator('details').filter({has:tab.locator(':scope > summary',{hasText:'Einsatzmappe'})}).first().locator(':scope > summary').click();await tab.getByRole('button',{name:'Verfügbare Dokumente',exact:true}).click();await expect(tab.getByRole('switch',{name:/Einsatzhinweise Heizung/})).toBeDisabled();}finally{await reader.close();await page.bringToFront();await sql('DELETE FROM platform.sessions WHERE user_id=$1',[id]);await sql('DELETE FROM platform.users WHERE id=$1',[id]);}
+  const id='dispatch-reader-'+crypto.randomUUID(),reader=await browser.newContext();try{await sql("INSERT INTO platform.users(id,display_name,role,enabled) VALUES($1,'Fiktiver Mappenleser','reader',true)",[id]);await authenticate(reader,id);expect((await reader.request.post(fixture.base+api+'?'+new URLSearchParams({order,revision}),{headers:{origin:fixture.base},data:{scope,key,target:'pds',selected:false,version:1}})).status()).toBe(403);const tab=await reader.newPage();await tab.bringToFront();await tab.goto(fixture.base+fileUrl);await openRow(tab,'Einsatzmappe');await tab.getByRole('button',{name:'Verfügbare Dokumente',exact:true}).click();await expect(tab.getByRole('switch',{name:/Einsatzhinweise Heizung/})).toBeDisabled();}finally{await reader.close();await page.bringToFront();await sql('DELETE FROM platform.sessions WHERE user_id=$1',[id]);await sql('DELETE FROM platform.users WHERE id=$1',[id]);}
  });
  await test.step('Quellenausfall bewahrt Auswahl und schmale Darstellung',async()=>{
   await page.route('**/api/service/einsatzmappe?*',route=>new URL(route.request().url()).searchParams.get('section')==='pds'?route.fulfill({status:503,contentType:'application/json',body:JSON.stringify({error:'Fiktiver Quellenausfall'})}):route.continue());await page.reload();await expect(page.getByText('1 ausgewählt',{exact:true})).toBeVisible();await expect(page.getByText('Dokumentverweis derzeit nicht prüfbar',{exact:true})).toBeVisible();await expect(page.getByRole('link',{name:'Einsatzhinweise Heizung.txt ↗',exact:true})).toHaveCount(0);await page.unrouteAll({behavior:'wait'});await page.getByRole('button',{name:'Mappe erneut laden',exact:true}).click();await expect(page.getByRole('link',{name:'Einsatzhinweise Heizung.txt ↗',exact:true})).toBeVisible();
@@ -440,7 +461,7 @@ test('E28 Kunden Objekt und Einheitenakten zeigen Fokusfelder und behalten Zuord
 
 test('E29 Menüleisten-Werkzeug nutzt mobile App, erhält Eingaben und speichert persönliche Sichtbarkeit',async({page,context,browserName})=>{
  await authenticate(context);await enter(page,'/servicehub');
- await page.getByRole('link',{name:'PlanBoard öffnen',exact:true}).click();await expect(page).toHaveURL(/\/planboard$/);await page.goBack();await expect(page).toHaveURL(/\/service$/);await expect(page.locator('.platform-bar:visible')).toHaveCount(1);
+ await page.getByRole('link',{name:'PlanBoard öffnen',exact:true}).click();await expect(page).toHaveURL(/\/planboard$/);await page.goBack();await expect(page).toHaveURL(/\/servicehub$/);await expect(page.locator('.platform-bar:visible')).toHaveCount(1);
  const parentRange=await page.evaluate(()=>sessionStorage.getItem('heyelli:history-range'));expect(JSON.parse(parentRange).maximum).toBeGreaterThan(JSON.parse(parentRange).minimum);
  const icon=page.getByRole('button',{name:'CaseDesk als Werkzeug öffnen',exact:true});await icon.focus();await page.keyboard.press('Enter');
  const panel=page.getByRole('region',{name:'Werkzeug CaseDesk',exact:true});await expect(panel).toBeVisible();
@@ -514,7 +535,7 @@ test('E31 Kalender-Kontextmenü öffnet den richtigen Servicevorgang mit getrenn
  async function openService(target){await enter(target,path);await target.getByRole('button',{name:'Tag',exact:true}).click();const appointment=target.getByRole('button',{name:/^SIM-SA-10002/}).first();await expect(appointment).toBeVisible();await appointment.click({timeout:10000});return target.getByRole('menu',{name:/Aktionen für SIM-SA-10002/});}
  const menu=await openService(page),link=menu.getByRole('menuitem',{name:'Im Service öffnen',exact:true});
  await expect(link).toHaveAttribute('href','/servicehub?ansicht=orders&akte=order&id=sim-order-2');
- await expect(menu.getByRole('menuitem',{name:'Vollständig bearbeiten',exact:true})).toBeFocused();await page.keyboard.press('ArrowDown');await expect(link).toBeFocused();await page.keyboard.press('Enter');await expect(page).toHaveURL(/\/service\?ansicht=orders&akte=order&id=sim-order-2$/);await expect(page.getByText('SIM-SA-10002',{exact:true}).first()).toBeVisible();
+ await expect(menu.getByRole('menuitem',{name:'Vollständig bearbeiten',exact:true})).toBeFocused();await page.keyboard.press('ArrowDown');await expect(link).toBeFocused();await page.keyboard.press('Enter');await expect(page).toHaveURL(/\/servicehub\?ansicht=orders&akte=order&id=sim-order-2$/);await expect(page.getByText('SIM-SA-10002',{exact:true}).first()).toBeVisible();
  await calendar(page);await page.getByRole('button',{name:/^Browser Alpha/}).first().click();await expect(page.getByRole('menuitem',{name:'Im Service öffnen',exact:true})).toHaveCount(0);
  const reader=await browser.newContext();try{await authenticate(reader,fixture.mixed);const tab=await reader.newPage();await tab.bringToFront();const readMenu=await openService(tab);await expect(readMenu.getByRole('menuitem',{name:'Im Service öffnen',exact:true})).toBeVisible();await expect(readMenu.getByRole('menuitem',{name:/^Umbenennen/})).toBeDisabled();}finally{await reader.close();}
  const role='calendar-link-role-'+crypto.randomUUID(),owner='calendar-link-reader-'+crypto.randomUUID(),restricted=await browser.newContext();
@@ -555,7 +576,7 @@ test('E33 Offener Werkzeugauftrag markiert Eingaben und blockiert weder Kalender
  await page.getByRole('button',{name:'Werkzeug schließen',exact:true}).click();
  await page.getByRole('link',{name:'PlanBoard öffnen',exact:true}).click();await expect(page).toHaveURL(/\/planboard$/);
  await expect(page.getByRole('dialog',{name:'Eingaben verwerfen?',exact:true})).toHaveCount(0);
- await page.goBack();await expect(page).toHaveURL(/\/service$/);await page.goForward();await expect(page).toHaveURL(/\/planboard$/);
+ await page.goBack();await expect(page).toHaveURL(/\/servicehub$/);await page.goForward();await expect(page).toHaveURL(/\/planboard$/);
  await page.getByRole('button',{name:'Neu laden',exact:true}).click();await expect(page.getByRole('button',{name:'Neu laden',exact:true})).toBeEnabled();
  await icon.press('Control+r');
  const warning=page.getByRole('alertdialog',{name:'Auftrag im Werkzeug noch offen',exact:true});await expect(warning).toBeVisible();await page.screenshot({path:join(artifacts,'tool-draft-reload-warning-'+browserName+'.png')});
@@ -570,7 +591,7 @@ test('E33 Offener Werkzeugauftrag markiert Eingaben und blockiert weder Kalender
  await mobile.getByRole('alertdialog',{name:'Auftrag verwerfen?',exact:true}).getByRole('button',{name:'Auftrag verwerfen',exact:true}).click();
  await expect(icon).not.toHaveAttribute('aria-describedby','incident-tool-draft');
  await page.getByRole('button',{name:'Werkzeug schließen',exact:true}).click();
- await page.goBack();await expect(page).toHaveURL(/\/service$/);await page.goForward();await expect(page).toHaveURL(/\/planboard$/);
+ await page.goBack();await expect(page).toHaveURL(/\/servicehub$/);await page.goForward();await expect(page).toHaveURL(/\/planboard$/);
  await expect(panel).toBeHidden();await page.reload();await expect(page.getByRole('button',{name:'Neuer Termin',exact:true})).toBeEnabled();
  await page.screenshot({path:join(artifacts,'tool-draft-guard-'+browserName+'.png')});
 });

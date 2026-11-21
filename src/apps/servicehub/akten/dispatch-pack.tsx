@@ -20,7 +20,7 @@ export function DispatchPack({file,orderId,data,onPlan,onConfirm}:{file:ServiceF
  function toggle(next:boolean){setOpen(next);try{sessionStorage.setItem('heyelli:einsatzmappe-offen',next?'1':'0');}catch{}}
  return <>
   {file.incidents?.map((incident,index)=><OrderIncident orderId={orderId} key={incident.id} incident={incident} index={index} count={file.incidents?.length} data={data} orderStatus={file.status} onPlan={onPlan} onConfirm={onConfirm}/>)}
-  <div className={styles.packGroup}><details className={styles.pack} open={open} onToggle={event=>{if(event.currentTarget.open!==open)toggle(event.currentTarget.open);}}><summary>Einsatzmappe</summary>{open&&<PackContent file={file} orderId={orderId}/>}</details>
+  <div className={styles.packGroup}><details className={styles.pack} open={open} onToggle={event=>{if(event.currentTarget.open!==open)toggle(event.currentTarget.open);}}><summary onClick={event=>{event.preventDefault();toggle(!open);}}>Einsatzmappe</summary>{open&&<PackContent file={file} orderId={orderId}/>}</details>
   <ReturnControl key={orderId+file.sourceRevision} orderId={orderId} revision={file.sourceRevision??''} objects={data.objects}/><MaterialList orderId={orderId} revision={file.sourceRevision??''} objects={data.objects}/></div>
  </>;
 }
