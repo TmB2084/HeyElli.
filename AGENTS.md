@@ -90,7 +90,7 @@ Diese Regeln gelten für die gesamte Anwendung und alle Änderungen durch Mensch
 - Änderungen kommen nur über Branch und Merge Request nach `main`; niemals direkt nach `main` pushen. Den Weg bis zum Release beschreibt `docs/ablauf.md`.
 - KI-Agenten (Claude Code, Codex) dürfen Branches pushen und Merge Requests öffnen, aber **nicht mergen** und **keine Tags oder Releases anlegen**; das macht immer ein Mensch. Ihre Branches heißen `claude/…` bzw. `codex/…`.
 - KI-Agenten ändern keine CI-Variablen, Server oder Runner, melden keine eigenen Runner an und halten die Pipeline ihres Branches grün.
-- Die Pipeline läuft ausschließlich auf dem zentralen Runner (Tag `docker`). `npm run verify` (Datenbank- und Browsertests) läuft lokal beim Entwickler.
+- Die GitLab-Pipeline läuft ausschließlich auf dem zentralen Runner (Tag `docker`); keine eigenen Runner anmelden. Zusätzlich führt `.github/workflows/verify.yml` das vollständige `npm run verify` bei Pull Requests auf einem von GitHub bereitgestellten, getrennten Linux-System aus. GitLab bleibt führend; GitHub-Prüfungen lösen keine Bereitstellung aus. Nur lesende Repositoryrechte, keine Anwendungsgeheimnisse und ausschließlich fest ausgewählte bereinigte JSON-Prüfnachweise verwenden. Lokale Abnahme und tatsächlich ausgeführten GitHub-/GitLab-Lauf getrennt ausweisen.
 
 <!-- BEGIN:nextjs-agent-rules -->
 
