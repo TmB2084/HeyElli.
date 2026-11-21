@@ -1,0 +1,1 @@
+export default function AccessDenied(){return <main><h1>Kein App-Zugriff</h1><p>Deine Rolle erlaubt diese App nicht. Öffne über das HeyElli-Menü eine freigegebene App oder wende dich an die Administration.</p></main>;}

@@ -1,0 +1,20 @@
+# Explicit disposable fresh-checkout verification. Never points at the regular development volume.
+# Use only in a separate checkout with a unique COMPOSE_PROJECT_NAME and generated local credentials.
+services:
+  db:
+    image: postgres:17.6-alpine
+    environment:
+      POSTGRES_USER: heyelli_checkout
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Separate checkout credentials required}
+      POSTGRES_DB: heyelli_checkout
+    ports:
+      - "127.0.0.1::5432"
+    volumes:
+      - checkout_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U heyelli_checkout -d heyelli_checkout"]
+      interval: 1s
+      timeout: 5s
+      retries: 40
+volumes:
+  checkout_data:

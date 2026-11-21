@@ -1,0 +1,15 @@
+{
+ "sim-order-1-incident":[
+  {"uuid":"sim-mat-1","nummer":"10","name":"FIKTIV-HZ-100","kurztext":"Drucksensor Heizungsanlage","langtext":"Fiktives Ersatzteil zur Demonstration der Materialliste. Keine echte Herstellerfreigabe.","positionsTyp":"ARTIKEL","positionsArt":"NORMAL","menge":2,"masseinheit":{"uuid":"sim-unit-piece","bezeichnung":"Stück"},"bestellnummer":"FIKTIV-B-100","herstellernummer":"FIKTIV-H-100","ekPreis":{"einzelPreis":12},"vkPreis":{"einzelPreis":25}},
+  {"uuid":"sim-work-1","nummer":"20","name":"FIKTIV-SERVICE-HZ","kurztext":"Anlage prüfen und Funktionskontrolle durchführen","langtext":"Fiktive Leistung: Sichtprüfung, Druckkontrolle und gemeinsame Funktionsprüfung. Arbeiten entsprechend dem vorhandenen Auftrag dokumentieren.","positionsTyp":"LEISTUNG","positionsArt":"NORMAL","menge":1.25,"masseinheit":{"uuid":"sim-unit-hour","bezeichnung":"h"}},
+  {"uuid":"sim-text-1","nummer":"30","kurztext":"Hinweis zum Einsatz","langtext":"Fiktiver Hinweis: Zugang zur Anlage vor dem Termin abstimmen.","positionsTyp":"TEXT","positionsArt":"NORMAL"}
+ ],
+ "sim-order-2-incident":[
+  {"uuid":"sim-mat-2","nummer":"10","name":"FIKTIV-BMA-200","kurztext":"Optischer Melder einschließlich Montage","positionsTyp":"ARTIKEL_INKL_LOHN","positionsArt":"NORMAL","menge":3,"masseinheit":{"uuid":"sim-unit-piece","bezeichnung":"Stück"}},
+  {"uuid":"sim-set-1","nummer":"20","name":"Fiktives Anschlussset","positionsTyp":"SORTIMENT","positionsArt":"NORMAL","menge":2,"masseinheit":{"uuid":"sim-unit-set","bezeichnung":"Set"},"teilleistungen":[
+   {"uuid":"sim-sub-1","nummer":"20.1","name":"FIKTIV-KABEL","kurztext":"Anschlussleitung","positionsTyp":"ARTIKEL","positionsArt":"NORMAL","menge":0.5,"gesamtMenge":1,"masseinheit":{"uuid":"sim-unit-length","bezeichnung":"m"}}
+  ]},
+  {"uuid":"sim-option-1","nummer":"30","name":"FIKTIV-ERSATZ","kurztext":"Optionaler Ersatzmelder","positionsTyp":"ARTIKEL","positionsArt":"BEDARF_OHNE_GESAMTBETRAG","menge":0,"masseinheit":{"uuid":"sim-unit-piece","bezeichnung":"Stück"}},
+  {"uuid":"sim-alt-1","nummer":"40","name":"FIKTIV-ALTERNATIVE","kurztext":"Alternativer Meldertyp","positionsTyp":"ARTIKEL","positionsArt":"ALTERNATIV","menge":1,"masseinheit":{"uuid":"sim-unit-piece","bezeichnung":"Stück"}}
+ ]
+}

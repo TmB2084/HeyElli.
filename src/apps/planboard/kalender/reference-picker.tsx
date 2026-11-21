@@ -1,0 +1,17 @@
+"use client";
+import {useEffect,useId,useRef,useState} from "react";
+import type {CalendarReference} from "./domain";
+export function ReferencePicker({label,kind,selected,onChange,disabled=false}:{label:string;kind:string;selected:CalendarReference|null;onChange:(value:CalendarReference|null)=>void;disabled?:boolean}){
+ const id=useId(),input=useRef<HTMLInputElement>(null);const [query,setQuery]=useState(""),[open,setOpen]=useState(false),[active,setActive]=useState(-1);
+ const [result,setResult]=useState<{key:string;items:CalendarReference[];error?:string}|null>(null);
+ const key=kind+":"+query,searchable=!selected&&query.trim().length>=3&&!disabled;
+ useEffect(()=>{if(!searchable)return;const controller=new AbortController();const timer=setTimeout(async()=>{try{const response=await fetch(`/api/ressourcenkalender/referenzen?kind=${encodeURIComponent(kind)}&q=${encodeURIComponent(query)}`,{signal:controller.signal,cache:"no-store"});const data=await response.json();if(!response.ok)throw new Error(data.error);if(!controller.signal.aborted)setResult({key,items:data.items});}catch(error){if(!controller.signal.aborted)setResult({key,items:[],error:error instanceof Error?error.message:"Suche fehlgeschlagen."});}},200);return ()=>{clearTimeout(timer);controller.abort();};},[kind,query,key,searchable]);
+ const items=result?.key===key?result.items:[];
+ function choose(item:CalendarReference){onChange(item);setQuery("");setOpen(false);setActive(-1);}
+ return <div className="search-picker" onBlur={event=>{if(!event.currentTarget.contains(event.relatedTarget))setOpen(false);}}>
+  <label htmlFor={id}>{label}</label><div className="selection-control">{selected&&<span className="selection-pill"><span>{selected.label}</span><button type="button" disabled={disabled} aria-label={`${label} entfernen`} onClick={()=>{onChange(null);setQuery("");setOpen(true);requestAnimationFrame(()=>input.current?.focus());}}>×</button></span>}
+  <input ref={input} id={id} hidden={!!selected} role="combobox" aria-autocomplete="list" aria-controls={`${id}-list`} aria-expanded={open&&searchable} aria-activedescendant={open&&items[active]?`${id}-${active}`:undefined} value={query} disabled={disabled} autoComplete="off" placeholder="Ab drei Zeichen suchen …" onFocus={()=>setOpen(true)} onChange={event=>{setQuery(event.target.value.slice(0,100));setActive(-1);setOpen(true);}} onKeyDown={event=>{if(event.key==="Escape"&&open){event.preventDefault();event.stopPropagation();setOpen(false);}if(["ArrowDown","ArrowUp"].includes(event.key)){event.preventDefault();setActive(value=>event.key==="ArrowDown"?Math.min(value+1,items.length-1):Math.max(0,value-1));}if(event.key==="Enter"){event.preventDefault();if(open&&items[active])choose(items[active]);}}}/></div>
+  {!selected&&<small>{["ABRUFAUFTRAG","GUTSCHRIFT"].includes(kind)?"PDS-UUID des Vorgangs eingeben.":kind==="ANSCHRIFT"?"Nach Kunde/Person suchen und vorhandene Anschrift wählen.":"Mindestens drei Zeichen eingeben."}</small>}
+  {open&&searchable&&<div className="search-popover"><ul role="listbox" id={`${id}-list`} aria-label={`${label} – Treffer`} className="search-results">{items.map((item,index)=><li role="option" aria-selected={false} id={`${id}-${index}`} key={item.id} className={index===active?"active":undefined} onMouseDown={event=>event.preventDefault()} onClick={()=>choose(item)}>{item.label}</li>)}</ul><small>{result?.key!==key?"PDS wird durchsucht …":result.error??(!items.length?"Keine Treffer.":`${items.length} Treffer`)}</small></div>}
+ </div>;
+}

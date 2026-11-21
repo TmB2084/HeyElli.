@@ -1,0 +1,1 @@
+export function planningVersion(row:Record<string,unknown>){return JSON.stringify([row.startZeitpunkt??'',row.endZeitpunkt??'',row.hauptmonteurUUID??'',[...(Array.isArray(row.weiteremonteureUUIDs)?row.weiteremonteureUUIDs:[])].sort()]);}

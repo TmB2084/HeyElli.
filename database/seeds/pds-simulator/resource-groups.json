@@ -1,0 +1,12 @@
+{
+  "groups": [
+    {"uuid":"sim-group-service","bezeichnung":"Kundendienst · Service"},
+    {"uuid":"sim-group-heating","bezeichnung":"Heizung/Lüftung"},
+    {"uuid":"sim-group-electrical","bezeichnung":"Elektrotechnik"}
+  ],
+  "memberships": {
+    "sim-employee-1":["sim-group-service","sim-group-heating"],
+    "sim-employee-2":["sim-group-service","sim-group-electrical"],
+    "sim-employee-3":["sim-group-service","sim-group-heating","sim-group-electrical"]
+  }
+}

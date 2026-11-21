@@ -1,0 +1,36 @@
+{
+  "holidays": [
+    {
+      "uuid": "sim-holiday-demo-full",
+      "bezeichnung": "Fiktiver Betriebsruhetag",
+      "aktiv": true,
+      "gesetzlich": false,
+      "naechstesDatum": "2026-11-05",
+      "halberTag": "NEIN"
+    },
+    {
+      "uuid": "sim-holiday-demo-half",
+      "bezeichnung": "Fiktiver freier Nachmittag",
+      "aktiv": true,
+      "gesetzlich": false,
+      "naechstesDatum": "2026-11-06",
+      "halberTag": "NACHMITTAGS"
+    }
+  ],
+  "groups": [
+    {
+      "uuid": "sim-holidays-service",
+      "bezeichnung": "Demo Service",
+      "aktiveFeiertage": [
+        "sim-holiday-demo-full"
+      ]
+    },
+    {
+      "uuid": "sim-holidays-part",
+      "bezeichnung": "Demo Teilzeit",
+      "aktiveFeiertage": [
+        "sim-holiday-demo-half"
+      ]
+    }
+  ]
+}

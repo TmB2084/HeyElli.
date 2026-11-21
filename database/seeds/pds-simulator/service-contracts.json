@@ -1,0 +1,4 @@
+{
+  "sim-order-1-incident": {"mode":"KEIN"},
+  "sim-order-2-incident": {"mode":"INTERVALL","intervallUUID":"sim-maintenance-interval-1","wartungsvertragUUID":"sim-maintenance-contract-1"}
+}

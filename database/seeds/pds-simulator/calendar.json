@@ -1,0 +1,282 @@
+[
+  {
+    "uuid": "cccccccc-cccc-4ccc-8ccc-000000000001",
+    "bezeichnung": "Wartung · Beispielhaus Nord",
+    "startZeitpunkt": "2026-11-02T08:00:00+01:00",
+    "endZeitpunkt": "2026-11-02T11:30:00+01:00",
+    "mitarbeiterUUIDs": [
+      "sim-employee-1"
+    ],
+    "status": "GEPLANT",
+    "typ": "FREIER",
+    "fix": false,
+    "ganzerTag": false,
+    "kategorien": []
+  },
+  {
+    "uuid": "cccccccc-cccc-4ccc-8ccc-000000000002",
+    "bezeichnung": "Prüfung · Hebeanlage",
+    "startZeitpunkt": "2026-11-02T12:30:00+01:00",
+    "endZeitpunkt": "2026-11-02T15:00:00+01:00",
+    "mitarbeiterUUIDs": [
+      "sim-employee-1"
+    ],
+    "status": "VORGEMERKT",
+    "typ": "FREIER",
+    "fix": false,
+    "ganzerTag": false,
+    "kategorien": []
+  },
+  {
+    "uuid": "cccccccc-cccc-4ccc-8ccc-000000000003",
+    "bezeichnung": "Service · Brandmeldeanlage",
+    "startZeitpunkt": "2026-11-02T08:30:00+01:00",
+    "endZeitpunkt": "2026-11-02T12:00:00+01:00",
+    "mitarbeiterUUIDs": [
+      "sim-employee-2"
+    ],
+    "status": "GEPLANT",
+    "typ": "FREIER",
+    "fix": false,
+    "ganzerTag": false,
+    "kategorien": []
+  },
+  {
+    "uuid": "cccccccc-cccc-4ccc-8ccc-000000000004",
+    "bezeichnung": "Abwesenheit",
+    "startZeitpunkt": "2026-11-02T08:00:00+01:00",
+    "endZeitpunkt": "2026-11-02T16:00:00+01:00",
+    "mitarbeiterUUIDs": [
+      "sim-employee-3"
+    ],
+    "status": "GEPLANT",
+    "typ": "ABWESENHEIT",
+    "fix": false,
+    "ganzerTag": false,
+    "kategorien": []
+  },
+  {
+    "uuid": "cccccccc-cccc-4ccc-8ccc-000000000005",
+    "bezeichnung": "Störung · Heizungsanlage",
+    "startZeitpunkt": "2026-11-03T07:30:00+01:00",
+    "endZeitpunkt": "2026-11-03T11:00:00+01:00",
+    "mitarbeiterUUIDs": [
+      "sim-employee-1"
+    ],
+    "status": "GEPLANT",
+    "typ": "FREIER",
+    "fix": false,
+    "ganzerTag": false,
+    "kategorien": []
+  },
+  {
+    "uuid": "cccccccc-cccc-4ccc-8ccc-000000000006",
+    "bezeichnung": "Wartung · Sicherheitsbeleuchtung",
+    "startZeitpunkt": "2026-11-03T09:00:00+01:00",
+    "endZeitpunkt": "2026-11-03T13:00:00+01:00",
+    "mitarbeiterUUIDs": [
+      "sim-employee-2"
+    ],
+    "status": "GEPLANT",
+    "typ": "FREIER",
+    "fix": false,
+    "ganzerTag": false,
+    "kategorien": []
+  },
+  {
+    "uuid": "cccccccc-cccc-4ccc-8ccc-000000000007",
+    "bezeichnung": "Montage · Lüftung",
+    "startZeitpunkt": "2026-11-03T10:00:00+01:00",
+    "endZeitpunkt": "2026-11-03T15:30:00+01:00",
+    "mitarbeiterUUIDs": [
+      "sim-employee-3"
+    ],
+    "status": "FREI",
+    "typ": "FREIER",
+    "fix": false,
+    "ganzerTag": false,
+    "kategorien": []
+  },
+  {
+    "uuid": "cccccccc-cccc-4ccc-8ccc-000000000008",
+    "bezeichnung": "Gemeinsamer Einsatz · Musterwerk",
+    "startZeitpunkt": "2026-11-04T09:00:00+01:00",
+    "endZeitpunkt": "2026-11-04T12:00:00+01:00",
+    "mitarbeiterUUIDs": [
+      "sim-employee-1",
+      "sim-employee-2"
+    ],
+    "status": "GEPLANT",
+    "typ": "FREIER",
+    "fix": false,
+    "ganzerTag": false,
+    "kategorien": []
+  },
+  {
+    "uuid": "cccccccc-cccc-4ccc-8ccc-000000000009",
+    "bezeichnung": "Wartung · Lüftungsanlage",
+    "startZeitpunkt": "2026-11-04T08:00:00+01:00",
+    "endZeitpunkt": "2026-11-04T14:00:00+01:00",
+    "mitarbeiterUUIDs": [
+      "sim-employee-3"
+    ],
+    "status": "GEPLANT",
+    "typ": "FREIER",
+    "fix": false,
+    "ganzerTag": false,
+    "kategorien": []
+  },
+  {
+    "uuid": "cccccccc-cccc-4ccc-8ccc-000000000010",
+    "bezeichnung": "Projektbesprechung",
+    "startZeitpunkt": "2026-11-05T09:00:00+01:00",
+    "endZeitpunkt": "2026-11-05T10:30:00+01:00",
+    "mitarbeiterUUIDs": [
+      "sim-employee-1",
+      "sim-employee-2",
+      "sim-employee-3"
+    ],
+    "status": "GEPLANT",
+    "typ": "FREIER",
+    "fix": true,
+    "ganzerTag": false,
+    "kategorien": []
+  },
+  {
+    "uuid": "cccccccc-cccc-4ccc-8ccc-000000000011",
+    "bezeichnung": "Service · Beispielhaus Süd",
+    "startZeitpunkt": "2026-11-05T11:00:00+01:00",
+    "endZeitpunkt": "2026-11-05T15:00:00+01:00",
+    "mitarbeiterUUIDs": [
+      "sim-employee-1"
+    ],
+    "status": "VORGEMERKT",
+    "typ": "FREIER",
+    "fix": false,
+    "ganzerTag": false,
+    "kategorien": []
+  },
+  {
+    "uuid": "cccccccc-cccc-4ccc-8ccc-000000000012",
+    "bezeichnung": "Urlaub · Genehmigt",
+    "startZeitpunkt": "2026-11-06T08:00:00+01:00",
+    "endZeitpunkt": "2026-11-06T16:00:00+01:00",
+    "mitarbeiterUUIDs": [
+      "sim-employee-2"
+    ],
+    "status": "GEPLANT",
+    "typ": "URLAUB",
+    "fix": false,
+    "ganzerTag": false,
+    "kategorien": []
+  },
+  {
+    "uuid": "cccccccc-cccc-4ccc-8ccc-000000000013",
+    "bezeichnung": "Kontrolle · Musterwerk",
+    "startZeitpunkt": "2026-11-06T08:00:00+01:00",
+    "endZeitpunkt": "2026-11-06T12:00:00+01:00",
+    "mitarbeiterUUIDs": [
+      "sim-employee-3"
+    ],
+    "status": "GEPLANT",
+    "typ": "FREIER",
+    "fix": false,
+    "ganzerTag": false,
+    "kategorien": []
+  },
+  {
+    "uuid": "cccccccc-cccc-4ccc-8ccc-000000000014",
+    "bezeichnung": "Urlaub · Beantragt",
+    "startZeitpunkt": "2026-11-06T08:00:00+01:00",
+    "endZeitpunkt": "2026-11-06T16:00:00+01:00",
+    "mitarbeiterUUIDs": [
+      "sim-employee-1"
+    ],
+    "status": "GEPLANT",
+    "typ": "URLAUB",
+    "fix": false,
+    "ganzerTag": false,
+    "kategorien": []
+  },
+  {
+    "uuid": "cccccccc-cccc-4ccc-8ccc-000000000015",
+    "bezeichnung": "Wartung BMA · Musterwerk West",
+    "startZeitpunkt": "2026-11-24T09:00:00+01:00",
+    "endZeitpunkt": "2026-11-24T11:30:00+01:00",
+    "mitarbeiterUUIDs": [
+      "sim-employee-2",
+      "sim-employee-3"
+    ],
+    "status": "GEPLANT",
+    "typ": "TAETIGKEIT",
+    "fix": false,
+    "ganzerTag": false,
+    "kategorien": [],
+    "objektUUID": "sim-unit-4",
+    "text": "Jährliche Wartung der Brandmeldeanlage. Zugang über Werkschutz."
+  },
+  {
+    "uuid": "cccccccc-cccc-4ccc-8ccc-000000000016",
+    "bezeichnung": "Aufmaß Warmwasserspeicher · Beispielhaus Süd",
+    "startZeitpunkt": "2026-11-25T10:00:00+01:00",
+    "endZeitpunkt": "2026-11-25T11:00:00+01:00",
+    "mitarbeiterUUIDs": [
+      "sim-employee-3"
+    ],
+    "status": "VORGEMERKT",
+    "typ": "TAETIGKEIT",
+    "fix": false,
+    "ganzerTag": false,
+    "kategorien": [],
+    "objektUUID": "sim-object-2",
+    "text": "Maße und Zugang für Angebot Speichertausch aufnehmen."
+  },
+  {
+    "uuid": "cccccccc-cccc-4ccc-8ccc-000000000017",
+    "bezeichnung": "Begehung · Musterwerk West",
+    "startZeitpunkt": "2026-12-03T13:00:00+01:00",
+    "endZeitpunkt": "2026-12-03T15:00:00+01:00",
+    "mitarbeiterUUIDs": [
+      "sim-employee-2"
+    ],
+    "status": "VORGEMERKT",
+    "typ": "TAETIGKEIT",
+    "fix": false,
+    "ganzerTag": false,
+    "kategorien": [],
+    "objektUUID": "sim-object-3",
+    "text": "Begehung für Erweiterung."
+  },
+  {
+    "uuid": "cccccccc-cccc-4ccc-8ccc-000000000018",
+    "bezeichnung": "Prüfung Sicherheitsbeleuchtung",
+    "startZeitpunkt": "2026-12-14T00:00:00+01:00",
+    "endZeitpunkt": "2026-12-15T00:00:00+01:00",
+    "mitarbeiterUUIDs": [
+      "sim-employee-3"
+    ],
+    "status": "GEPLANT",
+    "typ": "TAETIGKEIT",
+    "fix": false,
+    "ganzerTag": true,
+    "kategorien": [],
+    "objektUUID": "sim-unit-5",
+    "text": "Jahresprüfung."
+  },
+  {
+    "uuid": "cccccccc-cccc-4ccc-8ccc-000000000019",
+    "bezeichnung": "Filterwechsel Lüftungsanlage",
+    "startZeitpunkt": "2026-11-30T08:00:00+01:00",
+    "endZeitpunkt": "2026-11-30T10:00:00+01:00",
+    "mitarbeiterUUIDs": [
+      "sim-employee-1"
+    ],
+    "status": "GEPLANT",
+    "typ": "TAETIGKEIT",
+    "fix": false,
+    "ganzerTag": false,
+    "kategorien": [],
+    "objektUUID": "sim-unit-2",
+    "text": "Filterwechsel nach Wartungsplan."
+  }
+]

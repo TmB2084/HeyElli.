@@ -1,0 +1,5 @@
+[
+ {"uuid":"sim-article-service-travel","name":"SIM Anfahrt Service","kurztext":"Fiktiver Katalogartikel für eine Service-Anfahrt","typ":"ARTIKEL","massEinheit":"Stück","loeschKennzeichen":false},
+ {"uuid":"sim-article-service-small-material","name":"SIM Kleinmaterial Service","kurztext":"Fiktiver Katalogartikel für Kleinmaterial","typ":"ARTIKEL","massEinheit":"Stück","loeschKennzeichen":false},
+ {"uuid":"sim-article-service-work","name":"SIM Serviceeinsatz inkl. Lohn","kurztext":"Fiktiver Artikel einschließlich Lohnanteil","typ":"ARTIKEL_INKL_LOHN","massEinheit":"Stunde","loeschKennzeichen":false}
+]

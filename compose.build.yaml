@@ -1,0 +1,7 @@
+# Nur für lokale Builds, zusammen mit compose.server.yaml:
+#   HEYELLI_IMAGE=heyelli HEYELLI_TAG=local docker compose -f compose.server.yaml -f compose.build.yaml build
+# Auf dem Server und in der Pipeline kommt das Image aus der Registry, dort wird diese Datei nicht benutzt.
+services:
+  app:
+    build:
+      context: .

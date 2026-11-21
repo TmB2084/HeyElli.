@@ -1,0 +1,316 @@
+{
+  "SERVICEAUFTRAG": [
+    {
+      "uuid": "sim-status-serviceauftrag-1",
+      "bezeichnung": "Auftragspool",
+      "evidence": "handbook-1424"
+    },
+    {
+      "uuid": "sim-status-ausgegeben",
+      "bezeichnung": "Ausgegeben",
+      "evidence": "handbook-1424"
+    },
+    {
+      "uuid": "sim-status-serviceauftrag-3",
+      "bezeichnung": "Ausgegeben Mobil",
+      "evidence": "handbook-1424"
+    },
+    {
+      "uuid": "sim-status-serviceauftrag-4",
+      "bezeichnung": "Erledigt",
+      "evidence": "screenshot-service-2026-11-03"
+    },
+    {
+      "uuid": "sim-status-serviceauftrag-5",
+      "bezeichnung": "Geplant",
+      "evidence": "screenshot-service-2026-11-03"
+    },
+    {
+      "uuid": "sim-status-serviceauftrag-6",
+      "bezeichnung": "Manuell storniert",
+      "evidence": "handbook-1443"
+    },
+    {
+      "uuid": "sim-status-serviceauftrag-7",
+      "bezeichnung": "Material ausstehend",
+      "evidence": "screenshot-service-2026-11-03"
+    },
+    {
+      "uuid": "sim-status-serviceauftrag-8",
+      "bezeichnung": "Mobil abgeholt",
+      "evidence": "handbook-1424"
+    },
+    {
+      "uuid": "sim-status-serviceauftrag-9",
+      "bezeichnung": "Mobil storniert",
+      "evidence": "handbook-1443"
+    },
+    {
+      "uuid": "sim-open",
+      "bezeichnung": "Offen",
+      "evidence": "handbook-1424"
+    },
+    {
+      "uuid": "sim-status-serviceauftrag-11",
+      "bezeichnung": "Storniert",
+      "evidence": "screenshot-service-2026-11-03"
+    },
+    {
+      "uuid": "sim-status-serviceauftrag-12",
+      "bezeichnung": "Teilerledigt",
+      "evidence": "handbook-1424"
+    },
+    {
+      "uuid": "sim-status-serviceauftrag-13",
+      "bezeichnung": "zur Löschung vorgesehen",
+      "evidence": "screenshot-service-2026-11-03"
+    },
+    {
+      "uuid": "sim-service-custom-status",
+      "bezeichnung": "Demo: Rücksprache erforderlich",
+      "kategorie": "Offen",
+      "evidence": "synthetic-custom-example"
+    }
+  ],
+  "AUFTRAG": [
+    {
+      "uuid": "sim-order-open",
+      "bezeichnung": "Offen",
+      "evidence": "synthetic-demo-not-certified-standard"
+    },
+    {
+      "uuid": "sim-order-closed",
+      "bezeichnung": "Erledigt",
+      "evidence": "synthetic-demo-not-certified-standard"
+    },
+    {
+      "uuid": "sim-status-auftrag-3",
+      "bezeichnung": "Storniert",
+      "evidence": "synthetic-demo-not-certified-standard"
+    }
+  ],
+  "ANGEBOT": [
+    {
+      "uuid": "sim-order-open",
+      "bezeichnung": "Offen",
+      "evidence": "synthetic-demo-not-certified-standard"
+    },
+    {
+      "uuid": "sim-order-closed",
+      "bezeichnung": "Erledigt",
+      "evidence": "synthetic-demo-not-certified-standard"
+    },
+    {
+      "uuid": "sim-status-angebot-3",
+      "bezeichnung": "Storniert",
+      "evidence": "synthetic-demo-not-certified-standard"
+    },
+    {
+      "uuid": "sim-status-angebot-4",
+      "bezeichnung": "Beauftragt",
+      "evidence": "handbook-281-standard-example"
+    }
+  ],
+  "BEDARFSMELDUNG": [
+    {
+      "uuid": "sim-order-open",
+      "bezeichnung": "Offen",
+      "evidence": "synthetic-demo-not-certified-standard"
+    },
+    {
+      "uuid": "sim-order-closed",
+      "bezeichnung": "Erledigt",
+      "evidence": "synthetic-demo-not-certified-standard"
+    },
+    {
+      "uuid": "sim-status-bedarfsmeldung-3",
+      "bezeichnung": "Storniert",
+      "evidence": "synthetic-demo-not-certified-standard"
+    }
+  ],
+  "RECHNUNG": [
+    {
+      "uuid": "sim-order-open",
+      "bezeichnung": "Offen",
+      "evidence": "synthetic-demo-not-certified-standard"
+    },
+    {
+      "uuid": "sim-order-closed",
+      "bezeichnung": "Erledigt",
+      "evidence": "synthetic-demo-not-certified-standard"
+    },
+    {
+      "uuid": "sim-status-rechnung-3",
+      "bezeichnung": "Storniert",
+      "evidence": "synthetic-demo-not-certified-standard"
+    }
+  ],
+  "LIEFERSCHEIN": [
+    {
+      "uuid": "sim-order-open",
+      "bezeichnung": "Offen",
+      "evidence": "synthetic-demo-not-certified-standard"
+    },
+    {
+      "uuid": "sim-order-closed",
+      "bezeichnung": "Erledigt",
+      "evidence": "synthetic-demo-not-certified-standard"
+    },
+    {
+      "uuid": "sim-status-lieferschein-3",
+      "bezeichnung": "Storniert",
+      "evidence": "synthetic-demo-not-certified-standard"
+    }
+  ],
+  "BESTELLUNG": [
+    {
+      "uuid": "sim-order-open",
+      "bezeichnung": "Offen",
+      "evidence": "synthetic-demo-not-certified-standard"
+    },
+    {
+      "uuid": "sim-order-closed",
+      "bezeichnung": "Erledigt",
+      "evidence": "synthetic-demo-not-certified-standard"
+    },
+    {
+      "uuid": "sim-status-bestellung-3",
+      "bezeichnung": "Storniert",
+      "evidence": "synthetic-demo-not-certified-standard"
+    }
+  ],
+  "WARENEINGANG": [
+    {
+      "uuid": "sim-order-open",
+      "bezeichnung": "Offen",
+      "evidence": "synthetic-demo-not-certified-standard"
+    },
+    {
+      "uuid": "sim-order-closed",
+      "bezeichnung": "Erledigt",
+      "evidence": "synthetic-demo-not-certified-standard"
+    },
+    {
+      "uuid": "sim-status-wareneingang-3",
+      "bezeichnung": "Storniert",
+      "evidence": "synthetic-demo-not-certified-standard"
+    }
+  ],
+  "ABRUFAUFTRAG": [
+    {
+      "uuid": "sim-order-open",
+      "bezeichnung": "Offen",
+      "evidence": "synthetic-demo-not-certified-standard"
+    },
+    {
+      "uuid": "sim-order-closed",
+      "bezeichnung": "Erledigt",
+      "evidence": "synthetic-demo-not-certified-standard"
+    },
+    {
+      "uuid": "sim-status-abrufauftrag-3",
+      "bezeichnung": "Storniert",
+      "evidence": "synthetic-demo-not-certified-standard"
+    }
+  ],
+  "GUTSCHRIFT": [
+    {
+      "uuid": "sim-order-open",
+      "bezeichnung": "Offen",
+      "evidence": "synthetic-demo-not-certified-standard"
+    },
+    {
+      "uuid": "sim-order-closed",
+      "bezeichnung": "Erledigt",
+      "evidence": "synthetic-demo-not-certified-standard"
+    },
+    {
+      "uuid": "sim-status-gutschrift-3",
+      "bezeichnung": "Storniert",
+      "evidence": "synthetic-demo-not-certified-standard"
+    }
+  ],
+  "RUECKNAHME": [
+    {
+      "uuid": "sim-order-open",
+      "bezeichnung": "Offen",
+      "evidence": "synthetic-demo-not-certified-standard"
+    },
+    {
+      "uuid": "sim-order-closed",
+      "bezeichnung": "Erledigt",
+      "evidence": "synthetic-demo-not-certified-standard"
+    },
+    {
+      "uuid": "sim-status-ruecknahme-3",
+      "bezeichnung": "Storniert",
+      "evidence": "synthetic-demo-not-certified-standard"
+    }
+  ],
+  "PROJEKT": [
+    {
+      "uuid": "sim-status-projekt-1",
+      "bezeichnung": "Offen",
+      "evidence": "synthetic-demo-not-certified-standard"
+    },
+    {
+      "uuid": "sim-project-active",
+      "bezeichnung": "In Bearbeitung",
+      "evidence": "synthetic-demo-not-certified-standard"
+    },
+    {
+      "uuid": "sim-project-closed",
+      "bezeichnung": "Abgeschlossen",
+      "evidence": "synthetic-demo-not-certified-standard"
+    },
+    {
+      "uuid": "sim-status-projekt-4",
+      "bezeichnung": "Storniert",
+      "evidence": "synthetic-demo-not-certified-standard"
+    }
+  ],
+  "RUECKLAUF": [
+    {
+      "uuid": "sim-status-ruecklauf-1",
+      "bezeichnung": "Teilerledigt",
+      "evidence": "handbook-1536-level-status-not-full-catalog"
+    },
+    {
+      "uuid": "sim-status-ruecklauf-2",
+      "bezeichnung": "Offen",
+      "evidence": "handbook-1536-level-status-not-full-catalog"
+    },
+    {
+      "uuid": "sim-status-ruecklauf-3",
+      "bezeichnung": "Freigegeben",
+      "evidence": "handbook-1536-level-status-not-full-catalog"
+    },
+    {
+      "uuid": "sim-status-ruecklauf-4",
+      "bezeichnung": "Abgerechnet",
+      "evidence": "handbook-1536-level-status-not-full-catalog"
+    },
+    {
+      "uuid": "sim-status-ruecklauf-5",
+      "bezeichnung": "Storniert",
+      "evidence": "synthetic-demo-not-certified-standard"
+    }
+  ],
+  "ZAEHLLISTE": [
+    {
+      "uuid": "sim-status-zaehlliste-1",
+      "bezeichnung": "Offen",
+      "evidence": "synthetic-demo-not-certified-standard"
+    },
+    {
+      "uuid": "sim-status-zaehlliste-2",
+      "bezeichnung": "Erledigt",
+      "evidence": "synthetic-demo-not-certified-standard"
+    },
+    {
+      "uuid": "sim-status-zaehlliste-3",
+      "bezeichnung": "Storniert",
+      "evidence": "synthetic-demo-not-certified-standard"
+    }
+  ]
+}

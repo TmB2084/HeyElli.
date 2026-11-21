@@ -1,0 +1,7 @@
+import {helpTopics} from './knowledge.ts';
+const localSections=[
+ {title:'Wissensgrundlage',text:'AskElli ist deine lokale Bedienungshilfe mit Ollama. Stelle eine Frage zu HeyElli oder wähle einen Fragevorschlag. Elli kennt die dokumentierten Funktionen, Bedienwege und deine eigenen Berechtigungen. Bei Rückfragen berücksichtigt sie den bisherigen Gesprächskontext. Unbekannte Funktionen soll sie nicht erfinden.'},
+ {title:'Aktionen und Grenzen',text:'Ohne aktivierten Copilot erklärt Elli die Bedienung, liest aber keine aktuellen Aufträge oder Termine und führt keine Änderungen aus. Frage beispielsweise: Wie verschiebe ich einen Termin? Anlegen, Verschieben und Mobil-Ausgeben erledigst du selbst in den jeweiligen Apps. Ist Ollama nicht erreichbar, bleibt deine Frage gesichert; eine Fehlermeldung weist auf die lokale Verbindung hin.'},
+ {title:'Datenschutz und Sicherung',text:'Die KI-Verarbeitung erfolgt lokal mit Ollama. HeyElli sichert Fragen, Antworten, offene Anfragen und noch nicht gesendete Eingaben pro Benutzer. Neuer Chat setzt den gespeicherten Verlauf und Gesprächskontext zurück. Keine Zugangsdaten eingeben. Nur Administratoren können Antworten bewerten; bewertete Beiträge bleiben zur Wissenspflege gesondert gespeichert.'},
+];
+export function helpForProvider(copilotActive=false){return helpTopics.map(topic=>topic.id!=='hilfe'?topic:copilotActive?{...topic,title:'AskElli mit Copilot'}:{...topic,title:'AskElli mit Ollama',sections:localSections,text:localSections.map(section=>section.text).join(' ')});}

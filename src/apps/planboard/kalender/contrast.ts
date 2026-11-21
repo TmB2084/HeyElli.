@@ -1,0 +1,2 @@
+/** Black/white choice guarantees at least 4.5:1 on opaque six-digit palette colors. */
+export function calendarTextColor(color:string){const match=/^#([0-9a-f]{6})$/i.exec(color);if(!match)return '#17212e';const channels=[0,2,4].map(i=>parseInt(match[1].slice(i,i+2),16)/255).map(v=>v<=.04045?v/12.92:((v+.055)/1.055)**2.4),luminance=channels[0]*.2126+channels[1]*.7152+channels[2]*.0722;return (luminance+.05)/.05>=1.05/(luminance+.05)?'#000000':'#ffffff';}

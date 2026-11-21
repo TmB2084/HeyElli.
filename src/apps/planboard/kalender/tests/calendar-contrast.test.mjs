@@ -1,0 +1,2 @@
+import {test} from 'node:test';import assert from 'node:assert/strict';import {calendarTextColor} from '../contrast.ts';
+test('calendar color choice preserves WCAG normal-text contrast across the RGB luminance range',()=>{for(let n=0;n<=255;n++){const hex='#'+n.toString(16).padStart(2,'0').repeat(3),v=n/255,l=v<=.04045?v/12.92:((v+.055)/1.055)**2.4,color=calendarTextColor(hex),ratio=color==='#000000'?(l+.05)/.05:1.05/(l+.05);assert.ok(ratio>=4.5);}assert.equal(calendarTextColor('#000066'),'#ffffff');assert.equal(calendarTextColor('#ffff00'),'#000000');});

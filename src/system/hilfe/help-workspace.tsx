@@ -1,0 +1,31 @@
+'use client';
+import {useEffect,useState} from 'react';
+import {GuardedLink,AppGlyph,appIconBackground} from '@/platform/shell';
+import {helpForProvider} from '../../apps/askelli/elli/help-provider';
+import {helpSectionId,resolveHelpHash,searchHelp} from '../../apps/askelli/elli/help-search';
+import styles from './help-workspace.module.css';
+const destinations:Record<string,{label:string;href?:string;icon?:'incident'|'resource'|'duty'|'elli'|'account'|'settings'|'help'|'service'|'maildesk'|'tasks'|'mission'}>={
+ allgemein:{label:'HeyElli allgemein',icon:'help'},service:{label:'ServiceHub',href:'/servicehub',icon:'service'},stoerung:{label:'CaseDesk',href:'/casedesk',icon:'incident'},ressourcen:{label:'PlanBoard',href:'/planboard',icon:'resource'},maildesk:{label:'MailDesk',href:'/maildesk',icon:'maildesk'},aufgaben:{label:'TaskHub',href:'/taskhub',icon:'tasks'},missioncontrol:{label:'MissionControl',href:'/missioncontrol',icon:'mission'},bereitschaft:{label:'DutyBoard',href:'/dutyboard',icon:'duty'},konto:{label:'Benutzerkonto',href:'/benutzerkonto',icon:'account'},einstellungen:{label:'Einstellungen',href:'/einstellungen',icon:'settings'},mail:{label:'E-Mail & Integrationen',href:'/einstellungen?bereich=email'},hilfe:{label:'AskElli',icon:'elli'}
+};
+const groups=[{title:'Einstieg',ids:['allgemein']},{title:'Apps',ids:['service','stoerung','ressourcen','bereitschaft','maildesk','aufgaben','missioncontrol','hilfe']},{title:'Konto & System',ids:['konto','einstellungen','mail']}];
+export function HelpWorkspace({canAdmin,copilotActive=false}:{canAdmin:boolean;copilotActive?:boolean}){
+ const [activeCopilot,setActiveCopilot]=useState(copilotActive);
+ useEffect(()=>{let active=true;const controller=new AbortController();async function refresh(){try{const response=await fetch('/api/assistent/status',{cache:'no-store',signal:AbortSignal.any([controller.signal,AbortSignal.timeout(10000)])});const value=await response.json();if(active)setActiveCopilot(response.ok&&value.provider==='copilot'&&value.enabled===true);}catch{if(active)setActiveCopilot(false);}}void refresh();const timer=setInterval(()=>void refresh(),15000);window.addEventListener('heyelli:copilot-change',refresh);window.addEventListener('focus',refresh);return()=>{active=false;controller.abort();clearInterval(timer);window.removeEventListener('heyelli:copilot-change',refresh);window.removeEventListener('focus',refresh);};},[]);
+ const helpTopics=helpForProvider(activeCopilot);
+ const [active,setActive]=useState('allgemein'),[query,setQuery]=useState(''),[selected,setSelected]=useState('');
+ const searching=!!query.trim(),results=searchHelp(query,helpTopics);
+ function selectSection(topicId:string,sectionId=''){setActive(topicId);setSelected(sectionId);setQuery('');}
+ useEffect(()=>{function update(){const target=resolveHelpHash(window.location.hash);selectSection(target.topicId,target.sectionId);}update();window.addEventListener('hashchange',update);window.addEventListener('popstate',update);return()=>{window.removeEventListener('hashchange',update);window.removeEventListener('popstate',update);};},[]);
+ useEffect(()=>{if(!selected||searching)return;const frame=requestAnimationFrame(()=>{const element=document.getElementById(selected);element?.scrollIntoView({block:'nearest'});element?.focus({preventScroll:true});});return()=>cancelAnimationFrame(frame);},[active,selected,searching]);
+ return <main className={styles.page}>
+  <h1 className="sr-only">Bedienungsanleitung</h1>
+  <div className={`${styles.search} heyelli-field`}><label className="sr-only" htmlFor="help-search">Bedienungsanleitung durchsuchen</label><input id="help-search" type="search" placeholder="Bedienungsfrage oder Thema suchen …" value={query} onChange={event=>setQuery(event.target.value)}/>{query&&<button type="button" onClick={()=>setQuery('')}>Suche löschen</button>}</div>
+  <div className={styles.window}>
+   <nav className={styles.sidebar} aria-label="Anleitung nach Apps und Themen">{groups.map(group=><div className={styles.navGroup} key={group.title}><h2>{group.title}</h2><div>{group.ids.map(id=>{const item=destinations[id]??{label:String(id)};return <GuardedLink key={id} href={'#'+id} scroll={false} onNavigate={()=>selectSection(id)} aria-current={!searching&&active===id?'location':undefined}><span className={styles.icon} style={item.icon?{background:appIconBackground[item.icon],color:'#fff'}:undefined} data-icon={item.icon??'system'} aria-hidden="true">{item.icon?<AppGlyph icon={item.icon}/>:<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="5" y="3" width="14" height="18" rx="3"/><path d="M9 8h6M9 12h6M9 16h4"/></svg>}</span><span>{item.label}</span></GuardedLink>;})}</div></div>)}</nav>
+   <div className={styles.content}>{searching&&<section className={styles.results} aria-label="Suchergebnisse"><h2>Suchergebnisse</h2><p role="status">{results.length?`${results.length} passende Abschnitte`:'Keine passenden Abschnitte. Versuche einen anderen Suchbegriff.'}</p><ul>{results.map(result=><li key={result.id}><GuardedLink href={'#'+result.id} scroll={false} onNavigate={()=>selectSection(result.topicId,result.id)}><small>{result.topicTitle}</small><strong>{result.title} <span aria-hidden="true">›</span></strong><span>{result.text.length>180?result.text.slice(0,177)+'…':result.text}</span></GuardedLink></li>)}</ul></section>}{helpTopics.map(topic=>{const item=destinations[topic.id]??{label:topic.title},allowed=canAdmin||!['einstellungen','mail'].includes(topic.id);return <section key={topic.id} id={topic.id} hidden={searching||active!==topic.id} className={styles.article} aria-labelledby={'help-title-'+topic.id}>
+    <header className={styles.articleHeader}><h2 id={'help-title-'+topic.id}>{topic.title}</h2>{item.href&&allowed&&<GuardedLink href={item.href} className={styles.open}>{item.label} öffnen <span aria-hidden="true">↗</span></GuardedLink>}</header>
+    <div className={styles.sections}>{topic.sections.map(section=><section key={section.title} id={helpSectionId(topic.id,section.title)} tabIndex={-1} className={styles.section} aria-labelledby={helpSectionId(topic.id,section.title)+'-title'}><h3 id={helpSectionId(topic.id,section.title)+'-title'}>{section.title}</h3><p>{section.text}</p></section>)}</div>
+   </section>;})}</div>
+  </div>
+ </main>;
+}

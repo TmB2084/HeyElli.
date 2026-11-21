@@ -1,0 +1,6 @@
+export type MaterialPosition={id:string;parentId:string;depth:number;number:string;name:string;shortText:string;longText:string;extraText:string;type:string;variant:string;quantity:number|null;totalQuantity:number|null;unit:string;orderNumber:string;manufacturerNumber:string;ean:string;ignorePart:boolean;issue:string};
+export type MaterialGroup={id:string;objectId:string;provided:boolean;rows:MaterialPosition[];error:string};
+export type MaterialList={groups:MaterialGroup[];count:number};
+export const materialTypes:Record<string,string>={ARTIKEL:'Artikel',ARTIKEL_INKL_LOHN:'Artikel inkl. Lohn',LEISTUNG:'Leistung',LOHN:'Lohn',GERAET:'Gerät',SORTIMENT:'Sortiment',TEXT:'Text',ZUSCHLAG:'Zuschlag',FAHRTKOSTEN:'Fahrtkosten',SONSTIGES1:'Sonstiges 1',SONSTIGES2:'Sonstiges 2',SONSTIGES3:'Sonstiges 3',SONSTIGES4:'Sonstiges 4'};
+export const materialVariants:Record<string,string>={NORMAL:'',ALTERNATIV:'Alternative',BEDARF_MIT_GESAMTBETRAG:'Bedarf mit Gesamtbetrag',BEDARF_OHNE_GESAMTBETRAG:'Bedarf ohne Gesamtbetrag',SCHATTEN:'Schattenposition',DIFFPOS:'Differenzposition'};
+export function materialQuantity(value:number|null){return value===null?'—':new Intl.NumberFormat('de-DE',{maximumSignificantDigits:21,...(value!==0&&Math.abs(value)<0.000001?{notation:'scientific' as const}:{})}).format(value===0?0:value);}

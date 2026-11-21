@@ -1,0 +1,139 @@
+# HeyElli: Betrieb als Container hinter dem Host-nginx (Port nur auf 127.0.0.1).
+# Das Image kommt aus der GitLab-Registry und wird in der Pipeline gebaut. Auf dem Server wird nicht gebaut.
+# Aufruf auf dem Server nur über /usr/local/sbin/heyelli-compose.sh (setzt Projekt, .env und .env.tag).
+# Dateien je Instanz: .env (Konfiguration und Geheimnisse, nicht im Git), .env.tag (schreibt das Deploy-Skript).
+# Lokal bauen: docker compose -f compose.server.yaml -f compose.build.yaml build (siehe docs/ci-deploy.md).
+# Diese Datei heißt im Repo compose.server.yaml, weil compose.yaml die lokale Entwicklungsdatenbank beschreibt (npm run db:up).
+# Auf dem Server liegt sie als /opt/heyelli-<instanz>/compose.yaml (Inhalt byte-identisch, das Deploy-Skript prüft den sha256).
+#
+# Ein Dienst je Prozess: db, migrate (einmalig), app, mail-worker, assistant-runtime, monitor.
+# Netze: "intern" (internal, nur Dienste und Datenbank), "extern" (Ausgang für Microsoft 365 und AD, nur app und mail-worker),
+# "ollama" (gemeinsames internes Netz zum Ollama-Dienst, siehe deploy/server/ollama/compose.yaml). Test und Prod nutzen denselben
+# Ollama-Stack (Entscheidung 18.11.2026): ein Modell im Speicher, beide Instanzen hängen am selben externen Netz.
+
+x-haertung: &haertung
+  restart: unless-stopped
+  read_only: true
+  cap_drop: [ALL]
+  security_opt:
+    - no-new-privileges:true
+  logging:
+    driver: json-file
+    options:
+      max-size: "10m"
+      max-file: "5"
+
+x-app: &app
+  <<: *haertung
+  image: ${HEYELLI_IMAGE:-registry.elomech-gruppe.de/webapps/heyelli/app}:${HEYELLI_TAG:?HEYELLI_TAG fehlt}
+  env_file: .env
+  environment:
+    # verschlüsselte Einstellungen und Master-Schlüssel liegen im Volume "state" (siehe docs/ci-deploy.md)
+    HEYELLI_SETTINGS_DIR: /app/state
+  tmpfs:
+    - /tmp
+  volumes:
+    - state:/app/state
+    - local:/app/.local
+
+services:
+  db:
+    <<: *haertung
+    image: postgres:17.6-alpine
+    user: "70:70"
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:?POSTGRES_USER fehlt}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD fehlt}
+      POSTGRES_DB: ${POSTGRES_DB:?POSTGRES_DB fehlt}
+    tmpfs:
+      - /tmp
+      - /var/run/postgresql
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U \"$$POSTGRES_USER\" -d \"$$POSTGRES_DB\""]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+      start_period: 10s
+    networks: [intern]
+
+  migrate:
+    <<: *app
+    restart: "no"
+    command: ["node", "scripts/migrate-db.mjs"]
+    depends_on:
+      db:
+        condition: service_healthy
+    networks: [intern]
+
+  app:
+    <<: *app
+    ports:
+      - "127.0.0.1:${HEYELLI_PORT:-3000}:3000"
+    tmpfs:
+      - /tmp
+      - /app/.next/cache
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    networks: [intern, extern, ollama]
+
+  mail-worker:
+    <<: *app
+    command: ["node", "scripts/mail-worker.mjs"]
+    # Der Image-Healthcheck (Port 3000) passt nur zu "app". Der Worker schreibt etwa alle 15 s einen Herzschlag in
+    # platform.mail_worker_health; gesund = healthy und last_seen jünger als 120 s (scripts/health-check.mjs).
+    healthcheck:
+      test: ["CMD", "node", "scripts/health-check.mjs", "mail-worker"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    networks: [intern, extern]
+
+  assistant-runtime:
+    <<: *app
+    command: ["node", "scripts/assistant-runtime.mjs"]
+    # Kein Port und keine Datenbankzeile: Die Schleife schreibt alle ca. 3 s eine Herzschlag-Datei nach /tmp (tmpfs);
+    # gesund = Datei jünger als 120 s (scripts/heartbeat.mjs, scripts/health-check.mjs).
+    healthcheck:
+      test: ["CMD", "node", "scripts/health-check.mjs", "assistant-runtime"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    networks: [intern, ollama]
+
+  # Prüft die Web-Anwendung über Loopback und muss deshalb im Netzwerk von "app" laufen. Der Image-Healthcheck (Port 3000 im
+  # gemeinsamen Netzwerk von "app") passt hier, solange "app" läuft.
+  monitor:
+    <<: *app
+    command: ["node", "scripts/monitor.mjs", "--managed"]
+    network_mode: "service:app"
+    depends_on:
+      app:
+        condition: service_started
+
+networks:
+  intern:
+    internal: true
+    driver_opts:
+      com.docker.network.bridge.name: ${HEYELLI_BRIDGE_INTERN:?HEYELLI_BRIDGE_INTERN fehlt}
+  extern:
+    driver_opts:
+      com.docker.network.bridge.name: ${HEYELLI_BRIDGE_EXTERN:?HEYELLI_BRIDGE_EXTERN fehlt}
+  ollama:
+    external: true
+    name: ${OLLAMA_NETWORK:-heyelli-ollama}
+
+volumes:
+  pgdata:
+  state:
+  local:

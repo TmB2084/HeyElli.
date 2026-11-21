@@ -1,0 +1,8 @@
+# Einheitliche Zeilenenden: Entwicklung auf macOS, Auslieferung auf Debian -> immer LF
+* text=auto eol=lf
+*.sh text eol=lf
+*.png binary
+*.jpg binary
+*.ico binary
+*.webp binary
+*.woff2 binary

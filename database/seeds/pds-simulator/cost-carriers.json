@@ -1,0 +1,10 @@
+{
+  "costCarriers": [
+    {"uuid":"sim-ktr-units","nummer":"SIM-KTR-100","bezeichnung":"Beispielanlagen – Betrieb"},
+    {"uuid":"sim-ktr-maintenance","nummer":"SIM-KTR-200","bezeichnung":"Beispielvertrag – Wartung"},
+    {"uuid":"sim-ktr-billing","nummer":"SIM-KTR-300","bezeichnung":"Beispielvertrag – Rechnung"}
+  ],
+  "costCenters": [
+    {"uuid":"sim-kst-site","nummer":"SIM-KST-100","bezeichnung":"Beispielobjekte – Technik"}
+  ]
+}

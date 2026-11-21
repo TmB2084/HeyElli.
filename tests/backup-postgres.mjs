@@ -1,0 +1,62 @@
+import {sharePointSecrets} from '../src/platform/sharepoint/configuration.ts';
+import assert from 'node:assert/strict';
+import {mkdtemp,mkdir,writeFile,rm} from 'node:fs/promises';
+import {tmpdir} from 'node:os';
+import {join} from 'node:path';
+import {randomUUID,randomBytes} from 'node:crypto';
+import {spawnSync} from 'node:child_process';
+import {DatabaseSync} from 'node:sqlite';
+import {Pool} from 'pg';
+import {snapshotApplication,checkPayload} from '../scripts/backup-snapshot.mjs';
+import {command,encryptArchive,decryptArchive,postgresManifest,checkState,stablePostgres} from '../scripts/backup-core.mjs';
+import {verifyProtectedData,sanitizeRestoredDatabase} from '../scripts/backup-verify.mjs';
+import {saveConfig as saveBma} from '../src/platform/bmacloud/configuration.ts';
+import {saveConfig as saveCopilot} from '../src/apps/askelli/copilot/configuration.ts';
+import {savePdsConfiguration} from '../src/platform/pds/connection/configuration.ts';
+import {saveMicrosoft365Configuration} from '../src/platform/mail/configuration.ts';
+import {saveConfig as saveMicrosoftAuth} from '../src/system/anmeldung/microsoft/configuration.ts';
+import {createWorkspace,workspaceSchema} from '../src/platform/pds/connection/source.ts';
+import {privateDrafts} from '../src/apps/planboard/entwuerfe/repository.ts';
+import {encryptDraft} from '../src/apps/planboard/entwuerfe/crypto.ts';
+export async function checkBackupRestore(pool,duringDump=async()=>{}){
+ const project=process.env.HEYELLI_TEST_COMPOSE_PROJECT;if(!/^heyelli-test-[a-f0-9]+$/.test(project??''))throw Error('Isolierter Quellbestand erforderlich');
+ const root=await mkdtemp(join(tmpdir(),'heyelli-backup-fixture-')),work=await mkdtemp(join(tmpdir(),'heyelli-backup-restore-test-')),originalEnv={APP_ENV:process.env.APP_ENV,HEYELLI_TEST_SETTINGS_DIR:process.env.HEYELLI_TEST_SETTINGS_DIR};process.env.APP_ENV='test';process.env.HEYELLI_TEST_SETTINGS_DIR=root;
+ const targetProject='heyelli-restore-fixture-'+randomBytes(6).toString('hex'),targetEnv={...process.env,HEYELLI_TEST_POSTGRES_PASSWORD:randomBytes(32).toString('hex')},actor='restore-fixture:'+randomUUID(),workspace=randomUUID(),originals=new Map();let target,sqlite,started=false,fixtureArchive;
+ const compose=args=>command('docker',['compose','--env-file','/dev/null','-f','compose.restore.yaml','-p',targetProject,...args],{env:targetEnv});
+ for(const table of ['pds_connection','mail_settings','copilot_settings','bmacloud_settings','sharepoint_settings','microsoft_auth'])originals.set(table,(await pool.query(`SELECT * FROM platform.${table} WHERE id='central'`)).rows[0]);
+ try{
+  await writeFile(join(root,'fixture.txt'),'Fictional current source');await writeFile(join(root,'.env.local'),'FICTITIOUS_SETTING=retained\n',{mode:0o600});
+  await pool.query("INSERT INTO platform.users(id,display_name,role,enabled) VALUES($1,'Fiktive Wiederherstellungsprüfung','admin',true)",[actor]);
+  const bma=saveBma({baseUrl:'https://bma.example.invalid/',token:'fictional-bma'}),archive=saveBma({baseUrl:'https://bma.example.invalid/',token:'fictional-archive'}),copilot=saveCopilot({botId:'fictional-bot',secret:'fictional-directline',region:'global'});fixtureArchive=archive;await createWorkspace(pool,workspace);
+  const pds=savePdsConfiguration({baseUrl:'https://pds.example.invalid',token:'fictional-pds'},workspace),graph=saveMicrosoft365Configuration({tenantId:randomUUID(),clientId:randomUUID(),secret:'fictional-graph'}),auth=randomUUID();saveMicrosoftAuth({tenantId:randomUUID(),clientId:randomUUID(),secret:'fictional-auth',redirectUri:'https://heyelli.example.invalid/api/auth/microsoft/callback'},auth);
+  await pool.query("UPDATE platform.bmacloud_settings SET config_id=$1,enabled=true WHERE id='central'",[bma]);await pool.query("UPDATE platform.copilot_settings SET config_id=$1,enabled=true WHERE id='central'",[copilot]);await pool.query("UPDATE platform.pds_connection SET config_id=$1,workspace_id=$2,active_source='pds-readonly' WHERE id='central'",[pds,workspace]);await pool.query("UPDATE platform.mail_settings SET config_id=$1,enabled=true,test_mode=false WHERE id='central'",[graph]);await pool.query("UPDATE platform.microsoft_auth SET config_id=$1,enabled=true WHERE id='central'",[auth]);
+  const sp=sharePointSecrets.save({tenantId:randomUUID(),clientId:randomUUID(),secret:'fictional-sharepoint',siteId:'fictional.sharepoint.com,'+randomUUID()+','+randomUUID(),driveId:'fictional-drive',rootId:'root'});await pool.query("UPDATE platform.sharepoint_settings SET config_id=$1,enabled=true WHERE id='central'",[sp]);
+  await pool.query("INSERT INTO platform.secret_archives(provider,config_id) VALUES('bmacloud',$1)",[archive]);
+  await pool.query("INSERT INTO platform.sharepoint_uploads(id,actor_id,scope_key,library_key,display_name,content_hash,size) VALUES($1,$2,$3,$4,'Fiktiver noch unbestaetigter Upload.txt',$5,1)",[randomUUID(),actor,'a'.repeat(64),'b'.repeat(64),'c'.repeat(64)]);
+  const drafts=privateDrafts(pool),key=await drafts.key(actor),draftId=randomUUID(),storageKey='heyelli:calendar-draft:v2:fixture:'+draftId;
+  await drafts.change(actor,{key:storageKey,envelope:encryptDraft(key,storageKey,JSON.stringify({draftId,original:{id:'fictitious-event'},changed:{id:'fictitious-event',notes:'Fiktive wiederherstellbare Eingabe'},operationId:randomUUID()}))});await drafts.change(actor,{key:'heyelli:calendar-draft:v2:fixture:completed',complete:true});
+  await pool.query("INSERT INTO platform.assistant_chats(user_id,turns) VALUES($1,$2::jsonb)",[actor,JSON.stringify([{id:randomUUID(),question:'Fiktive gesicherte Frage',answer:'Fiktive Antwort',sources:[]}])]);
+  await pool.query("INSERT INTO platform.sessions(id,token_hash,user_id,auth_mode,pds_user_uuid,expires_at) VALUES($1,$2,$3,'simulator','fictional',now()+interval '1 hour')",[randomUUID(),randomBytes(32).toString('hex'),actor]);
+  const mail=randomUUID();await pool.query("INSERT INTO platform.mail_queue(id,request_id,sender,recipient,subject,body,actor_id,test_mode) VALUES($1,$2,'sender@example.invalid','recipient@example.invalid','Fiktiv','Nicht versenden',$3,false)",[mail,randomUUID(),actor]);
+  await mkdir(join(root,'.local/pds-simulator'),{recursive:true});sqlite=new DatabaseSync(join(root,'.local/pds-simulator/fixture.sqlite'));sqlite.exec('PRAGMA journal_mode=WAL;CREATE TABLE attachment(id INTEGER PRIMARY KEY,content BLOB)');sqlite.prepare('INSERT INTO attachment(content) VALUES(?)').run(Buffer.from('Fiktiver Anhang im WAL'));
+  const directory=join(work,'payload');await mkdir(directory);const client=await pool.connect();let manifest;try{manifest=await snapshotApplication({root,directory,client,freshClient:()=>pool.connect(),paths:['fixture.txt'],revision:'fictional-fixture',dump:async(snapshot,output)=>{await command('docker',['compose','--env-file','/dev/null','-f','compose.test.yaml','-p',project,'exec','-T','db','pg_dump','-U','heyelli_test','-d','heyelli_test','--format=custom','--no-owner','--no-acl','--snapshot',snapshot],{output});await duringDump();}});}finally{client.release();}
+  const tar=join(work,'data.tar.gz'),encrypted=join(work,'data.hebackup'),unlock=join(work,'unlock.key');await command('tar',['-czf',tar,'-C',directory,'.']);await encryptArchive(tar,encrypted,unlock);await rm(directory,{recursive:true});await rm(tar);await decryptArchive(encrypted,unlock,tar);await command('python3',['scripts/backup-extract.py',tar,directory]);await checkPayload(directory);
+  started=true;await compose(['up','-d','--wait']);const mapped=spawnSync('docker',['compose','--env-file','/dev/null','-f','compose.restore.yaml','-p',targetProject,'port','db','5432'],{env:targetEnv,encoding:'utf8'});assert.equal(mapped.status,0);const url=new URL('postgresql://heyelli_test@127.0.0.1:'+mapped.stdout.trim().split(':').at(-1)+'/heyelli_test');url.password=targetEnv.HEYELLI_TEST_POSTGRES_PASSWORD;assert.notEqual(url.port,new URL(process.env.HEYELLI_TEST_DATABASE_URL).port);target=new Pool({connectionString:url.href});target.on('error',()=>{});
+  await command('docker',['compose','--env-file','/dev/null','-f','compose.restore.yaml','-p',targetProject,'exec','-T','db','pg_restore','-U','heyelli_test','-d','heyelli_test','--no-owner','--no-acl','--exit-on-error'],{env:targetEnv,input:join(directory,'postgres.dump')});const restored=await target.connect();try{await restored.query('BEGIN ISOLATION LEVEL REPEATABLE READ READ ONLY');assert.deepEqual(await postgresManifest(restored),manifest.postgres);await restored.query('ROLLBACK');}finally{restored.release();}
+  const checked=await verifyProtectedData(target,join(directory,'state'));assert.ok(checked.configurations>=6);assert.ok(checked.archives>=1);assert.equal(checked.drafts,1);assert.equal(await checkState(root,manifest.files,{logical:true}),true);
+  await sanitizeRestoredDatabase(target);assert.equal((await target.query("SELECT active_source FROM platform.pds_connection WHERE id='central'")).rows[0].active_source,'simulator');assert.equal((await target.query("SELECT enabled,test_mode FROM platform.mail_settings WHERE id='central'")).rows[0].test_mode,true);for(const table of ['mail_settings','copilot_settings','bmacloud_settings','sharepoint_settings','microsoft_auth'])assert.equal((await target.query(`SELECT enabled FROM platform.${table} WHERE id='central'`)).rows[0].enabled,false);assert.equal((await target.query('SELECT status FROM platform.mail_queue WHERE id=$1',[mail])).rows[0].status,'cancelled');
+  assert.equal((await target.query('SELECT count(*)::int n FROM platform.sessions WHERE user_id=$1 AND revoked_at IS NOT NULL',[actor])).rows[0].n,1);assert.equal((await pool.query('SELECT count(*)::int n FROM platform.sessions WHERE user_id=$1 AND revoked_at IS NULL',[actor])).rows[0].n,1);
+  const unchanged=await pool.connect();try{await unchanged.query('BEGIN ISOLATION LEVEL REPEATABLE READ READ ONLY');assert.deepEqual(stablePostgres(await postgresManifest(unchanged,{sourceStability:true})),manifest.sourceStabilityPostgres);await unchanged.query('ROLLBACK');}finally{unchanged.release();}
+  await target.query('DROP TABLE platform.sharepoint_uploads');await target.query('DROP TABLE platform.sharepoint_settings');const legacy=await verifyProtectedData(target,join(directory,'state'));assert.equal(legacy.configurations,checked.configurations-1);await sanitizeRestoredDatabase(target);
+  for(const kind of ['sqlite-aba','file-aba']){const rejected=join(work,kind);await mkdir(rejected);const source=await pool.connect();try{await assert.rejects(snapshotApplication({root,directory:rejected,client:source,freshClient:()=>pool.connect(),paths:['fixture.txt'],revision:'fictional-consistency-check',dump:async(_snapshot,output)=>{await writeFile(output,'fictitious unused dump');if(kind==='sqlite-aba'){sqlite.prepare('INSERT INTO attachment(content) VALUES(?)').run(Buffer.from('Transient fictional input'));sqlite.exec('DELETE FROM attachment WHERE id>1');}else{const {readFile}=await import('node:fs/promises'),path=join(root,'.env.local'),original=await readFile(path);await writeFile(path,'FICTITIOUS_SETTING=temporary');await writeFile(path,original);}}}),/während Sicherung geändert/);}finally{source.release();}}
+  await pool.query('DELETE FROM platform.mail_queue WHERE id=$1',[mail]);
+ }finally{
+  sqlite?.close();await target?.end();try{if(started)await compose(['down','-v','--remove-orphans']);}finally{
+   for(const[table,row]of originals){const keys=Object.keys(row).filter(k=>k!=='id');await pool.query(`UPDATE platform.${table} SET ${keys.map((k,i)=>`"${k}"=$${i+1}`).join(',')} WHERE id='central'`,keys.map(k=>row[k]));}
+   if(fixtureArchive)await pool.query("DELETE FROM platform.secret_archives WHERE provider='bmacloud' AND config_id=$1",[fixtureArchive]);
+   await pool.query('DELETE FROM platform.sharepoint_uploads WHERE actor_id=$1',[actor]);
+   await pool.query('DELETE FROM platform.mail_queue WHERE actor_id=$1',[actor]);await pool.query('DELETE FROM platform.sessions WHERE user_id=$1',[actor]);await pool.query('DELETE FROM platform.users WHERE id=$1',[actor]);await pool.query(`DROP SCHEMA IF EXISTS "${workspaceSchema(workspace)}" CASCADE`);await pool.query('DELETE FROM platform.pds_workspaces WHERE id=$1',[workspace]);
+   for(const[k,v]of Object.entries(originalEnv)){if(v===undefined)delete process.env[k];else process.env[k]=v;}await rm(root,{recursive:true,force:true});await rm(work,{recursive:true,force:true});
+  }
+ }
+}

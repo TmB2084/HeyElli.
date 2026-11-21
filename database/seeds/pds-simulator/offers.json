@@ -1,0 +1,10 @@
+{
+  "_hinweis": "Fiktive Angebote für den PDS-Simulator (PdsAPIVorgangRESTModel/PdsAPIVorgangDetailsRESTModel mit belegDatum). Keine Produktivdaten.",
+  "offers": [
+    {"uuid": "sim-offer-1", "dbid": 8101, "vorgangsNummer": "SIM-ANG-201", "vorgangstyp": "ANGEBOT", "bezeichnung": "Austausch Warmwasserspeicher", "personUUID": "SIM-K-100", "vorgangStatus": {"uuid": "sim-order-open", "bezeichnung": "Offen"}, "belegDatum": "2026-11-02"},
+    {"uuid": "sim-offer-2", "dbid": 8102, "vorgangsNummer": "SIM-ANG-202", "vorgangstyp": "ANGEBOT", "bezeichnung": "Erweiterung BMA Halle 3", "personUUID": "SIM-K-200", "vorgangStatus": {"uuid": "sim-order-open", "bezeichnung": "Offen"}, "belegDatum": "2026-10-02"},
+    {"uuid": "sim-offer-3", "dbid": 8103, "vorgangsNummer": "SIM-ANG-203", "vorgangstyp": "ANGEBOT", "bezeichnung": "Lüftungswartung 2027", "personUUID": "SIM-K-100", "vorgangStatus": {"uuid": "sim-order-open", "bezeichnung": "Offen"}, "belegDatum": "2026-11-18"},
+    {"uuid": "sim-offer-4", "dbid": 8104, "vorgangsNummer": "SIM-ANG-204", "vorgangstyp": "ANGEBOT", "bezeichnung": "Notbeleuchtung Treppenhaus", "personUUID": "SIM-K-200", "vorgangStatus": {"uuid": "sim-status-angebot-4", "bezeichnung": "Beauftragt"}, "belegDatum": "2026-10-20"},
+    {"uuid": "sim-offer-5", "dbid": 8105, "vorgangsNummer": "SIM-ANG-205", "vorgangstyp": "ANGEBOT", "bezeichnung": "Hebeanlage Pumpentausch", "personUUID": "SIM-K-100", "vorgangStatus": {"uuid": "sim-order-open", "bezeichnung": "Offen"}, "belegDatum": "2026-11-10"}
+  ]
+}

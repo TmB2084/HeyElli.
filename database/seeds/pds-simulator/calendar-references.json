@@ -1,0 +1,219 @@
+{
+  "categories": [
+    {
+      "uuid": "sim-category-vacation",
+      "bezeichnung": "Urlaub",
+      "ganzerTag": false
+    },
+    {
+      "uuid": "sim-category-sick",
+      "bezeichnung": "Krank",
+      "ganzerTag": false
+    },
+    {
+      "uuid": "sim-category-project",
+      "bezeichnung": "Projekt",
+      "ganzerTag": false
+    },
+    {
+      "uuid": "sim-category-maintenance-continuation",
+      "bezeichnung": "fortführung Wartung",
+      "ganzerTag": false
+    },
+    {
+      "uuid": "sim-category-service-continuation",
+      "bezeichnung": "fortführung Serviceauftrag",
+      "ganzerTag": false
+    },
+    {
+      "uuid": "sim-category-on-call",
+      "bezeichnung": "Bereitschaft",
+      "ganzerTag": false
+    },
+    {
+      "uuid": "sim-category-parental-leave",
+      "bezeichnung": "Elternzeit",
+      "ganzerTag": false
+    },
+    {
+      "uuid": "sim-category-time-off",
+      "bezeichnung": "FZA",
+      "ganzerTag": false
+    },
+    {
+      "uuid": "sim-category-additional-info",
+      "bezeichnung": "Zusatzinfo",
+      "ganzerTag": false
+    },
+    {
+      "uuid": "sim-category-appointment-requested",
+      "bezeichnung": "Termin Angefragt",
+      "ganzerTag": false
+    },
+    {
+      "uuid": "sim-category-training-company",
+      "bezeichnung": "ÜBL",
+      "ganzerTag": false
+    },
+    {
+      "uuid": "sim-category-school",
+      "bezeichnung": "Schule",
+      "ganzerTag": false
+    },
+    {
+      "uuid": "sim-category-service",
+      "bezeichnung": "Service",
+      "ganzerTag": false
+    },
+    {
+      "uuid": "sim-category-meeting",
+      "bezeichnung": "Besprechung",
+      "ganzerTag": false
+    },
+    {
+      "uuid": "sim-category-day",
+      "bezeichnung": "Ganztagsplanung",
+      "ganzerTag": true
+    }
+  ],
+  "projects": [
+    {
+      "uuid": "sim-project-1",
+      "nummer": "SIM-PR-100",
+      "bezeichnung": "Beispielprojekt Nord",
+      "geschaeftspartner": {
+        "uuid": "SIM-K-100",
+        "name": "Beispielkunde Nord"
+      },
+      "vorgangStatus": {
+        "uuid": "sim-project-active",
+        "bezeichnung": "In Bearbeitung"
+      }
+    },
+    {
+      "uuid": "sim-project-2",
+      "nummer": "SIM-PR-200",
+      "bezeichnung": "Beispielprojekt West",
+      "geschaeftspartner": {
+        "uuid": "SIM-K-200",
+        "name": "Beispielkunde West"
+      },
+      "vorgangStatus": {
+        "uuid": "sim-project-closed",
+        "bezeichnung": "Abgeschlossen"
+      }
+    }
+  ],
+  "transactions": [
+    {
+      "uuid": "sim-transaction-auftrag",
+      "vorgangsNummer": "SIM-AUF-100",
+      "vorgangstyp": "AUFTRAG",
+      "bezeichnung": "Beispielvorgang AUFTRAG",
+      "personUUID": "SIM-K-100",
+      "vorgangStatus": {
+        "uuid": "sim-order-open",
+        "bezeichnung": "Offen"
+      }
+    },
+    {
+      "uuid": "sim-transaction-angebot",
+      "vorgangsNummer": "SIM-ANG-101",
+      "vorgangstyp": "ANGEBOT",
+      "bezeichnung": "Beispielvorgang ANGEBOT",
+      "personUUID": "SIM-K-100",
+      "vorgangStatus": {
+        "uuid": "sim-order-closed",
+        "bezeichnung": "Erledigt"
+      }
+    },
+    {
+      "uuid": "sim-transaction-bedarfsmeldung",
+      "vorgangsNummer": "SIM-BED-102",
+      "vorgangstyp": "BEDARFSMELDUNG",
+      "bezeichnung": "Beispielvorgang BEDARFSMELDUNG",
+      "personUUID": "SIM-K-100",
+      "vorgangStatus": {
+        "uuid": "sim-order-open",
+        "bezeichnung": "Offen"
+      }
+    },
+    {
+      "uuid": "sim-transaction-rechnung",
+      "vorgangsNummer": "SIM-REC-103",
+      "vorgangstyp": "RECHNUNG",
+      "bezeichnung": "Beispielvorgang RECHNUNG",
+      "personUUID": "SIM-K-100",
+      "vorgangStatus": {
+        "uuid": "sim-order-closed",
+        "bezeichnung": "Erledigt"
+      }
+    },
+    {
+      "uuid": "sim-transaction-lieferschein",
+      "vorgangsNummer": "SIM-LIE-104",
+      "vorgangstyp": "LIEFERSCHEIN",
+      "bezeichnung": "Beispielvorgang LIEFERSCHEIN",
+      "personUUID": "SIM-K-100",
+      "vorgangStatus": {
+        "uuid": "sim-order-open",
+        "bezeichnung": "Offen"
+      }
+    },
+    {
+      "uuid": "sim-transaction-bestellung",
+      "vorgangsNummer": "SIM-BES-105",
+      "vorgangstyp": "BESTELLUNG",
+      "bezeichnung": "Beispielvorgang BESTELLUNG",
+      "personUUID": "SIM-K-100",
+      "vorgangStatus": {
+        "uuid": "sim-order-closed",
+        "bezeichnung": "Erledigt"
+      }
+    },
+    {
+      "uuid": "sim-transaction-wareneingang",
+      "vorgangsNummer": "SIM-WAR-106",
+      "vorgangstyp": "WARENEINGANG",
+      "bezeichnung": "Beispielvorgang WARENEINGANG",
+      "personUUID": "SIM-K-100",
+      "vorgangStatus": {
+        "uuid": "sim-order-open",
+        "bezeichnung": "Offen"
+      }
+    },
+    {
+      "uuid": "sim-transaction-abrufauftrag",
+      "vorgangsNummer": "SIM-ABR-107",
+      "vorgangstyp": "ABRUFAUFTRAG",
+      "bezeichnung": "Beispielvorgang ABRUFAUFTRAG",
+      "personUUID": "SIM-K-100",
+      "vorgangStatus": {
+        "uuid": "sim-order-closed",
+        "bezeichnung": "Erledigt"
+      }
+    },
+    {
+      "uuid": "sim-transaction-gutschrift",
+      "vorgangsNummer": "SIM-GUT-108",
+      "vorgangstyp": "GUTSCHRIFT",
+      "bezeichnung": "Beispielvorgang GUTSCHRIFT",
+      "personUUID": "SIM-K-100",
+      "vorgangStatus": {
+        "uuid": "sim-order-open",
+        "bezeichnung": "Offen"
+      }
+    },
+    {
+      "uuid": "sim-transaction-ruecknahme",
+      "vorgangsNummer": "SIM-RUE-109",
+      "vorgangstyp": "RUECKNAHME",
+      "bezeichnung": "Beispielvorgang RUECKNAHME",
+      "personUUID": "SIM-K-100",
+      "vorgangStatus": {
+        "uuid": "sim-order-closed",
+        "bezeichnung": "Erledigt"
+      }
+    }
+  ]
+}

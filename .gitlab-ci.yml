@@ -1,0 +1,216 @@
+# CI/CD für HeyElli nach dem Muster von onboarding und den Meister Apps (ELOMHDOCKER01).
+# Ablauf, Variablen, Einrichtung auf ELOMHWEB12 und Rollback: docs/ci-deploy.md
+#
+#   Merge nach main:  check_code + check_compose (+ npm_audit) -> build_image -> deploy_test (automatisch)
+#   Release (Tag vX.Y.Z auf einem Commit aus main):  release_check (+ release_version) -> deploy_prod (automatisch)
+#   In Tag-Pipelines wird NICHT neu gebaut: Prod bekommt das Image, das auf main gebaut wurde (Tag = Kurz-Hash des Tag-Commits).
+#   Ablauf für Entwickler: docs/ablauf.md
+#
+# Der zentrale Runner ELOMHRUN01 (Docker-Executor, Tag "docker") prüft, baut das Image und pusht es in die GitLab-Registry.
+# Auf dem Server wird nicht gebaut und nicht per git gearbeitet: Die Deploy-Jobs melden sich per SSH als gitlab-deploy an,
+# der Forced Command startet /usr/local/sbin/heyelli-deploy.sh <test|prod> <Commit-Kurz-Hash>. Der Server zieht nur das Image.
+# Keine Geheimnisse in dieser Datei: SSH-Schlüssel und known_hosts liegen in CI-Variablen (siehe docs/ci-deploy.md).
+#
+# Nicht Teil dieser Pipeline: die Datenbank- und Browser-Prüfungen aus "npm run verify" (PostgreSQL per Docker, Playwright).
+# Sie brauchen Docker-Socket und Host-Netzwerk und laufen weiter lokal beim Entwickler. Keinen eigenen Runner dafür anmelden.
+
+stages:
+  - check
+  - build
+  - deploy_test
+  - deploy_prod
+
+default:
+  tags: [docker]
+
+# Merge-Request-Pipeline bevorzugt; Branch-Pipeline nur, wenn kein Merge Request offen ist.
+# Tag-Pipelines gibt es nur für Releases (vX.Y.Z); alle anderen Tags starten keine Pipeline.
+workflow:
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH && $CI_OPEN_MERGE_REQUESTS
+      when: never
+    - if: $CI_COMMIT_BRANCH
+    - if: $CI_COMMIT_TAG =~ /^v\d+\.\d+\.\d+$/
+
+variables:
+  # Muss .node-version entsprechen (wird im Job geprüft).
+  NODE_IMAGE: node:24.11.1-trixie-slim
+  NPM_CONFIG_FUND: "false"
+  NPM_CONFIG_UPDATE_NOTIFIER: "false"
+  NPM_CONFIG_CACHE: "$CI_PROJECT_DIR/.cache/npm"
+
+# Prüfen und Bauen laufen nur für Branches und Merge Requests, nie in Release-Pipelines (Tags).
+.ohne_tag:
+  rules:
+    - if: $CI_COMMIT_TAG
+      when: never
+    - when: on_success
+
+.node:
+  image: $NODE_IMAGE
+  cache:
+    key:
+      files: [package-lock.json]
+    paths: [.cache/npm]
+  before_script:
+    - test "$(node --version)" = "$(cat .node-version)" || { echo "Node-Version weicht von .node-version ab"; exit 1; }
+    - npm ci --no-audit
+
+# ---------------------------------------------------------------- check
+
+check_code:
+  extends: [.node, .ohne_tag]
+  stage: check
+  # python3 braucht ein Modultest (Prüfung des Sicherungsarchivs), das Node-Image bringt es nicht mit.
+  before_script:
+    - test "$(node --version)" = "$(cat .node-version)" || { echo "Node-Version weicht von .node-version ab"; exit 1; }
+    - apt-get update -qq && apt-get install -y -qq --no-install-recommends python3
+    - npm ci --no-audit
+  script:
+    - npm run lint
+    # Die Next-Typen (LayoutProps u. a.) entstehen erst durch "next typegen".
+    - npx next typegen
+    - npx tsc --noEmit
+    # Modultests ohne Datenbank (schließt die Browser- und PostgreSQL-Tests aus, die "npm run verify" ausführt).
+    - npm run test:unit
+
+# Eigener Job mit allow_failure: Ein neu gemeldeter Befund in einer Abhängigkeit soll die Auslieferung nicht blockieren,
+# muss aber sichtbar bleiben (Warnung in der Pipeline) und zeitnah bewertet werden.
+npm_audit:
+  extends: [.node, .ohne_tag]
+  stage: check
+  allow_failure: true
+  script:
+    - npm audit --omit=dev --audit-level=high
+
+check_compose:
+  extends: .ohne_tag
+  stage: check
+  image: docker:29.9.3-cli
+  script:
+    # Dummy-.env aus der Vorlage; die aufgelöste Konfiguration wird nie ausgegeben (--quiet).
+    - cp deploy/server/env.server.example .env
+    - docker compose -f compose.server.yaml config --quiet
+    - docker compose -f compose.server.yaml -f compose.build.yaml config --quiet
+  after_script:
+    - rm -f .env
+
+# ---------------------------------------------------------------- build
+
+build_image:
+  extends: .ohne_tag
+  stage: build
+  image: docker:29.9.3-cli
+  needs: [check_code, check_compose]
+  script:
+    - echo "$CI_JOB_TOKEN" | docker login -u gitlab-ci-token --password-stdin "$CI_REGISTRY"
+    # Ohne Provenance/SBOM-Attestierungen, sonst lehnt die GitLab-Registry den Push ab.
+    - export BUILDX_NO_DEFAULT_ATTESTATIONS=1
+    # Der Server prüft vor dem Start, ob seine compose.yaml zu diesem Image passt (Label unten).
+    - COMPOSE_SHA="$(sha256sum compose.server.yaml | cut -d' ' -f1)"
+    - >
+      docker build --pull --provenance=false --sbom=false
+      --network "${DOCKER_BUILD_NETWORK:-default}"
+      --label "org.opencontainers.image.revision=$CI_COMMIT_SHA"
+      --label "org.opencontainers.image.source=$CI_PROJECT_URL"
+      --label "de.elomech.heyelli.commit=$CI_COMMIT_SHORT_SHA"
+      --label "de.elomech.heyelli.pipeline=$CI_PIPELINE_ID"
+      --label "de.elomech.heyelli.sha.compose=$COMPOSE_SHA"
+      -t "$CI_REGISTRY_IMAGE/app:$CI_COMMIT_SHORT_SHA"
+      -t "$CI_REGISTRY_IMAGE/app:$CI_COMMIT_REF_SLUG"
+      .
+    - docker push "$CI_REGISTRY_IMAGE/app:$CI_COMMIT_SHORT_SHA"
+    - docker push "$CI_REGISTRY_IMAGE/app:$CI_COMMIT_REF_SLUG"
+  after_script:
+    - docker logout "$CI_REGISTRY" || true
+
+# ---------------------------------------------------------------- deploy
+
+# Gemeinsame Technik der Deploy-Jobs. docker:cli hat kein ssh, deshalb alpine mit openssh-client.
+# Die Variablen DEPLOY_SSH_KEY (Typ File), DEPLOY_KNOWN_HOSTS, DEPLOY_HOST und DEPLOY_USER sind je Umgebung ("test",
+# "production") mit gleichem Namen, aber unterschiedlichem Wert bzw. Schlüssel angelegt. Der Forced Command hängt am Schlüssel;
+# gesendet wird nur der Commit-Kurz-Hash. Es zählt nur der Exit-Code (die Gesundheitsprüfung macht der Server).
+.deploy_ssh:
+  image: alpine:3.24
+  before_script:
+    - apk add --no-cache openssh-client
+    - install -d -m 700 "$HOME/.ssh"
+    - printf '%s\n' "$DEPLOY_KNOWN_HOSTS" > "$HOME/.ssh/known_hosts"
+    - chmod 600 "$HOME/.ssh/known_hosts" "$DEPLOY_SSH_KEY"
+  script:
+    - >
+      ssh -i "$DEPLOY_SSH_KEY"
+      -o IdentitiesOnly=yes -o BatchMode=yes -o StrictHostKeyChecking=yes
+      -o UserKnownHostsFile="$HOME/.ssh/known_hosts"
+      "$DEPLOY_USER@$DEPLOY_HOST" "$CI_COMMIT_SHORT_SHA"
+
+deploy_test:
+  extends: .deploy_ssh
+  stage: deploy_test
+  needs: [build_image]
+  environment:
+    name: test
+    url: https://heyelli-test.elomech.de
+  resource_group: heyelli-test
+  rules:
+    - if: $CI_COMMIT_TAG
+      when: never
+    - if: $DEPLOY_TEST_ENABLED != "true"
+      when: never
+    # Standardbranch (Branch-Pipeline): automatisch. Alles andere (Merge Request, Feature-Branch): per Knopf.
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH && $CI_PIPELINE_SOURCE != "merge_request_event"
+      when: on_success
+    - when: manual
+      allow_failure: true
+
+# ---------------------------------------------------------------- Release (Tag vX.Y.Z)
+
+# Ein Release ist ein Tag vX.Y.Z (SemVer), den ein Entwickler in GitLab unter Deploy > Releases > "New release" anlegt.
+# Die Tag-Pipeline baut nicht neu. Sie prüft, dass der Tag-Commit in main liegt und das dazugehörige Image existiert,
+# und rollt dann dasselbe Image aus, das auf main gebaut wurde und auf der Testinstanz lief. Ohne bestandene Prüfung gibt es keinen Prod-Deploy.
+.release_regel:
+  rules:
+    - if: $CI_COMMIT_TAG =~ /^v\d+\.\d+\.\d+$/
+
+release_check:
+  extends: .release_regel
+  stage: check
+  image: docker:29.9.3-cli
+  variables:
+    GIT_DEPTH: "0"
+  before_script:
+    - apk add --no-cache bash git jq
+  script:
+    - bash deploy/ci/release-check.sh check
+  after_script:
+    - docker logout "$CI_REGISTRY" || true
+
+# Nur ein Hinweis, blockiert nie (Exit-Code 2 = Warnung): Code hat sich seit dem letzten Release geändert, app-releases.ts aber nicht.
+# Die Tag-Nummer (SemVer) und die interne App-Version (JJ.V je App, AGENTS.md) sind zwei verschiedene Schemata und werden nicht verglichen.
+release_version:
+  extends: .release_regel
+  stage: check
+  image: alpine:3.24
+  variables:
+    GIT_DEPTH: "0"
+  allow_failure:
+    exit_codes: 2
+  before_script:
+    - apk add --no-cache bash git
+  script:
+    - bash deploy/ci/release-check.sh version
+
+deploy_prod:
+  extends: .deploy_ssh
+  stage: deploy_prod
+  needs: [release_check]
+  environment:
+    name: production
+    url: https://heyelli.elomech.de
+  resource_group: heyelli-prod
+  rules:
+    - if: $DEPLOY_PROD_ENABLED != "true"
+      when: never
+    - if: $CI_COMMIT_TAG =~ /^v\d+\.\d+\.\d+$/
+      when: on_success

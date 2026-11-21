@@ -1,0 +1,8 @@
+[
+ {"uuid":"sim-maint-contract-1","interval":"sim-maint-interval-1","object":"sim-unit-1","title":"Wartung Heizungsanlage","days":-7,"closed":false},
+ {"uuid":"sim-maint-contract-2","interval":"sim-maint-interval-2","object":"sim-unit-4","title":"Wartung Brandmeldeanlage","days":0,"closed":false},
+ {"uuid":"sim-maint-contract-3","interval":"sim-maint-interval-3","object":"sim-unit-2","title":"Wartung Lüftungsanlage","days":14,"closed":false},
+ {"uuid":"sim-maint-contract-4","interval":"sim-maint-interval-4","object":"sim-unit-5","title":"Wartung Sicherheitsbeleuchtung","days":null,"closed":false},
+ {"uuid":"sim-maint-contract-5","interval":"sim-maint-interval-5","object":"sim-unit-3","title":"Abgeschlossene Wartung Hebeanlage","days":-14,"closed":true},
+ {"uuid":"sim-maint-contract-6","interval":"sim-maint-interval-6","object":"sim-object-1","title":"Wartung Gebäude Nord","days":-2,"closed":false}
+]

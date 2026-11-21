@@ -1,0 +1,19 @@
+# Isolated disposable PostgreSQL for automated tests; never loads .env.
+services:
+  db:
+    image: postgres:17.6-alpine
+    environment:
+      POSTGRES_USER: heyelli_test
+      POSTGRES_PASSWORD: ${HEYELLI_TEST_POSTGRES_PASSWORD:?Temporary test password required}
+      POSTGRES_DB: heyelli_test
+    ports:
+      - "127.0.0.1::5432"
+    volumes:
+      - test_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U heyelli_test -d heyelli_test"]
+      interval: 1s
+      timeout: 5s
+      retries: 40
+volumes:
+  test_data:

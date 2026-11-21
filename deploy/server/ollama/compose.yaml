@@ -1,0 +1,51 @@
+# Ollama als eigener Dienst, EINMAL für Test und Prod (ein Modell im Speicher). Vorlage; auf ELOMHWEB12 unter /opt/ollama-stack/compose.yaml (/opt/ollama ist ein Link auf die Installation des Host-Ollama).
+# Das Netz "heyelli-ollama" ist intern (kein Zugriff nach außen, nicht vom Host); heyelli-test und heyelli-prod hängen
+# sich über OLLAMA_NETWORK daran (siehe compose.server.yaml). Der Name im Netz ist "ollama", Port 11434.
+# Die Image-Version vor dem Einsatz festlegen und prüfen (auf dem Host läuft derzeit 0.40.16).
+#   cd /opt/ollama-stack && docker compose -p ollama up -d
+#   docker compose exec ollama ollama pull qwen3:1.7b      # einmalig; Modelle liegen im Volume "models"
+services:
+  ollama:
+    image: ollama/ollama:${OLLAMA_VERSION:?OLLAMA_VERSION fehlt}
+    restart: unless-stopped
+    user: "10003:10003"
+    read_only: true
+    cap_drop: [ALL]
+    security_opt:
+      - no-new-privileges:true
+    environment:
+      HOME: /data
+      OLLAMA_MODELS: /data/models
+      OLLAMA_HOST: 0.0.0.0:11434
+      OLLAMA_NO_CLOUD: "1"
+      OLLAMA_NUM_PARALLEL: "1"
+      OLLAMA_MAX_LOADED_MODELS: "1"
+      OLLAMA_KEEP_ALIVE: 5m
+    tmpfs:
+      - /tmp
+    volumes:
+      - models:/data
+    mem_limit: 3g
+    healthcheck:
+      test: ["CMD-SHELL", "OLLAMA_HOST=127.0.0.1:11434 ollama list > /dev/null 2>&1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    networks:
+      - ollama
+
+networks:
+  ollama:
+    name: heyelli-ollama
+    internal: true
+    driver_opts:
+      com.docker.network.bridge.name: br-ollama
+
+volumes:
+  models:

@@ -1,0 +1,2 @@
+const topics:Record<string,string>={'/servicehub':'service','/casedesk':'stoerung','/planboard':'ressourcen','/dutyboard':'bereitschaft','/maildesk':'maildesk','/taskhub':'aufgaben','/missioncontrol':'missioncontrol','/benutzerkonto':'konto','/einstellungen':'einstellungen'};
+export function appHelpHref(pathname:string){if(pathname==='/start')return '/hilfe#allgemein';if(pathname==='/')return '/hilfe#hilfe';const path=Object.keys(topics).sort((a,b)=>b.length-a.length).find(path=>pathname===path||pathname.startsWith(path+'/'));return path?'/hilfe#'+topics[path]:'/hilfe';}

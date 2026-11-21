@@ -1,0 +1,8 @@
+'use client';
+import {Notice} from "@/platform/shell";
+import {useState} from 'react';
+export function MobileIssue({id,mainId,technician,disabled,onIssued}:{id:string;mainId:string;technician:string;disabled:boolean;onIssued:()=>void}){
+ const [confirm,setConfirm]=useState(false),[busy,setBusy]=useState(false),[done,setDone]=useState(false),[error,setError]=useState('');
+ async function issue(){if(busy||done||error)return;setBusy(true);try{const response=await fetch('/api/ressourcenkalender/mobilausgabe',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id,mainId})});const result=await response.json();if(!response.ok)throw new Error(result.error);setDone(true);setConfirm(false);onIssued();}catch(problem){setError(problem instanceof Error?problem.message:'Verbindung unterbrochen. Bitte den Ausgabestatus in PDS prüfen.');}finally{setBusy(false);}}
+ return <section className="calendar-mobile-issue"><h3>Mobile Ausgabe</h3><p>Haupttechniker: <strong>{technician}</strong></p><small>Die Ausgabe betrifft den Serviceauftrag, gegebenenfalls mit mehreren Auftragsebenen. Ungespeicherte Terminänderungen werden dabei nicht übernommen.</small>{done?<Notice tone="success" role="status">Mobil ausgegeben und in der Terminhistorie protokolliert.</Notice>:error?<Notice tone="error" role="alert">{error}</Notice>:confirm?<><p>Serviceauftrag jetzt für die mobile Bearbeitung ausgeben?</p><button type="button" disabled={busy||disabled} onClick={()=>void issue()}>{busy?'Wird ausgegeben …':'Ausgabe bestätigen'}</button> <button type="button" disabled={busy} onClick={()=>setConfirm(false)}>Abbrechen</button></>:<p><button type="button" disabled={disabled} onClick={()=>setConfirm(true)}>Mobil ausgeben</button></p>}</section>;
+}

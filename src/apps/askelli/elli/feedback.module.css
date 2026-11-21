@@ -1,0 +1,27 @@
+.feedback { margin-top:10px;font-size:12px; }
+.actions { display:flex;align-items:center;flex-wrap:wrap;gap:5px; }
+.actions button { display:grid;place-items:center;min-width:32px;min-height:32px;padding:6px;border:1px solid transparent;border-radius:var(--radius-small);background:transparent;color:var(--muted); }
+.actions button:hover { background:color-mix(in srgb,var(--foreground) 6%,transparent);color:var(--foreground); }
+.actions button[aria-pressed=true] { color:var(--primary);background:color-mix(in srgb,var(--primary) 9%,transparent);border-color:color-mix(in srgb,var(--primary) 22%,transparent); }
+.actions svg { width:17px;height:17px; }
+.actions .textButton { display:inline-flex;font:inherit; }
+.actions small,.form small { color:var(--muted);font-size:11px;line-height:1.5; }
+.form { display:grid;gap:10px;margin-top:8px;padding:12px;border:1px solid var(--border);border-radius:var(--radius-panel);background:var(--background);max-width:480px; }
+.form label { display:grid;gap:5px;font-size:12px; }
+.form select,.form textarea { width:100%;min-width:0;padding:7px 9px;font:inherit;color:var(--foreground);background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-small); }
+.form textarea { resize:vertical; }
+.form>button { justify-self:start;padding:7px 10px;border:1px solid var(--border);border-radius:var(--radius-small);background:var(--surface);color:var(--foreground);font:inherit; }
+.success { display:block;margin-top:4px;color:var(--muted);font-size:11px; }
+.feedback button:focus-visible,.form select:focus-visible,.form textarea:focus-visible { outline:3px solid var(--focus);outline-offset:2px; }
+.review { display:grid;gap:12px; }
+.review>p { color:var(--muted);font-size:12px;line-height:1.6; }
+.review article { padding:14px;border:1px solid var(--border);border-radius:var(--radius-panel);background:var(--surface);overflow-wrap:anywhere; }
+.review header { display:flex;gap:8px;align-items:center;flex-wrap:wrap;font-size:12px; }
+.review small { color:var(--muted);font-size:11px; }
+.review details { margin-top:10px;font-size:12px; }
+.review summary { cursor:pointer; }
+.review p { white-space:pre-wrap;font-size:12px;line-height:1.6; }
+.review nav { display:flex;gap:8px;flex-wrap:wrap;align-items:center; }
+.review button { padding:6px 10px;border:1px solid var(--border);border-radius:var(--radius-small);background:var(--surface);color:var(--foreground);font:inherit; }
+@media(pointer:coarse){.actions button,.form>button,.review button{min-height:44px;min-width:44px;}}
+@media(max-width:600px){.form textarea,.form select{font-size:16px;}.form{padding:10px;}}

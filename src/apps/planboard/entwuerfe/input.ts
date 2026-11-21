@@ -1,0 +1,3 @@
+import {readTextLimited,DataLimitError} from '../../../platform/http-safety/limits.ts';
+import {PlatformError} from '../../../platform/store/model.ts';
+export async function privateDraftInput(request:Request){let value;try{value=JSON.parse(await readTextLimited(new Response(request.body,{headers:request.headers}),300000));}catch(error){if(error instanceof DataLimitError)throw new PlatformError(error.message,413);if(error instanceof SyntaxError)throw new PlatformError('Ungültige Entwurfssicherung.');throw error;}if(!value||typeof value!=='object'||Array.isArray(value))throw new PlatformError('Entwurfssicherung fehlt.');return value;}

@@ -1,0 +1,50 @@
+import {createHash,randomUUID} from 'node:crypto';
+import type {Pool,PoolClient} from 'pg';
+import {PlatformError} from '../store/model.ts';
+import {categories,protectedClasses,selection,type Category} from './model.ts';
+type Scope={actor:string;subject:string;admin:boolean};
+const fingerprint=(value:unknown)=>createHash('sha256').update(JSON.stringify(value)).digest('hex');
+const cutoff="(($2::date+1)::timestamp AT TIME ZONE 'Europe/Berlin')";
+export async function authorize(client:Pool|PoolClient,scope:Scope){
+ const actor=(await client.query('SELECT role,enabled FROM platform.users WHERE id=$1',[scope.actor])).rows[0];if(!actor?.enabled)throw new PlatformError('Bitte zuerst anmelden.',401);
+ if(scope.admin&&actor.role!=='admin'||!scope.admin&&scope.actor!==scope.subject)throw new PlatformError('Datenzugriff nicht erlaubt.',403);
+ if(!(await client.query('SELECT 1 FROM platform.users WHERE id=$1',[scope.subject])).rowCount)throw new PlatformError('Benutzer nicht gefunden.',404);
+}
+export function dataLifecycle(pool:Pool){
+ async function tx<T>(scope:Scope,work:(client:PoolClient)=>Promise<T>){const client=await pool.connect();try{await client.query('BEGIN');await authorize(client,scope);await client.query('SELECT id FROM platform.users WHERE id=$1 FOR UPDATE',[scope.subject]);const value=await work(client);await client.query('COMMIT');return value;}catch(error){await client.query('ROLLBACK');throw error;}finally{client.release();}}
+ async function candidates(client:PoolClient,subject:string,chosen:Category[],day:string,lock=false){
+  if(lock)await client.query('SELECT user_id FROM platform.assistant_chats WHERE user_id=$1 FOR UPDATE',[subject]);
+  const rules=(await client.query('SELECT * FROM platform.retention_rules ORDER BY category FOR SHARE')).rows;
+  const chat=(await client.query('SELECT epoch,turns,drafts,pending,updated_at FROM platform.assistant_chats WHERE user_id=$1',[subject])).rows[0];
+  const pendingDrafts=Number((await client.query("SELECT count(*) AS n FROM platform.private_draft_copies WHERE user_id=$1 AND state='pending'",[subject])).rows[0].n);
+  const pendingActions=Number((await client.query("SELECT count(*) n FROM platform.assistant_actions WHERE user_id=$1 AND state IN ('pending','executing','uncertain')",[subject])).rows[0].n);
+  const chatProtected=pendingActions>0||!!chat&&(chat.pending.length>0||Object.values(chat.drafts).some(d=>typeof (d as {text?:unknown})?.text==='string'&&(d as {text:string}).text.length>0));
+  const rows:Record<Category,Record<string,unknown>[]>={chat:[],feedback:[],mail:[],sessions:[]};
+  if(chosen.includes('chat')&&chat&&!chatProtected){const eligible=(await client.query(`SELECT updated_at<${cutoff} AS ok FROM platform.assistant_chats WHERE user_id=$1`,[subject,day])).rows[0]?.ok;if(eligible)rows.chat=chat.turns.map((turn:{id:string})=>({epoch:chat.epoch,...turn}));}
+  if(chosen.includes('feedback'))rows.feedback=(await client.query(`SELECT * FROM platform.assistant_feedback WHERE user_id=$1 AND updated_at<${cutoff} ORDER BY epoch,turn_id LIMIT 501${lock?' FOR UPDATE':''}`,[subject,day])).rows;
+  if(chosen.includes('mail'))rows.mail=(await client.query(`SELECT * FROM platform.mail_queue WHERE actor_id=$1 AND status IN ('simulated','accepted','cancelled') AND content_cleared_at IS NULL AND COALESCE(processed_at,created_at)<${cutoff} ORDER BY id LIMIT 501${lock?' FOR UPDATE':''}`,[subject,day])).rows;
+  if(chosen.includes('sessions'))rows.sessions=(await client.query(`SELECT * FROM platform.sessions WHERE user_id=$1 AND (revoked_at IS NOT NULL OR expires_at<=now()) AND created_at<${cutoff} ORDER BY id LIMIT 501${lock?' FOR UPDATE':''}`,[subject,day])).rows;
+  const held:Category[]=[];for(const rule of rules)if(rule.hold&&chosen.includes(rule.category)){held.push(rule.category);rows[rule.category as Category]=[];}
+  const more=Object.fromEntries(Object.entries(rows).map(([key,value])=>[key,value.length>500]));
+  for(const key of Object.keys(rows) as Category[])rows[key]=rows[key].slice(0,500);
+  const summary={more,counts:Object.fromEntries(Object.entries(rows).map(([k,v])=>[k,v.length])),protectedDrafts:pendingDrafts,protectedActions:pendingActions,chatProtected,held};
+  // Include current state/rules: a late draft, modified record or hold invalidates
+  // the preview. New input is never swept into an old confirmation.
+  return {rows,summary,fingerprint:fingerprint({rows,chat,pendingDrafts,pendingActions,rules})};
+ }
+ return {
+  read:(scope:Scope)=>tx(scope,async client=>{const rules=(await client.query('SELECT category,review_after_days,hold,version FROM platform.retention_rules ORDER BY category')).rows,reviews=[];for(const rule of rules)if(rule.review_after_days!==null){const day=(await client.query("SELECT ((now() AT TIME ZONE 'Europe/Berlin')::date-$1::integer)::text AS day",[rule.review_after_days])).rows[0].day;const result=await candidates(client,scope.subject,[rule.category],day);reviews.push({category:rule.category,cutoff:day,count:result.summary.counts[rule.category],more:result.summary.more[rule.category],hold:rule.hold});}return {rules,reviews,protectedClasses,executions:(await client.query('SELECT id::text,actor_id,summary,created_at FROM platform.privacy_executions WHERE subject_id=$1 ORDER BY id DESC LIMIT 20',[scope.subject])).rows,automaticDeletion:false};}),
+  rule:(scope:Scope,input:Record<string,unknown>)=>tx(scope,async client=>{if(!scope.admin)throw new PlatformError('Administratorrechte erforderlich.',403);if(typeof input.category!=='string'||!Object.hasOwn(categories,input.category)||typeof input.hold!=='boolean'||!Number.isSafeInteger(input.version)||input.days!==null&&(!Number.isInteger(input.days)||Number(input.days)<1||Number(input.days)>36500))throw new PlatformError('Aufbewahrungsvorgabe prüfen.');const before=(await client.query('SELECT * FROM platform.retention_rules WHERE category=$1 FOR UPDATE',[input.category])).rows[0];if(before.version!==input.version)throw new PlatformError('Vorgabe wurde geändert. Bitte neu öffnen.',409);await client.query('UPDATE platform.retention_rules SET review_after_days=$2,hold=$3,version=version+1,updated_at=now() WHERE category=$1',[input.category,input.days,input.hold]);await client.query("INSERT INTO platform.audit_events(actor_id,action,target_id,changes) VALUES($1,'privacy.rule.changed',$2,$3::jsonb)",[scope.actor,input.category,JSON.stringify([{field:'reviewAfterDays',label:'Prüffrist',before:before.review_after_days,after:input.days},{field:'hold',label:'Aufbewahrungssperre',before:before.hold,after:input.hold}])]);return {ok:true};}),
+  preview:(scope:Scope,input:Record<string,unknown>)=>tx(scope,async client=>{const chosen=selection(input),result=await candidates(client,scope.subject,chosen.categories,chosen.cutoff);if(Number((await client.query('SELECT count(*) n FROM platform.privacy_plans WHERE actor_id=$1 AND consumed_at IS NULL AND expires_at>now()',[scope.actor])).rows[0].n)>=50)throw new PlatformError('Zu viele offene Vorschauen. Bitte zehn Minuten warten.',429);const id=randomUUID();await client.query('INSERT INTO platform.privacy_plans(id,actor_id,subject_id,categories,cutoff,fingerprint,summary) VALUES($1,$2,$3,$4::jsonb,$5,$6,$7::jsonb)',[id,scope.actor,scope.subject,JSON.stringify(chosen.categories),chosen.cutoff,result.fingerprint,JSON.stringify(result.summary)]);return {id,...result.summary,expiresInMinutes:10};}),
+  execute:(scope:Scope,input:Record<string,unknown>)=>tx(scope,async client=>{
+   if(input.confirm!==true||typeof input.id!=='string'||!/^[a-f0-9-]{36}$/i.test(input.id))throw new PlatformError('Löschung ausdrücklich bestätigen.');const plan=(await client.query('SELECT *,cutoff::text AS day FROM platform.privacy_plans WHERE id=$1 AND actor_id=$2 AND subject_id=$3 FOR UPDATE',[input.id,scope.actor,scope.subject])).rows[0];if(!plan)throw new PlatformError('Vorschau nicht gefunden.',404);if(plan.consumed_at)return {ok:true,alreadyDone:true,summary:plan.summary};if(new Date(plan.expires_at).getTime()<=Date.now())throw new PlatformError('Vorschau abgelaufen. Bitte erneut prüfen.',409);
+   const current=await candidates(client,scope.subject,plan.categories,plan.day,true);if(current.fingerprint!==plan.fingerprint)throw new PlatformError('Daten oder Vorgaben wurden geändert. Nichts entfernt; bitte neue Vorschau erstellen.',409);
+   for(const row of current.rows.chat){await client.query('INSERT INTO platform.removed_chat_turns(user_id,epoch,turn_id) VALUES($1,$2,$3) ON CONFLICT DO NOTHING',[scope.subject,row.epoch,row.id]);}
+   if(current.rows.chat.length){const ids=current.rows.chat.map(r=>r.id);await client.query('UPDATE platform.assistant_chats SET turns=(SELECT COALESCE(jsonb_agg(t),\'[]\'::jsonb) FROM jsonb_array_elements(turns) t WHERE NOT(t->>\'id\'=ANY($2::text[]))),updated_at=now() WHERE user_id=$1',[scope.subject,ids]);}
+   for(const row of current.rows.feedback)await client.query('DELETE FROM platform.assistant_feedback WHERE user_id=$1 AND epoch=$2 AND turn_id=$3',[scope.subject,row.epoch,row.turn_id]);
+   for(const row of current.rows.mail)await client.query("UPDATE platform.mail_queue SET sender='entfernt@example.invalid',recipient='entfernt@example.invalid',subject='Entfernte Nachricht',body='',error=NULL,content_cleared_at=now() WHERE id=$1 AND actor_id=$2",[row.id,scope.subject]);
+   for(const row of current.rows.sessions)await client.query('DELETE FROM platform.sessions WHERE id=$1 AND user_id=$2',[row.id,scope.subject]);
+   await client.query('UPDATE platform.privacy_plans SET consumed_at=now() WHERE id=$1',[plan.id]);await client.query('INSERT INTO platform.privacy_executions(plan_id,actor_id,subject_id,summary) VALUES($1,$2,$3,$4::jsonb)',[plan.id,scope.actor,scope.subject,JSON.stringify(current.summary)]);await client.query("INSERT INTO platform.audit_events(actor_id,action,target_id,changes) VALUES($1,'privacy.cleanup.completed',$2,$3::jsonb)",[scope.actor,scope.subject,JSON.stringify([{field:'counts',label:'Bestätigte Datenbereinigung',before:null,after:current.summary.counts}])]);return {ok:true,summary:current.summary};
+  }),
+ };
+}

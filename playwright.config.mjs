@@ -1,0 +1,2 @@
+import {defineConfig} from '@playwright/test';
+export default defineConfig({testDir:'./tests/browser',workers:1,fullyParallel:false,retries:0,timeout:45000,expect:{timeout:12000},outputDir:process.env.HEYELLI_BROWSER_TEMP_DIR,reporter:[['./tests/browser/reporter.mjs']],use:{headless:true,trace:'off',video:'off',screenshot:'off',viewport:{width:1280,height:900}},projects:[{name:'chromium',use:{browserName:'chromium'}},{name:'webkit',testIgnore:'**/zoom.spec.mjs',use:{browserName:'webkit'}}]});

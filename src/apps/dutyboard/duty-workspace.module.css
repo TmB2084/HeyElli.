@@ -1,0 +1,180 @@
+.workspace {
+ --duty-line: color-mix(in srgb, var(--foreground) 12%, transparent);
+ --duty-hover: color-mix(in srgb, var(--foreground) 5%, transparent);
+ --duty-head: color-mix(in srgb, var(--background) 55%, var(--surface));
+ max-width: 1800px;
+ padding: 28px 24px 32px;
+ font-family: var(--font-ui);
+ font-size: 13px;
+ line-height: 1.55;
+ -webkit-font-smoothing: antialiased;
+}
+.workspace .assignmentDialog { width: min(460px, calc(100vw - 32px)); max-height: min(740px, calc(100dvh - 40px)); padding: 0; overflow: hidden; }
+.assignmentDialog[open] { display: flex; flex-direction: column; }
+.assignmentHeading { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex: 0 0 auto; padding: 16px 20px; border-bottom: 1px solid var(--duty-line); background: var(--duty-head); }
+.workspace .assignmentHeading h2 { margin: 0; font-size: 15px; }
+.workspace .assignmentHeading button { width: 28px; min-height: 28px; height: 28px; padding: 0; border: 0; border-radius: var(--radius-small); background: var(--duty-hover); color: var(--muted); font-size: 21px; }
+.assignmentBody { min-height: 0; overflow: auto; padding: 16px 20px 20px; }
+.workspace .assignmentDialog :global(.duty-plan-panel) { margin: 0; padding: 0; border: 0; box-shadow: none; background: transparent; }
+.workspace .assignmentDialog :global(.duty-plan-panel)>p:first-child { margin-top: 0; }
+.workspace .assignmentDialog :global(.duty-preview-scroll) { overflow: auto; }
+@media(max-width:650px) {
+ .workspace .assignmentDialog { width: calc(100vw - 20px); max-height: calc(100dvh - 24px); }
+ .assignmentHeading { padding: 14px 16px; }
+ .assignmentBody { padding: 16px; }
+}
+.workspace :global(.calendar-toolbar) button,
+.workspace :global(.duty-plan-panel)>button,
+.workspace :global(.duty-wish-section) button { font-family: inherit; font-size: 12px; font-weight: 500; min-height: 32px; padding: 7px 11px; border: 1px solid var(--duty-line); border-radius: var(--radius-small); color: var(--foreground); background: var(--surface); box-shadow: none; }
+.workspace button:not(:disabled):hover { filter: none; }
+.workspace :global(.calendar-toolbar) button:not(:disabled):hover,
+.workspace :global(.duty-plan-panel)>button:not(:disabled):hover,
+.workspace :global(.duty-wish-section) button:not(:disabled):hover { background: var(--duty-hover); }
+.workspace button:disabled { cursor: default; }
+.workspace button:focus-visible, .workspace a:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+.workspace input, .workspace select { font-family: inherit; font-size: 13px; line-height: 1.4; padding: 7px 10px; min-height: 34px; border-radius: var(--radius-small); border: 1px solid var(--duty-line); background: var(--surface); color: var(--foreground); }
+.workspace input:focus-visible, .workspace select:focus-visible { outline: 2px solid var(--focus); outline-offset: 1px; }
+.workspace input[type="checkbox"] { min-height: 14px; padding: 0; }
+.workspace label { font-size: 12px; font-weight: 500; }
+.workspace > :global(.duty-toolbar):not(:global(.calendar-search-filters)) { margin: 0 0 14px; padding: 12px; background: var(--surface); border: 1px solid var(--duty-line); border-radius: var(--radius-panel); gap: 10px; }
+.workspace :global(.duty-year-navigation) { background: var(--duty-head); border: 1px solid var(--duty-line); border-radius: var(--radius-item); }
+.workspace :global(.duty-year-navigation)>button { border: 0; box-shadow: none; border-radius: var(--radius-small); background: transparent; padding-inline: 11px; }
+.workspace :global(.duty-year-navigation)>label { border-color: var(--duty-line); font-size: 11px; gap: 8px; }
+.workspace :global(.duty-year-navigation) input { width: 76px; min-height: 32px; padding: 4px; margin: 0; border: 0; background: transparent; font-size: 13px; font-weight: 600; text-align: center; }
+.workspace :global(.calendar-views) { border-color: var(--duty-line); border-radius: var(--radius-item); background: var(--duty-head); }
+.workspace :global(.calendar-views)>button { border: 0; border-radius: 0; background: transparent; box-shadow: none; }
+.workspace :global(.calendar-views)>button+button { border-left: 1px solid var(--duty-line); }
+.workspace :global(.duty-tabs) { display: flex; flex-wrap: wrap; width: fit-content; max-width: 100%; padding: 3px; gap: 3px; margin: 0 0 14px; border: 1px solid var(--duty-line); border-radius: var(--radius-item); background: var(--duty-head); overflow: visible; }
+.workspace :global(.duty-tabs) button[role="tab"] { flex: 0 1 auto; font: inherit; font-size: 12px; font-weight: 500; line-height: 1.4; min-height: 32px; padding: 6px 14px; border: 1px solid transparent; border-radius: var(--radius-small); background: transparent; color: var(--muted); }
+.workspace :global(.duty-tabs) button[aria-selected="true"] { background: var(--surface); color: var(--foreground); border: 1px solid var(--duty-line); font-weight: 650; box-shadow: none; }
+.workspace :global(.duty-tabs) button:focus-visible { outline: 2px solid var(--focus); outline-offset: 1px; }
+.workspace :global(.calendar-search-filters) { margin: 0 0 12px; gap: 12px; }
+.workspace :global(.calendar-search-field) { min-height: 34px; padding-inline: 10px; border: 1px solid color-mix(in srgb, var(--foreground) 22%, transparent); border-radius: var(--radius-item); background: var(--surface); gap: 7px; }
+.workspace :global(.calendar-search-field) svg { width: 15px; height: 15px; color: var(--muted); }
+.workspace :global(.calendar-search-field) input { font: inherit; font-size: 12px; min-height: 32px; padding: 6px 0; }
+.workspace :global(.calendar-search-field) input::placeholder { color: var(--muted); opacity: 1; }
+.workspace > section[role="tabpanel"] { margin-top: 0; }
+.workspace :global(.duty-year-scroll) { border: 1px solid var(--duty-line); border-radius: var(--radius-panel); background: var(--surface); box-shadow: var(--shadow-1); }
+.workspace :global(.duty-year-table) th, .workspace :global(.duty-year-table) td { border-color: var(--duty-line); }
+.workspace :global(.duty-year-table) thead th { background-color: var(--duty-head); }
+.workspace :global(.duty-year-table) :global(.duty-month-heading) { font-size: 11px; font-weight: 600; }
+.workspace :global(.duty-year-table) :global(.duty-week-heading) { font-weight: 500; }
+.workspace :global(.duty-year-table) tbody th:first-child { padding: 12px 10px; }
+.workspace :global(.duty-year-table) th:first-child strong { font-size: 12px; font-weight: 650; }
+.workspace :global(.duty-person-totals) { font-size: 10px; gap: 3px 8px; line-height: 1.5; }
+.workspace :global(.duty-selected-count) { font-size: 10px; }
+.workspace :global(.duty-cell-button) { font-family: inherit; font-size: inherit; }
+.workspace :global(.duty-cell-button):focus-visible { outline-offset: -2px; outline-width: 2px; }
+.workspace :global(.duty-cell-button):not(:disabled):hover { background: var(--duty-hover); }
+.workspace :global(.calendar-team-note) { font-size: 11px; line-height: 1.6; }
+.workspace :global(.duty-holiday-options),
+.workspace :global(.duty-plan-panel),
+.workspace :global(.duty-wish-section),
+.workspace :global(.duty-fairness) { background: var(--surface); border: 1px solid var(--duty-line); border-radius: var(--radius-panel); box-shadow: var(--shadow-1); }
+.workspace :global(.duty-holiday-options) { margin: 0; padding: 0 20px; }
+.workspace :global(.duty-holiday-options) :global(.duty-holiday-fields) { gap: 12px 20px; padding: 16px 0; }
+.workspace :global(.duty-holiday-fields) label { font-size: 12px; gap: 7px; }
+.workspace :global(.duty-holiday-fields) select { min-height: 32px; font-size: 12px; padding: 6px 9px; border-color: var(--duty-line); border-radius: var(--radius-small); }
+.workspace :global(.duty-holiday-fields) :global(.duty-distribute),
+.workspace :global(.duty-plan-panel)>button:global(.duty-plan-confirm) { background: var(--primary); color: #fff; border-color: var(--primary); }
+.workspace :global(.duty-holiday-fields) :global(.duty-distribute):not(:disabled):hover,
+.workspace :global(.duty-plan-panel)>button:global(.duty-plan-confirm):not(:disabled):hover { background: var(--primary-hover); }
+.workspace :global(.duty-holiday-advanced) { padding-top: 4px; }
+.workspace :global(.duty-holiday-advanced) h3 { font-size: 12px; font-weight: 600; color: var(--foreground); margin: 8px 0; }
+.workspace :global(.duty-holiday-detail-body) { border-color: var(--duty-line); }
+.workspace :global(.duty-holiday-weights) { gap: 12px 20px; padding-block: 6px; }
+.workspace :global(.duty-holiday-weights) label { display: flex; flex-direction: column; align-items: flex-start; gap: 5px; }
+.workspace :global(.duty-holiday-weights) select { width: 88px; }
+.workspace :global(.duty-holiday-help) { margin-top: 12px; padding-top: 10px; border-top: 1px solid var(--duty-line); }
+.workspace :global(.duty-plan-panel) { margin-block: 16px; padding: 20px; }
+.workspace :global(.duty-plan-panel) h2 { margin: 0 0 10px; font-size: 15px; font-weight: 650; letter-spacing: -.02em; }
+.workspace :global(.duty-preview-scroll) { border: 1px solid var(--duty-line); border-radius: var(--radius-item); }
+.workspace :global(.admin-table) { font-size: 12px; }
+.workspace :global(.admin-table) th, .workspace :global(.admin-table) td { padding: 10px 12px; border-color: var(--duty-line); }
+.workspace :global(.admin-table) thead th { background: var(--duty-head); font-size: 11px; font-weight: 600; }
+.workspace :global(.admin-table) tbody th { background: var(--surface); }
+.workspace :global(.admin-table) tbody tr:hover { background: var(--duty-hover); }
+.workspace :global(.duty-selection-reason) { font-size: 11px; }
+.workspace :global(.duty-fairness) { margin: 0; padding: 20px; }
+.workspace :global(.duty-fairness-heading) { font-size: 14px; font-weight: 600; }
+.workspace :global(.duty-fairness-scroll) { border: 1px solid var(--duty-line); border-radius: var(--radius-item); }
+.workspace :global(.duty-fairness-table) td:nth-child(2), .workspace :global(.duty-fairness-table) td:nth-child(3) { font-variant-numeric: tabular-nums; text-align: right; }
+.workspace :global(.duty-fairness-table) small { font-size: 11px; }
+.workspace :global(.duty-wish-section) { padding: 20px; margin: 0 0 16px; }
+.workspace :global(.duty-wish-section) h2 { font-size: 14px; font-weight: 650; letter-spacing: -.02em; }
+.workspace :global(.duty-wish-controls) { gap: 12px; margin-block: 14px; }
+.workspace :global(.duty-wish-controls) label { font-size: 12px; }
+.workspace :global(.duty-wish-controls) select { font-size: 13px; }
+.workspace :global(.duty-swap-card) { padding: 14px; border-color: var(--duty-line); border-radius: var(--radius-item); background: var(--duty-head); }
+.workspace :global(.duty-swap-card) h3 { font-size: 13px; font-weight: 600; }
+.workspace :global(.duty-swap-card) p { font-size: 12px; }
+.workspace dialog { font-family: inherit; font-size: 13px; border-color: var(--duty-line); border-radius: var(--radius-panel); box-shadow: var(--shadow-1); }
+.workspace dialog::backdrop { background: #12172066; backdrop-filter: blur(3px); }
+.workspace dialog h2 { font-size: 16px; font-weight: 650; letter-spacing: -.025em; }
+.workspace dialog :global(.dialog-heading) { align-items: center; border-color: var(--duty-line); }
+.workspace dialog :global(.dialog-heading) button { min-height: 28px; width: 28px; height: 28px; padding: 0; border: 0; border-radius: var(--radius-small); background: var(--duty-hover); color: var(--muted); font-size: 21px; }
+.workspace dialog button { font-family: inherit; font-size: 12px; min-height: 32px; padding: 7px 10px; border: 1px solid var(--duty-line); border-radius: var(--radius-small); background: var(--surface); color: var(--foreground); }
+.workspace dialog button:not(:disabled):hover { background: var(--duty-hover); filter: none; }
+.workspace dialog button:disabled { opacity: .5; }
+.workspace dialog :global(.discard-dialog-actions)>button:last-child { background: var(--primary); color: white; border-color: var(--primary); }
+.workspace :global(.calendar-selection-item) { border-color: var(--duty-line); border-radius: var(--radius-small); }
+@media(max-width:900px) {
+ .workspace :global(.duty-mobile-selection-count) { font-size: 11px; padding: 10px; border-color: var(--duty-line); }
+ .workspace :global(.duty-year-table) tbody tr { border-color: var(--duty-line); }
+}
+@media(max-width:650px) {
+ .workspace { padding: 24px 14px 28px; }
+ .workspace > :global(.duty-toolbar):not(:global(.calendar-search-filters)) { gap: 10px; padding: 10px; }
+ .workspace :global(.calendar-views) { flex-wrap: wrap; }
+ .workspace :global(.calendar-views)>button { flex: 1 1 100%; text-align: left; }
+ .workspace :global(.calendar-views)>button+button { border-left: 0; border-top: 1px solid var(--duty-line); }
+ .workspace :global(.duty-tabs) { width: 100%; display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); }
+ .workspace :global(.duty-tabs) button[role="tab"] { padding-inline: 6px; font-size: 11px; white-space: normal; }
+ .workspace :global(.calendar-search-fields) { width: auto; flex: 1 1 180px; }
+ .workspace :global(.calendar-search-fields) :global(.calendar-search-field) { width: 100%; }
+ .workspace :global(.calendar-search-field) input { font-size: 16px; min-height: 40px; width: 100%; }
+ .workspace :global(.duty-fairness), .workspace :global(.duty-plan-panel), .workspace :global(.duty-wish-section) { padding: 14px; }
+ .workspace :global(.duty-holiday-options) { padding-inline: 14px; }
+ .workspace :global(.duty-holiday-weights) { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 10px; width: 100%; }
+ .workspace :global(.duty-holiday-weights) select { width: 100%; }
+ .workspace :global(.duty-holiday-fields) { min-width: 0; }
+ .workspace :global(.duty-holiday-fields) select { max-width: 100%; }
+ .workspace :global(.duty-wish-controls) { flex-direction: column; align-items: stretch; }
+ .workspace :global(.duty-wish-controls) select { width: 100%; }
+ .workspace :global(.duty-preview-scroll) table { min-width: 650px; }
+ .workspace :global(.duty-holiday-help) { max-width: 100%; }
+ .workspace dialog input:not([type="checkbox"]), .workspace dialog select { font-size: 16px; min-height: 40px; }
+}
+
+.workspace :global(.duty-assignment-summary) { margin-bottom: 18px; }
+.workspace :global(.duty-assignment-person) { display: grid; grid-template-columns: 1fr auto; gap: 3px 16px; align-items: center; }
+.workspace :global(.duty-assignment-person)>span { grid-column: 1; font-size: 11px; color: var(--muted); }
+.workspace :global(.duty-assignment-person)>strong { grid-column: 1; font-size: 18px; line-height: 1.3; overflow-wrap: anywhere; }
+.workspace :global(.duty-assignment-person)>b { grid-column: 2; grid-row: 1 / 3; border-radius: var(--radius-small); padding: 6px 10px; font-size: 14px; background: var(--duty-hover); white-space: nowrap; }
+.workspace :global(.duty-assignment-time) { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 16px 0 0; padding: 12px 0; border-top: 1px solid var(--duty-line); border-bottom: 1px solid var(--duty-line); }
+.workspace :global(.duty-assignment-time) dt { font-size: 11px; color: var(--muted); }
+.workspace :global(.duty-assignment-time) dd { margin: 3px 0 0; font-size: 12px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.workspace :global(.duty-assignment-replaces) { display: block; margin-top: 10px; color: var(--muted); }
+
+.workspace :global(.duty-consecutive-warning) { margin: 0 0 16px; padding: 12px; border: 1px solid color-mix(in srgb, #bc8a27 45%, var(--duty-line)); border-radius: var(--radius-item); background: color-mix(in srgb, #bc8a27 9%, var(--surface)); }
+.workspace :global(.duty-consecutive-warning) :global(.app-notice) { margin: 0 0 10px; }
+.workspace :global(.duty-consecutive-warning) label { display: grid; grid-template-columns: 14px minmax(0, 1fr); align-items: start; gap: 8px; }
+.workspace :global(.duty-consecutive-warning) input[type="checkbox"] { width: 14px; min-width: 14px; height: 14px; min-height: 14px; margin: 3px 0 0; }
+
+.eventMenu { position: fixed; inset: auto; margin: 0; min-width: 205px; max-width: calc(100vw - 16px); padding: 5px; border: 1px solid var(--duty-line); border-radius: var(--radius-item); background: var(--surface); color: var(--foreground); box-shadow: var(--shadow-3); font: 12px -apple-system, BlinkMacSystemFont, sans-serif; }
+.eventMenu>strong { display: block; padding: 7px 9px; font-size: 11px; color: var(--muted); }
+.eventMenu button,.eventMenu a { display: flex; align-items: center; gap: 9px; width: 100%; padding: 8px 9px; min-height: 32px; border: 0; border-radius: var(--radius-small); background: transparent; color: inherit; text-decoration: none; font: inherit; text-align: left; }
+.eventMenu button:not(:disabled):hover,.eventMenu a:hover { background: var(--duty-hover); }
+.eventMenu button:disabled { opacity: .45; }
+.eventMenu span { width: 16px; text-align: center; }
+.workspace :global(.duty-event-form) fieldset { display: grid; gap: 12px; border: 0; padding: 0; margin: 14px 0 18px; min-width: 0; }
+.workspace :global(.duty-event-form) label { display: grid; gap: 5px; }
+.workspace :global(.duty-event-form) input,.workspace :global(.duty-event-form) select { width: 100%; }
+.workspace .eventMenu a { color: var(--foreground); }
+.workspace :global(.duty-event-form) label { margin: 0; }
+.workspace :global(.duty-event-form)>p { margin: 8px 0 12px; color: var(--muted); font-size: 12px; }
+.eventMenu svg { width: 15px; height: 15px; flex: 0 0 auto; }
+
+.workspace :global(.duty-week-heading) :global(.duty-week-link) { display: block; padding: 5px 0; color: inherit; text-decoration: none; border-radius: 3px; }
+.workspace :global(.duty-week-link):hover { background: var(--duty-hover); text-decoration: underline; }
+.workspace :global(.duty-week-link):focus-visible { outline-offset: -2px; }

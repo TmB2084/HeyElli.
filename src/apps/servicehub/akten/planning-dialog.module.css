@@ -1,0 +1,52 @@
+.dialog {
+  --planning-line:color-mix(in srgb,var(--foreground) 12%,transparent);
+  --planning-tint:color-mix(in srgb,var(--foreground) 4%,transparent);
+  width:min(720px,calc(100% - 32px));
+  max-width:none;
+  max-height:calc(100dvh - 48px);
+  padding:0;
+  overflow:hidden;
+  border:1px solid var(--planning-line);
+  border-radius:var(--radius-panel);
+  background:var(--surface);
+  color:var(--foreground);
+  box-shadow:var(--shadow-1);
+  font:13px/1.5 var(--font-ui);
+}
+.dialog::backdrop { background:#12172066; backdrop-filter:blur(3px); }
+.dialog>form { display:flex; flex-direction:column; max-height:calc(100dvh - 50px); min-height:0; }
+.heading,.footer { flex:0 0 auto; display:flex; align-items:center; gap:10px; padding:16px 22px; background:color-mix(in srgb,var(--background) 40%,var(--surface)); }
+.heading { justify-content:space-between; border-bottom:1px solid var(--planning-line); }
+.dialog .heading h2 { font-size:15px; font-weight:650; letter-spacing:-.02em; margin:0; }
+.dialog button { font:inherit; font-size:12px; font-weight:550; min-height:34px; padding:7px 12px; border:1px solid var(--planning-line); border-radius:var(--radius-item); background:var(--surface); color:var(--foreground); }
+.dialog button:not(:disabled):hover { background:var(--planning-tint); filter:none; }
+.dialog button:disabled { cursor:default; opacity:.5; }
+.dialog button:focus-visible,.dialog input:focus-visible { outline:3px solid var(--focus); outline-offset:2px; }
+.dialog .close { width:28px; height:28px; min-height:28px; padding:0; border:0; border-radius:var(--radius-small); background:var(--planning-tint); color:var(--muted); font-size:21px; line-height:1; }
+.body { flex:1 1 auto; min-height:0; overflow-y:auto; overscroll-behavior:contain; scrollbar-gutter:stable; padding:18px 22px 24px; }
+.context { margin:0 0 16px; padding:10px 12px; border:1px solid var(--planning-line); border-radius:var(--radius-item); background:var(--planning-tint); color:var(--muted); font-size:12px; overflow-wrap:anywhere; }
+.dialog fieldset { margin:0; padding:0; border:0; border-radius:0; background:transparent; min-width:0; }
+.dialog :global(.incident-grid) { grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:4px 20px; }
+.dialog label { display:block; margin:12px 0 6px; font-size:12px; font-weight:550; }
+.dialog input { width:100%; min-width:0; min-height:36px; margin-top:6px; padding:8px 10px; border:1px solid var(--planning-line); border-radius:var(--radius-small); background:var(--surface); color:var(--foreground); font:inherit; }
+.dialog small { color:var(--muted); font-size:11px; line-height:1.5; }
+.dialog :global(.selection-control) { min-height:36px; padding:3px 6px; border-color:var(--planning-line); border-radius:var(--radius-small); background:var(--surface); }
+.dialog :global(.selection-control):focus-within { outline:2px solid var(--focus); outline-offset:1px; }
+.dialog :global(.selection-control) input { margin:0; padding:3px 4px; min-height:28px; border:0; outline:none; background:transparent; }
+.dialog :global(.search-hint) { display:block; min-height:17px; margin-top:4px; }
+.dialog :global(.selection-pill) { max-width:100%; padding:3px 4px 3px 8px; gap:6px; border:1px solid var(--planning-line); border-radius:var(--radius-small); background:var(--planning-tint); color:var(--foreground); font-size:12px; }
+.dialog :global(.selection-pill)>button { width:24px; height:24px; min-height:24px; padding:0; border:0; border-radius:var(--radius-small); background:transparent; color:var(--muted); font-size:17px; }
+.footer { justify-content:flex-end; border-top:1px solid var(--planning-line); }
+.dialog .save { padding-inline:16px; background:var(--primary); color:#fff; border-color:var(--primary); }
+.dialog .save:not(:disabled):hover { background:var(--primary-hover); }
+.dialog :global(.app-notice) { margin:16px 0 0; }
+@media(max-width:600px) {
+  .dialog { width:calc(100% - 20px); max-height:calc(100dvh - 24px); border-radius:var(--radius-panel); }
+  .dialog>form { max-height:calc(100dvh - 26px); }
+  .heading,.footer { padding:14px 16px; }
+  .body { padding:14px 16px 20px; }
+  .dialog :global(.incident-grid) { grid-template-columns:minmax(0,1fr); gap:0; }
+  .dialog input { font-size:16px; min-height:40px; }
+  .dialog button { min-height:40px; }
+  .footer>button { flex:1; }
+}

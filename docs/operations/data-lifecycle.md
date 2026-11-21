@@ -1,0 +1,74 @@
+# Datenaufbewahrung, Export und bestätigte Bereinigung
+
+Stand: 13.11.2026. Gilt für den lokalen Entwicklungsbetrieb mit fiktiven Daten. Keine juristische oder produktive Datenschutzfreigabe.
+
+## Bedienung
+
+**Benutzerkonto → Benutzerkonto → Daten & Export** bietet einen persönlichen Download und eine gezielte Bereinigung abgeschlossener Daten. Der Server bestimmt das eigene Konto aus der geprüften Sitzung. Ein übergebenes fremdes Konto wird abgewiesen. Die persönlichen API-Wege sind ausdrücklich sitzungsgebunden; eine fachliche App-Freigabe ersetzt keine Identitätsprüfung.
+
+**Einstellungen → Sicherheit → Daten & Aufbewahrung** bietet Administratoren dieselben Verfahren für ein ausgewähltes Konto sowie zentrale Prüffristen und Aufbewahrungssperren. Fristen speichern automatisch, erzeugen aber ausschließlich Hinweise. Initial ist keine Frist gesetzt. Es gibt keinen automatischen Löschlauf und keine nachträgliche Altersbereinigung des Bestands. Eine Sperre verhindert auch die manuell bestätigte Bereinigung ihrer Datenklasse.
+
+Bereinigung: Datenarten und einschließlich gemeinten Stichtag wählen → Vorschau erstellen → Anzahl und Schutzangaben prüfen → ausdrücklich bestätigen. Vorschauen gelten zehn Minuten, höchstens 500 Einträge je Datenklasse und Bestätigung. Bei größeren Beständen weist die Vorschau auf verbleibende Einträge hin; diese erfordern einen weiteren ausdrücklich bestätigten Vorgang. Ändert sich seit der Vorschau ein relevanter Datensatz, Entwurf oder eine Vorgabe, wird mit 409 abgebrochen; nichts wird entfernt. Erneute Ausführung derselben bestätigten Vorschau ist idempotent. Die Oberfläche löscht niemals beim Öffnen, Speichern einer Prüffrist oder Erstellen einer Vorschau.
+
+## Datenklassen und Grenzen
+
+| Klasse / Quelle | Zweck und Zugriff | Export | Bereinigung / Aufbewahrung |
+| --- | --- | --- | --- |
+| Benutzer, Rollen, Mitarbeiter-/PDS-Zuordnung; PostgreSQL | Identität, Berechtigung, Planung; eigenes Profil, Administration | Eigenes Profil, Rolle, eigene Zuordnungen | Erhalten; geordneter Austritt durch Deaktivierung und Sitzungswiderruf. Keine physische Kontolöschung, letzter Administrator bleibt geschützt. |
+| Anzeige-, Kalender-, Launcher-, Nutzungs- und Bereitschaftspräferenzen; PostgreSQL, quellbezogene Schemata | Persönliche Bedienung | Eigene Werte | Erhalten, keine pauschale Alterslöschung. |
+| Frag-Elli-Verlauf, servergesicherte Fragen; PostgreSQL | Gesprächskontext und Wiederaufnahme | Eigene Antworten, offene Fragen, Eingabezweige | Nur abgeschlossene Antworten; gesamte Unterhaltung geschützt, solange eine Frage, nichtleere Eingabe oder offene/unklare Aktion besteht. Alte Antworten besitzen keine verlässlichen Einzelzeitpunkte: konservativ zählt die letzte Aktualisierung des gesamten Chats. Chatkennung bleibt bestehen. Entfernte Antwortkennungen bleiben als Sperrmarkierung erhalten, damit späte Tabs/Anfragen nichts wiederherstellen. |
+| Elli-Bewertungen; PostgreSQL | Gezielte Verbesserung der Wissensbasis; Bewertung nur für Administratoren, eigene Kopie von Frage/Antwort | Eigene Bewertungen mit Texten | Separat ausdrücklich auswählen; Chatbereinigung entfernt Bewertungen nicht still mit. |
+| Mailwarteschlange, Protokoll; PostgreSQL | Versand, Nachweis und Duplikatschutz; Administration | Eigene Nachrichten und Versandaktivität | Ausschließlich Inhalte abgeschlossener Nachrichten (`simulated`, `accepted`, `cancelled`): Absender/Empfänger werden neutralisiert, Betreff/Text/Fehler entfernt. Kennung, Status und Protokoll bleiben erhalten; kein erneuter Versand bereinigter Inhalte. Offene, fehlgeschlagene oder unklare Sendungen bleiben geschützt. |
+| MailDesk-Entscheidungen, gelernte Absender, Antwortverweise; PostgreSQL | Zuordnung des geteilten Postfachs, Teamarbeit, Nachweis; MailDesk-Recht | Eigene Antworten (Verweise) und von dir zuletzt geänderte Entscheidungen | Erhalten; keine Mailinhalte gespeichert, Antworttexte unterliegen der Bereinigung der Mailwarteschlange. Gelernte Absender sind Geschäftsdaten und werden nicht automatisch gelöscht. |
+| Aufgaben-Ergänzungen (Checkliste, Verknüpfungen, Verlauf); PostgreSQL | Ergänzung zu PDS-Aufgaben, Teamarbeit, Nachweis; Aufgaben-Recht | Von dir zuletzt geänderte Ergänzungen | Erhalten; die Aufgabe selbst liegt in PDS, der Verlauf ist auf 100 Einträge je Aufgabe begrenzt |
+| Kundennotizen (Kunde 360); PostgreSQL | Gesprächsvermerke und Hinweise am Kunden; Service-Recht | Eigene Notizen | Erhalten; nur der Verfasser kann eine Notiz löschen, keine automatische Löschung |
+| MissionControl: Planung, Fokuszeiten, Notizen zur Aufgabe; PostgreSQL | Persönliche Tages-/Wochenplanung und Fokus; MissionControl-Recht | Eigene Planung, eigene Fokuszeiten, eigene Notizen | Erhalten; Planung und Fokuszeiten werden mit dem Konto gelöscht, Notizen nur durch den Verfasser |
+| MissionControl-Ziele, Tageswerte, Zuordnungen, Erledigt-Protokoll; PostgreSQL | Teamziele und Rückblick; MissionControl-Recht | Eigenes Erledigt-Protokoll | Erhalten; Ziele werden archiviert, nicht gelöscht; Tageswerte und Zuordnungen enden mit dem Ziel |
+| Sitzungen; PostgreSQL | Anmeldung | Eigene Sitzungsmetadaten, niemals Token oder Tokenhash | Ausschließlich bereits widerrufene/abgelaufene Sitzungen bis Stichtag; aktive Sitzungen bleiben erhalten. Eine Anmeldung entfernt keine älteren Sitzungen mehr. |
+| Kalenderentwürfe und Schlüssel; PostgreSQL und verschlüsselte Browserablage | Eingabesicherung, getrennte Tabzweige | Inhaber erhält entschlüsselte servergesicherte Inhalte, niemals Schlüssel. Administrator eines anderen Kontos erhält ausschließlich Entwurfsmetadaten. | Niemals altersbasiert entfernen. Gerätebereinigung bleibt ein eigener Ablauf: erst bestätigte Sicherung, dann ausdrückliche Bestätigung; neuere Kopien bleiben erhalten. Abschlussmarkierungen bleiben erhalten. |
+| Aufträge, Kundenkontakte und Uploads; lokale SQLite-Ablage | Fachdokumentation, Wiederholungsschutz | Eigene erstellte Datensätze/Anhänge bei Service-/CaseDesk-Zugriff oder Administration; Anhänge in Base64-Blöcken | Keine pauschale Löschung: Anhänge können noch von nicht übertragenen Eingaben benötigt werden. Gemeinsame PDS-Objekte haben keine sichere persönliche Eigentümerschaft und werden nicht als persönliche Komplettakte exportiert. |
+| Kalenderhistorie, administrative Historie, Bereitschafts-/Tauschnachweise und Vorgangskennungen; PostgreSQL/SQLite | Gemeinsame Nachvollziehbarkeit und Schutz gegen doppelte Ausführung | Eigene Aktivitätsmetadaten, keine unbeschränkten fremden Fachtexte | Erhalten. Fachlicher Lösch-/Anonymisierungsauftrag erfordert separate Datenzuordnung und fachliche Freigabe. |
+| Integrationskonfigurationen, Referenzen, Archive und Master-Schlüssel | Geschützte Verbindungen | Nicht im persönlichen Export | Ausschließlich referenzgeprüfter Geheimnislebenszyklus; kein allgemeiner Löschlauf. |
+| Browserdiagnose; PostgreSQL | Datensparsame Sicherheitsnachweise, eigener Versand, administrative Übersicht | Eigene normalisierte Diagnosegruppen | Geschützte Metadaten, keine automatische Löschung; technische Minutenbudgets werden überschrieben. |
+| Vorschauen, Ausführungsprotokoll, entfernte Chatkennungen; PostgreSQL | Nachweis, Änderungsschutz und Wiederholungsschutz | Eigene Ausführungen und Antwortmarkierungen | Vorschauen speichern Kennungen, Fingerabdruck und Zähler, keine gelöschten Texte. Protokoll enthält Akteur, Zeitpunkt, Datenarten und Anzahl. Keine automatische Verdichtung. |
+| Sicherungen und heruntergeladene Exporte | Wiederherstellung / persönliche Auskunft | Sicherung ist kein persönlicher Export | Bestehende Archive bleiben unverändert. Eigenständige geschützte Aufbewahrung und autorisierte Entfernung durch Betreiber beziehungsweise Empfänger erforderlich. |
+
+## Export prüfen und schützen
+
+Der Download ist **JSONL**, eine JSON-Struktur pro Zeile. Er enthält ein Manifest und muss mit `{"type":"end","complete":true}` abschließen. Bei Verbindungsabbruch oder fehlender Abschlussmarkierung ist er unvollständig und erneut anzufordern. Download geschützt ablegen: Er kann persönliche Freitexte, entschlüsselte Entwürfe und Anhänge enthalten. Keine E-Mail-Weitergabe ohne Prüfung.
+
+PostgreSQL wird in einer konsistenten schreibgeschützten Transaktion mit Seiten von 50 Datensätzen gelesen; SQLite separat in einer schreibgeschützten Lesetransaktion, Binärinhalte in 64-KiB-Blöcken. Das ist kein gemeinsam atomarer Vollbackup-Schnitt zwischen beiden Speichern. Anfragen sind zeitlich begrenzt; Abbruch gibt Datenbankverbindungen frei. Keine Tokenhashes, Geheimnisdateien, Umgebungsdateien, Wrapped Keys oder Master-Schlüssel werden ausgegeben.
+
+Nicht übertragene Browser-Eingaben sind serverseitig nicht vollständig bekannt. Vor einem Austritt alle Geräte synchronisieren, einen persönlichen Export prüfen und Kalenderkopien gegebenenfalls über **Gerät & Entwürfe** sichern. Die neue Datenbereinigung berührt Browserablagen nicht. Ein persönlicher Export ist keine vollständige rechtliche Auskunft über gemeinsame Fachakten, externe PDS-Daten oder Daten bei Microsoft/Ollama/Copilot; diese Quellen sind gesondert fachlich zu prüfen. Ein Download überträgt keine Daten an diese Anbieter.
+
+## Betrieb, Austritt und Wiederherstellung
+
+1. Datenverantwortliche legen zulässige Zwecke, individuelle Fristen, gesetzliche Ausnahmen und externe Empfänger fest. Im Entwicklungsbestand nichts ungeprüft pauschal löschen.
+2. Konto bei Austritt deaktivieren; Sitzungswiderruf prüfen. Eigene Daten vorab exportieren beziehungsweise kontrolliert durch Administration sichern. Private Entwurfsinhalte nur durch den Inhaber exportieren.
+3. Aufbewahrungssperren und geteilte Fachnachweise prüfen; nur tatsächlich freigegebene abgeschlossene Daten über Vorschau und Bestätigung bereinigen. Gemeinsame Akten separat behandeln. Administrativer Bereinigungsvorgang nennt im Protokoll Administrator und betroffenes Konto.
+4. Sicherungen enthalten möglicherweise frühere Daten. Betreiber legen eigenständige Fristen, Zugriff und kontrollierte Entfernung aller lokalen/externen Kopien fest. Dieses Modul löscht oder überschreibt keine bestehenden Sicherungen.
+5. Nach Wiederherstellung einer älteren Sicherung bleiben Integrationen und reale Schreibzugriffe gesperrt. Ausführungsprotokoll aus dem jüngsten geschützten Bestand und spätere Löschaufträge separat prüfen; wiederhergestellte Inhalte gegebenenfalls mit neuer Vorschau erneut bereinigen, bevor fachlicher Betrieb freigegeben wird. Automatisches, datenübergreifendes Wiederanwenden von Löschaufträgen über Archivgrenzen ist nicht implementiert.
+
+Prüfnachweise: `src/platform/data-lifecycle/tests/data-lifecycle.test.mjs`, `tests/data-lifecycle-postgres.mjs`, geschützte HTTP-Wege in `tests/platform-http.mjs`. Datenbanktest ist im isolierten Plattformlauf und damit in `npm run verify` registriert. Keine Tests gegen die Entwicklungsdatenbank; Migration 034 ergänzt ausschließlich Tabellen, leere Schutzmarkierungen und eine nullable Mailspalte.
+
+### Gemeinsame Einsatzmappen
+
+`dispatch_packs` und `dispatch_pack_refs` enthalten gemeinsame fachliche Dokumentreferenzen, Auswahlstände, Urheber und Zeitpunkte; keine Datei-Inhalte, URLs oder Zugangsdaten. Abwahlen bleiben als Versionsmarkierung bestehen, damit verspätete Wiederholungen keine Auswahl überschreiben. Sie werden nicht durch persönliche Geräte-/Kontobereinigung gelöscht. Die Auswahländerung wird im administrativen Protokoll mit alten/neuen Werten nachgewiesen; persönliche Aktivitätsexporte enthalten den eigenen Protokollverweis. Fachliche Vollsicherungen umfassen diese Tabellen automatisch. Die Mappe ist keine Offline-Sicherung externer Dokumente.
+
+### Terminbestätigungen
+
+`service_confirmations` speichert gemeinsame Nachweise und Wiederholungsschutz mit Benutzer, Zeitpunkt, Quelle, Auftrag/Einsatz, Kanal, Inhaltsprüfsummen und optionalem Warteschlangenbezug. Keine zusätzliche Kopie von Empfänger, Nachricht, URLs oder Geheimnissen. Inhaltsprüfsummen sind für den Wiederholungsschutz erforderlich und keine anonymisierten Daten. Graph-Inhalte unterliegen der vorhandenen kontrollierten Mail-Inhaltsbereinigung; der Nachweis und damit der Doppelversandschutz bleiben erhalten. Persönliche Exporte ergänzen eigene Nachweise ohne die internen Prüfsummen. Outlook-Vorbereitung ist ausdrücklich kein Versandnachweis. Kein automatisches Entfernen von Nachweisen oder offenen Nachrichten.
+
+### Persönliche Notizen
+
+`platform.personal_notes` enthält ausschließlich den persönlichen Notiztext, Version und Änderungszeitpunkt, gebunden an den angemeldeten Benutzer. Die eigene Rollenfreigabe wird bei jedem Zugriff geprüft. Eigene Datenexporte enthalten den Text; administrative Exporte eines anderen Kontos liefern nur Zeichenanzahl und Metadaten. Notiztexte gelangen weder in Fachprotokolle noch an Elli. PostgreSQL-Vollsicherungen umfassen die Tabelle. Es gibt keine automatische Alterslöschung.
+
+Unbestätigte Browserfassungen werden mit dem bestehenden benutzergebundenen Entwurfsschlüssel verschlüsselt; Schlüssel bleiben nur im Speicher. Jeder Tab verwendet eine getrennte, gesperrte Ablage. Bestätigte Fassungen werden nur bei unverändertem Inhalt entfernt. Offene Kopien bleiben bei Verbindungsfehlern erhalten. Die Wiederherstellung setzt dasselbe Browserprofil, eine gültige Sitzung und die Werkzeugfreigabe voraus; vor einer Serversicherung ist ein Geräteverlust weiterhin eine Grenze. Die allgemeine Kalender-Gerätebereinigung entfernt diese Notizkopien nicht. Mehrere unabhängige offene Tabfassungen bleiben getrennt erhalten; beim erneuten Öffnen wird die neueste verfügbare Fassung aufgenommen.
+
+### Service-Auftragsaktionen
+
+Der lokale Simulator hält `service-action`-Nachweise mit kontogebundenem Anfragefingerabdruck und dem Ergebnis der bestätigten Aktion. Diese Nachweise schützen Wiederholungen nach Verbindungsabbruch und dürfen nicht durch persönliche Bereinigung entfernt werden. Status-/Ausgabenachweise in PostgreSQL enthalten Benutzer, Zeitpunkt und alte/neue Werte; keine zusätzlichen Kopien der Auftragsbeschreibung. Die vorhandene Gesamtsicherung umfasst beide Bestände. Keine automatische Alterslöschung oder erneute Ausführung aus einem Betriebsmonitor.
+
+### CaseDesk-Standardpositionen
+
+`platform.incident_defaults` ist eine gemeinsame administrative Konfiguration pro Datenquelle mit Version, Bearbeiter und Zeitpunkt. Standardpositionen enthalten Katalogkennung, geprüften Namen/Typ, Positionsnummer und Menge; keine Zugangsdaten oder Preise. Änderungen werden mit alten/neuen Werten im administrativen Protokoll dokumentiert. Vollsicherungen umfassen Tabelle und die Simulator-Schrittnachweise automatisch. Persönliche Bereinigung entfernt diese gemeinsame Konfiguration und den fachlichen Wiederholungsschutz nicht. Offene Einstellungen im Browser sind bis zur Serverbestätigung nur im geöffneten Formular geschützt; Navigations-/Neuladeschutz ersetzt keine Gerätesicherung.

@@ -1,0 +1,6 @@
+import {eventColorDetails,type CalendarEvent,type CalendarColor,type ColorLayouts} from './domain';
+const sources={type:'Termintyp',category:'Kategorie',status:'Auftragsstatus'};
+export function CalendarColorPreview({event,colors,layouts}:{event:CalendarEvent;colors:CalendarColor[];layouts?:ColorLayouts}){
+ const resolved=eventColorDetails(event,colors,layouts);
+ return <fieldset className="calendar-edit-group"><legend>Farbdarstellung</legend><div className="calendar-color-preview" style={{background:resolved.main.color}} aria-label="Vorschau der Kalenderfarben">{resolved.secondary&&<span className="calendar-color-preview-stripe" style={{background:resolved.secondary.color}}/>}</div><div className="calendar-color-preview-labels"><div><span className="calendar-color-swatch" style={{background:resolved.main.color}}/><span><strong>1. Farbe · Hauptfarbe</strong><small>{'neutral' in resolved.main?'Neutral · keine passende Farbregel':sources[resolved.main.source]}</small></span></div><div><span className="calendar-color-swatch" style={{background:resolved.secondary?.color??'transparent'}}/><span><strong>2. Farbe · Nebenfarbe</strong><small>{resolved.secondary?sources[resolved.secondary.source]:'Keine Nebenfarbe'}</small></span></div></div></fieldset>;
+}

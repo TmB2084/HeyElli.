@@ -1,0 +1,25 @@
+[
+ {
+  "uuid": "sim-dispatch-doc-1",
+  "order": "sim-order-1",
+  "fileName": "Einsatzhinweise Heizung.txt",
+  "text": "Fiktive Einsatzhinweise: Heizungsanlage am Beispielobjekt prüfen. Keine echten Kundendaten."
+ },
+ {
+  "uuid": "sim-dispatch-doc-2",
+  "order": "sim-order-2",
+  "fileName": "Anlagenhinweise Brandmeldeanlage.txt",
+  "text": "Fiktive Anlagenhinweise für die Service-Demonstration. Keine realen Betriebsanweisungen."
+ },
+ {
+  "uuid": "sim-chronicle-report-1",
+  "order": "sim-order-2",
+  "fileName": "Fiktiver Wartungsbericht BMA.txt",
+  "datum": "2026-10-15",
+  "dokumententyp": {
+   "uuid": "sim-document-type-report",
+   "bezeichnung": "Wartungsbericht"
+  },
+  "text": "Fiktiver Wartungsbericht für die Anlagenchronik. Ausschließlich erfundene Demonstrationsdaten; kein Nachweis einer realen Wartung."
+ }
+]

@@ -1,0 +1,9 @@
+'use client';
+import {AlertDialog} from '@/platform/shell';
+import {useEffect,useRef,useState} from 'react';
+import {mergeLabels,provenanceText,type ConflictProvenance,type MergeField,type CalendarEvent} from './domain';
+export function CalendarConflictDialog({current,desired,fields,provenance,confirmLabel="Auswahl speichern",onCancel,onResolve}:{current:CalendarEvent;desired:CalendarEvent;fields:MergeField[];provenance?:ConflictProvenance;confirmLabel?:string;onCancel:()=>void;onResolve:(choices:Partial<Record<MergeField,'mine'|'current'>>)=>void}){
+ const dialog=useRef<HTMLDialogElement>(null),[choices,setChoices]=useState<Partial<Record<MergeField,'mine'|'current'>>>({});
+ useEffect(()=>{dialog.current?.showModal();},[]);
+ return <AlertDialog dialogRef={dialog} title="Gleichzeitig geänderte Felder" description="Andere Änderungen werden automatisch zusammengeführt. Bitte entscheide nur für diese Felder." onCancel={event=>{event.preventDefault();onCancel();}} actions={<><button type="button" onClick={onCancel}>Später entscheiden</button><button type="button" data-primary="true" disabled={fields.some(field=>!choices[field])} onClick={()=>onResolve(choices)}>{confirmLabel}</button></>}>{fields.map(field=><label key={field}>{mergeLabels[field]}<p>Aktuell: {JSON.stringify(current[field]??'')}<br/><small>{provenanceText(provenance?.current[field])}</small></p><p>Dein Entwurf: {JSON.stringify(desired[field]??'')}<br/><small>{provenanceText(provenance?.mine[field])}</small></p><select aria-label={mergeLabels[field]} value={choices[field]??''} onChange={event=>setChoices(values=>({...values,[field]:event.target.value as 'mine'|'current'}))}><option value="" disabled>Bitte auswählen</option><option value="current">Aktuellen Wert behalten</option><option value="mine">Meinen Wert übernehmen</option></select></label>)}</AlertDialog>;
+}

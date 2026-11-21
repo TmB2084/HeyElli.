@@ -1,0 +1,1 @@
+export {IncidentDefaultsPanel} from './panel';

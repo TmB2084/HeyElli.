@@ -1,0 +1,3 @@
+[
+ {"uuid":"sim-return-2","vorgangsNummer":"SIM-RL-10002","bezeichnung":"Fiktiver Rücklauf Brandmeldeanlage","vorgangStatus":{"uuid":"fictional-return-received","bezeichnung":"Eingegangen"},"rootEbene":{"ebenen":[{"uuid":"sim-return-2-level","serviceauftragebeneUUID":"sim-order-2-incident","objektUUID":"sim-unit-4","ausgefuehrtenArbeiten":"Fiktive Funktionsprüfung durchgeführt. Melder gereinigt und Anlage wieder betriebsbereit übergeben.","ausfuehrDatum":"2026-11-04","status":{"uuid":"fictional-work-done","bezeichnung":"Ausgeführt"},"positionen":[{"uuid":"sim-return-2-position","nummer":"10","name":"Funktionsprüfung Brandmeldeanlage","positionsTyp":"LEISTUNG","menge":1.5,"masseinheit":{"uuid":"sim-return-hour","bezeichnung":"h"}}]}]}}
+]

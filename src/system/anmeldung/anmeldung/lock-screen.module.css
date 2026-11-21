@@ -1,0 +1,46 @@
+/* Anmeldebildschirm (Entwurf B1): immer dunkel wie der macOS-Sperrbildschirm. Schrift: var(--font-ui).
+   Der Hintergrund ist ohne Unschärfe vollständig deckend; Felder bleiben ohne Glaseffekt lesbar. */
+.lock {
+  --lock-fg: #f4f4f5; --lock-muted: #c6c7ce; --lock-field: #ffffff1f; --lock-field-line: #ffffff2e; --lock-field-hover: #ffffff29;
+  color-scheme: dark; box-sizing: border-box; width: 100%; max-width: none; margin: 0; min-height: 100svh; display: flex; flex-direction: column; align-items: center;
+  padding: 0 20px; color: var(--lock-fg); font-family: var(--font-ui); -webkit-font-smoothing: antialiased;
+  background: radial-gradient(120% 90% at 20% 10%, #3a2530 0%, transparent 55%), radial-gradient(110% 90% at 85% 90%, #1f2b3a 0%, transparent 60%), #17181c;
+}
+.clock { margin-top: clamp(32px, 9vh, 72px); text-align: center; }
+.date { font-size: 20px; font-weight: 500; color: var(--lock-muted); }
+.time { font-size: clamp(56px, 12vh, 96px); font-weight: 600; letter-spacing: -.03em; line-height: 1; margin-top: 4px; font-variant-numeric: tabular-nums; }
+.panel { margin-top: auto; margin-bottom: clamp(40px, 11vh, 96px); width: min(100%, 300px); display: flex; flex-direction: column; align-items: center; gap: 12px; }
+.symbol { font-family: var(--font-wordmark); font-size: 64px; font-weight: 800; letter-spacing: -.06em; line-height: 1.05; margin-bottom: 14px; text-shadow: 0 6px 30px #0007; white-space: nowrap; }
+.symbol span { color: #ff6574; }
+.symbol i { color: var(--primary); font-style: normal; }
+.form { width: 100%; margin: 0; display: flex; flex-direction: column; gap: 12px; }
+.form fieldset { margin: 0; padding: 0; border: 0; background: none; display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+.field { position: relative; display: flex; align-items: center; width: 100%; height: 36px; border-radius: var(--radius-window); background: var(--lock-field); border: 1px solid var(--lock-field-line); transition: background 140ms ease, border-color 140ms ease; }
+.field:hover { background: var(--lock-field-hover); }
+.field:focus-within { border-color: #ffffff66; }
+.field input { flex: 1; min-width: 0; height: 100%; margin: 0; padding: 0 14px; border: 0; border-radius: var(--radius-window); background: transparent; color: var(--lock-fg); font: inherit; font-size: 14px; }
+.field input::placeholder { color: #ffffffa6; }
+.field input:focus { outline: none; }
+.field:focus-within { outline: 3px solid #ff8591; outline-offset: 2px; }
+.submit { flex: none; width: 28px; height: 28px; min-height: 0; margin-right: 4px; padding: 0; border: 0; border-radius: 50%; background: var(--primary); color: #fff; display: grid; place-items: center; box-shadow: 0 2px 8px #d82b3c66; cursor: pointer; }
+.submit:hover { background: var(--primary-hover); }
+.submit:disabled { opacity: .55; cursor: wait; }
+.submit:focus-visible { outline: 3px solid #ff8591; outline-offset: 2px; }
+.hint { margin: 0; font-size: 12px; color: var(--lock-muted); text-align: center; }
+.secondary { margin-top: 6px; height: 32px; min-height: 0; padding: 0 14px; border-radius: var(--radius-panel); background: #ffffff14; border: 1px solid #ffffff26; color: #fff; display: inline-flex; align-items: center; gap: 8px; font: inherit; font-size: 13px; cursor: pointer; }
+.secondary:hover { background: #ffffff24; }
+.secondary:focus-visible { outline: 3px solid #ff8591; outline-offset: 2px; }
+.microsoft { display: grid; grid-template-columns: 7px 7px; gap: 1px; }
+.microsoft i { width: 7px; height: 7px; display: block; }
+.status { margin: 0; font-size: 13px; color: var(--lock-muted); text-align: center; }
+.notice { width: 100%; }
+/* Passwort ändern auf dem Anmeldebildschirm: gemeinsames Formular im Pillen-Stil. */
+.panel :global(.password-form) { width: 100%; }
+.panel :global(.password-form fieldset) { display: flex; flex-direction: column; gap: 10px; margin: 0; padding: 0; border: 0; background: none; }
+.panel :global(.password-form label) { display: flex; flex-direction: column; gap: 4px; margin: 0; font-size: 12px; color: var(--lock-muted); }
+.panel :global(.password-form input) { height: 36px; padding: 0 14px; border-radius: var(--radius-window); background: var(--lock-field); border: 1px solid var(--lock-field-line); color: var(--lock-fg); font: inherit; font-size: 14px; }
+.panel :global(.password-form small) { color: var(--lock-muted); text-align: center; }
+.panel :global(.password-form button) { height: 36px; border-radius: var(--radius-window); border: 0; background: var(--primary); color: #fff; font: inherit; font-weight: 600; }
+.panel :global(.password-form button:hover) { background: var(--primary-hover); }
+@media (max-width: 480px) { .symbol { font-size: 48px; } .date { font-size: 16px; } }
+@media (prefers-reduced-motion: reduce) { .field { transition: none; } }

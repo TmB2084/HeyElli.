@@ -1,0 +1,278 @@
+.workspace {
+  --planner-line: color-mix(in srgb, var(--foreground) 12%, transparent);
+  --planner-hover: color-mix(in srgb, var(--foreground) 5%, transparent);
+  --planner-head: color-mix(in srgb, var(--background) 55%, var(--surface));
+  max-width: 1800px;
+  padding: 28px 24px 32px;
+  font-family: var(--font-ui);
+  font-size: 13px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+.content { min-width: 0; }
+.content :global(.calendar-toolbar) { gap: 8px; padding: 12px; border: 1px solid var(--planner-line); border-radius: 12px 12px 0 0; background: var(--surface); }
+.workspace .content :global(.calendar-toolbar) button,
+.workspace .content :global(.calendar-duty-link),
+.content :global(.calendar-search-status) button { font: inherit; font-size: 12px; line-height: 1.4; font-weight: 500; min-height: 32px; padding: 7px 10px; border: 1px solid var(--planner-line); border-radius: var(--radius-small); background: var(--surface); color: var(--foreground); box-shadow: none; }
+.content :global(.calendar-duty-link) { text-decoration: none; }
+.content :global(.calendar-toolbar) button:not(:disabled):hover,
+.content :global(.calendar-duty-link):hover,
+.content :global(.calendar-search-status) button:not(:disabled):hover { background: var(--planner-hover); filter: none; }
+.content :global(.calendar-toolbar) button:focus-visible,
+.content :global(.calendar-duty-link):focus-visible,
+.content :global(.calendar-search-status) button:focus-visible,
+.content dialog button:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+.workspace .content :global(.calendar-toolbar) button:global(.calendar-new-event) { display: inline-flex; align-items: center; justify-content: center; gap: 6px; background: var(--primary); border-color: var(--primary); color: white; }
+.workspace .content :global(.calendar-toolbar) button:global(.calendar-new-event):not(:disabled):hover { background: var(--primary-hover); }
+.content :global(.calendar-views) { background: var(--planner-head); border: 1px solid var(--planner-line); border-radius: var(--radius-item); padding: 2px; gap: 2px; overflow: visible; }
+.workspace .content :global(.calendar-views) button { border: 1px solid transparent; border-radius: var(--radius-small); box-shadow: none; background: transparent; padding: 4px 10px; min-height: 28px; }
+.workspace .content :global(.calendar-views) button[aria-pressed="true"] { background: var(--surface); color: var(--foreground); border-color: var(--planner-line); box-shadow: none; font-weight: 650; }
+.content :global(.calendar-date-navigation) { background: var(--planner-head); border-color: var(--planner-line); border-radius: var(--radius-item); }
+.workspace .content :global(.calendar-date-navigation)>button { background: transparent; border: 0; box-shadow: none; border-radius: var(--radius-small); padding: 7px 9px; }
+.workspace .content :global(.calendar-date-navigation) > :global(.calendar-period-trigger) { border-inline: 1px solid var(--planner-line); border-radius: 0; padding-inline: 12px; }
+.workspace .content :global(.calendar-date-navigation) > :global(.calendar-period-today) { border-left: 1px solid var(--planner-line); border-radius: 0 7px 7px 0; padding-inline: 12px; margin-left: 4px; }
+.content :global(.calendar-period-caption) { gap: 6px; }
+.content :global(.calendar-period-caption) strong { font-size: 12px; }
+.content :global(.calendar-period-caption)>span { font-size: 11px; }
+.content > :global(.calendar-filters):not(:global(.calendar-search-filters)) { gap: 8px 20px; padding: 10px 14px; margin: 0 0 12px; background: color-mix(in srgb, var(--surface) 65%, var(--background)); border: 1px solid var(--planner-line); border-top: 0; border-radius: 0 0 12px 12px; }
+.content :global(.calendar-checkbox) { min-height: 24px; gap: 7px; font-size: 11px; font-weight: 450; line-height: 1.5; }
+.content :global(.calendar-checkbox) input { width: 14px; height: 14px; flex: 0 0 auto; }
+.content :global(.calendar-search-filters) { margin: 12px 0; gap: 8px 16px; align-items: center; }
+.content :global(.calendar-search-fields) { gap: 8px; }
+.content :global(.calendar-search-field) { min-height: 34px; padding: 0 10px; gap: 7px; background: var(--surface); border-color: color-mix(in srgb, var(--foreground) 22%, transparent); border-radius: var(--radius-item); }
+.content :global(.calendar-search-field) svg { width: 15px; height: 15px; color: var(--muted); }
+.workspace .content :global(.calendar-search-field) input[type="search"] { font: inherit; font-size: 12px; padding: 7px 0; min-width: 175px; }
+.content :global(.calendar-search-status) { gap: 12px; }
+.content :global(.calendar-summary)>span { font-size: 11px; }
+.content :global(.calendar-board) { border-color: var(--planner-line); border-radius: var(--radius-panel); background: var(--surface); box-shadow: var(--shadow-1); scrollbar-color: color-mix(in srgb, var(--foreground) 28%, transparent) var(--background); }
+.workspace .content :global(.calendar-corner),
+.workspace .content :global(.calendar-time-head) { background: var(--planner-head); border-color: var(--planner-line); }
+.content :global(.calendar-corner) { font-size: 12px; font-weight: 600; }
+.content :global(.calendar-corner) small { font-size: 10px; font-weight: 400; }
+.content :global(.calendar-day-head) { border-color: var(--planner-line); }
+.workspace .content :global(.calendar-day-head.weekend) { background: color-mix(in srgb, var(--foreground) 4%, var(--planner-head)); }
+.content :global(.calendar-hour-head) { font-size: 10px; }
+.content :global(.calendar-hour-head) span { border-color: var(--planner-line); }
+.workspace .content :global(.calendar-resource) { background: var(--surface); border-color: var(--planner-line); }
+.content :global(.calendar-resource)>strong { font-size: 12px; font-weight: 650; }
+.content :global(.calendar-resource)>small { font-size: 10px; }
+.content :global(.calendar-resource-times) { font-size: 11px; }
+.content :global(.calendar-track) { border-color: var(--planner-line); }
+.workspace .content :global(.calendar-day-background) { background-color: var(--surface); background-image: linear-gradient(to right, color-mix(in srgb, var(--foreground) 7%, transparent) 1px, transparent 1px); border-right-color: color-mix(in srgb, var(--foreground) 18%, transparent); }
+.workspace .content :global(.calendar-day-background.weekend) { background-color: color-mix(in srgb, var(--foreground) 3%, var(--surface)); }
+.workspace .content :global(.calendar-day-background.month) { background-image: none; }
+.content :global(.calendar-footnote) { font-size: 11px; line-height: 1.6; color: var(--muted); }
+.content :global(.calendar-period-popover),
+.content :global(.calendar-bulk-panel),
+.content :global(.calendar-context-menu),
+.content :global(.calendar-context-submenu) { border: 1px solid var(--planner-line); border-radius: var(--radius-panel); background: var(--surface); box-shadow: var(--shadow-3); }
+.workspace .content :global(.calendar-period-popover) { padding: 12px; }
+.workspace .content :global(.calendar-picker-grid) button { min-height: 28px; padding: 3px 0; border: 0; border-radius: var(--radius-small); box-shadow: none; font-size: 11px; }
+.workspace .content :global(.calendar-picker-grid) button:global(.selected) { background: var(--primary); color: white; }
+.workspace .content :global(.calendar-picker-grid) button:global(.in-period):not(:global(.selected)) { background: color-mix(in srgb, var(--primary) 10%, var(--surface)); }
+.content :global(.calendar-picker-direct) input { font: inherit; font-size: 13px; border-radius: var(--radius-small); }
+.content :global(.calendar-context-menu)>button { min-height: 30px; font-size: 12px; padding: 6px 9px; border-radius: var(--radius-small); box-shadow: none; }
+.content :global(.calendar-context-menu)>button:not(:disabled):hover { background: var(--planner-hover); filter: none; }
+.content :global(.calendar-context-menu)>button:focus-visible { background: var(--planner-hover); outline: 2px solid var(--focus); outline-offset: -2px; }
+.content :global(.calendar-context-title) { font-size: 11px; }
+.content :global(.calendar-context-separator) { background: var(--planner-line); }
+.content :global(.calendar-context-submenu) button { font-family: inherit; font-size: 12px; border-radius: var(--radius-small); }
+.content :global(.calendar-context-submenu) input { font-family: inherit; font-size: 13px; border-radius: var(--radius-small); }
+.content dialog { font-family: inherit; font-size: 13px; border-color: var(--planner-line); border-radius: var(--radius-panel); box-shadow: var(--shadow-1); }
+.content dialog::backdrop { background: #12172066; backdrop-filter: blur(3px); }
+.content dialog h2 { font-size: 16px; font-weight: 650; letter-spacing: -.025em; }
+.content dialog h3 { font-size: 13px; font-weight: 600; }
+.content dialog button { font-family: inherit; font-size: 12px; min-height: 32px; padding: 7px 10px; border: 1px solid var(--planner-line); border-radius: var(--radius-small); background: var(--surface); color: var(--foreground); }
+.content dialog button:not(:disabled):hover { background: var(--planner-hover); filter: none; }
+.content dialog button:disabled { opacity: .5; cursor: default; }
+.content dialog button[type="submit"], .content dialog [role="alertdialog"] :global(.discard-dialog-actions)>button:last-child { background: var(--primary); border-color: var(--primary); color: white; }
+.content dialog button[type="submit"]:not(:disabled):hover { background: var(--primary-hover); }
+.content dialog input, .content dialog textarea, .content dialog select { font-family: inherit; font-size: 13px; font-weight: 400; padding: 8px 10px; min-height: 34px; line-height: 1.5; border: 1px solid var(--planner-line); border-radius: var(--radius-small); color: var(--foreground); background: var(--surface); }
+.content dialog input[type="checkbox"], .content dialog input[type="radio"] { min-height: 14px; padding: 0; }
+.content dialog input:focus-visible, .content dialog textarea:focus-visible, .content dialog select:focus-visible { outline: 2px solid var(--focus); outline-offset: 1px; }
+.content dialog label { font-size: 12px; font-weight: 550; }
+.content dialog small { font-size: 11px; }
+.content dialog :global(.calendar-checkbox) { font-size: 12px; font-weight: 450; }
+.content :global(.calendar-edit-dialog) > :global(.dialog-heading) { padding-block: 16px; border-color: var(--planner-line); align-items: center; }
+.content :global(.dialog-heading) h2 { font-size: 15px; }
+.content :global(.dialog-heading) button { width: 28px; height: 28px; min-height: 28px; padding: 0; border: 0; border-radius: var(--radius-small); font-size: 21px; background: var(--planner-hover); color: var(--muted); }
+.content :global(.calendar-edit-dialog) form>label { margin-block: 12px; }
+.content :global(.calendar-edit-kind) { font-size: 11px; }
+.content :global(.calendar-edit-group) { border-color: var(--planner-line); border-radius: var(--radius-panel); margin-block: 16px; padding: 12px 14px; background: color-mix(in srgb, var(--background) 30%, var(--surface)); }
+.content :global(.calendar-edit-group) legend { font-size: 12px; }
+.content :global(.calendar-section) { border-color: var(--planner-line); border-radius: var(--radius-item); }
+.content :global(.calendar-section)>summary { font-size: 12px; font-weight: 550; }
+.content :global(.calendar-edit-dialog) :global(.discard-dialog-actions) { border-color: var(--planner-line); gap: 8px; }
+.content :global(.calendar-edit-dialog) :global(.discard-dialog-actions)>button:not([type="submit"]) { background: var(--surface); color: var(--foreground); border: 1px solid var(--planner-line); box-shadow: none; }
+.content :global(.calendar-edit-dialog) :global(.discard-dialog-actions)>button:not([type="submit"]):not(:disabled):hover { background: var(--planner-hover); filter: none; }
+.content :global(.calendar-edit-dialog) :global(.discard-dialog-actions)>button[type="submit"] { background: var(--primary); color: white; }
+.content :global(.calendar-selection-item) { border-color: var(--planner-line); border-radius: var(--radius-small); }
+.content :global(.calendar-selection-actions) button { background: var(--surface); color: var(--foreground); border: 1px solid var(--planner-line); }
+.content :global(.calendar-legend-dialog) :global(.dialog-heading) { align-items: center; border-bottom: 1px solid var(--planner-line); padding-bottom: 12px; }
+.content :global(.calendar-team-week-table) th, .content :global(.calendar-team-week-table) td { border-color: var(--planner-line); }
+.content :global(.calendar-team-week-table) { font-size: 12px; }
+@media(max-width: 700px) {
+  .workspace { padding: 24px 14px 28px; }
+  .content :global(.calendar-toolbar) { padding: 10px; gap: 8px; }
+  .content :global(.calendar-date-navigation) { width: 100%; }
+  .content :global(.calendar-period-caption) { gap: 4px; }
+  .workspace .content :global(.calendar-date-navigation)>button { padding-inline: 8px; }
+  .workspace .content :global(.calendar-period-caption)>span { font-size: 10px; }
+  .workspace .content :global(.calendar-views) button { min-height: 32px; }
+  .content > :global(.calendar-filters):not(:global(.calendar-search-filters)) { padding: 10px 12px; gap: 6px 14px; }
+  .content :global(.calendar-search-fields) { width: 100%; flex-wrap: wrap; }
+  .workspace .content :global(.calendar-search-field) input[type="search"] { min-width: 0; font-size: 16px; min-height: 40px; }
+  .content :global(.calendar-search-status) { flex-wrap: wrap; width: 100%; }
+  .content :global(.calendar-summary) { flex: 1 1 180px; }
+  .content :global(.calendar-summary)>span { font-size: 10px; }
+  .content :global(.calendar-board) { min-height: 360px; }
+  .content dialog input, .content dialog textarea, .content dialog select { font-size: 16px; min-height: 40px; }
+  .content dialog input[type="checkbox"], .content dialog input[type="radio"] { min-height: 14px; }
+  .content :global(.calendar-edit-dialog) :global(.calendar-time-fields) { grid-template-columns: 1fr; }
+  .content :global(.calendar-edit-dialog) :global(.discard-dialog-actions) { flex-wrap: wrap; }
+}
+
+/* ---------------------------------------------------------------------------
+   macOS-26-Umbau, Variante R1 (20.11.2026): volle Arbeitsfläche ohne Seitenleiste, eine symmetrische
+   Werkzeugleiste (Zeitraum · Ansicht · Suche/Werkzeuge/Neuer Termin), Planung bis zum unteren Rand, Statusleiste.
+   --------------------------------------------------------------------------- */
+.workspace { max-width: none; margin: 8px; padding: 0; border: 1px solid var(--line); border-radius: var(--radius-window); background: color-mix(in srgb,var(--surface) 70%,var(--background)); box-shadow: var(--shadow-window); overflow: hidden; }
+.content { display: flex; flex-direction: column; height: calc(100dvh - var(--platform-bar-height) - 18px); }
+.content :global(.calendar-toolbar.calendar-toolbar-r1) { display: grid; grid-template-columns: minmax(0,1fr) auto minmax(0,1fr); align-items: center; gap: 12px; padding: 10px 12px; border: 0; border-bottom: 1px solid var(--line); border-radius: 0; background: transparent; flex: 0 0 auto; }
+.content :global(.calendar-toolbar-start) { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.content :global(.calendar-toolbar-end) { display: flex; align-items: center; justify-content: flex-end; gap: 6px; min-width: 0; }
+/* Kapseln */
+.workspace .content :global(.calendar-toolbar-r1) button, .workspace .content :global(.calendar-toolbar-r1 .calendar-duty-link) { border-radius: var(--radius-control); min-height: var(--control-height); }
+.content :global(.calendar-toolbar-r1 .calendar-views), .content :global(.calendar-toolbar-r1 .calendar-date-navigation) { border-radius: var(--radius-control); }
+.workspace .content :global(.calendar-toolbar-r1 .calendar-views) button { border-radius: var(--radius-control); padding: 4px 14px; }
+.workspace .content :global(.calendar-toolbar-r1 .calendar-date-navigation)>button { border-radius: var(--radius-control); }
+.workspace .content :global(.calendar-toolbar-r1 .calendar-date-navigation) > :global(.calendar-period-today) { border-radius: var(--radius-control); }
+.workspace .content :global(.calendar-tool-button) { display: inline-grid; place-items: center; width: var(--control-height); padding: 0 !important; }
+/* Token-Suche */
+.content :global(.calendar-token-search) { position: relative; display: flex; align-items: center; gap: 6px; width: min(380px,32vw); min-width: 200px; height: var(--control-height); padding: 0 6px 0 12px; border: 1px solid var(--planner-line); border-radius: var(--radius-control); background: color-mix(in srgb,var(--foreground) 5%,transparent); color: var(--muted); }
+.content :global(.calendar-token-search):focus-within { border-color: color-mix(in srgb,var(--foreground) 35%,transparent); box-shadow: 0 0 0 3px color-mix(in srgb,var(--focus) 50%,transparent); }
+.workspace .content :global(.calendar-token-search) input { min-width: 0; margin: 0; padding: 0; border: 0; background: transparent; color: var(--foreground); font: inherit; font-size: 12px; outline: none; box-shadow: none; }
+.workspace .content :global(.calendar-token-input) { flex: 1; min-width: 50px !important; }
+.content :global(.calendar-token) { display: inline-flex; align-items: center; gap: 4px; height: 22px; padding: 0 3px 0 8px; border-radius: var(--radius-control); font-size: 11.5px; font-weight: 600; white-space: nowrap; max-width: 46%; }
+.content :global(.calendar-token) i { font-style: normal; font-weight: 400; opacity: .8; }
+.content :global(.calendar-token.is-resource) { background: #30d15829; color: #9be8b4; }
+.content :global(.calendar-token.is-term) { background: #5aa9ff2e; color: #b9dbff; }
+:global(:root[data-theme="light"]) .content :global(.calendar-token.is-resource) { color: #1c6b39; }
+:global(:root[data-theme="light"]) .content :global(.calendar-token.is-term) { color: #1d5394; }
+.workspace .content :global(.calendar-token) input { font-weight: 600; font-size: 11.5px; color: inherit; }
+.workspace .content :global(.calendar-token .calendar-search-clear) { width: 16px; height: 16px; min-height: 16px !important; padding: 0 !important; border: 0; border-radius: 50%; background: color-mix(in srgb,var(--foreground) 16%,transparent); color: inherit; font-size: 11px; line-height: 1; }
+.content :global(.calendar-search-suggestions) { position: absolute; z-index: 40; top: calc(100% + 6px); left: 0; right: 0; display: grid; gap: 2px; padding: 6px; border: 1px solid var(--planner-line); border-radius: var(--radius-panel); background: var(--surface); box-shadow: var(--shadow-popover); }
+.workspace .content :global(.calendar-search-suggestions) button { display: flex; align-items: center; justify-content: space-between; gap: 10px; width: 100%; min-height: 36px; padding: 0 10px; border: 0; border-radius: var(--radius-control); background: transparent; text-align: left; }
+.workspace .content :global(.calendar-search-suggestions) button[aria-selected="true"] { background: var(--selection); color: #fff; }
+.content :global(.calendar-search-suggestions) button small { color: var(--muted); font-size: 11px; }
+.content :global(.calendar-search-suggestions) button[aria-selected="true"] small { color: #fff; }
+.content :global(.calendar-search-hint) { padding: 6px 10px 2px; border-top: 1px solid var(--planner-line); color: var(--muted); font-size: 11px; }
+/* Menüs „Darstellung“ und „Mehr“ */
+.content :global(.calendar-menu-wrap) { position: relative; }
+.content :global(.calendar-menu) { position: absolute; z-index: 40; top: calc(100% + 6px); right: 0; display: grid; gap: 2px; min-width: 260px; padding: 6px; border: 1px solid var(--planner-line); border-radius: var(--radius-panel); background: var(--surface); box-shadow: var(--shadow-popover); }
+.workspace .content :global(.calendar-menu) button, .workspace .content :global(.calendar-menu .calendar-duty-link) { display: flex; align-items: center; width: 100%; min-height: var(--control-height); padding: 0 12px; border: 0; border-radius: var(--radius-control); background: transparent; text-align: left; font-weight: 450; }
+.content :global(.calendar-menu) hr { margin: 4px 6px; border: 0; border-top: 1px solid var(--planner-line); }
+.content :global(.calendar-display-menu) :global(.calendar-checkbox) { display: flex; align-items: center; justify-content: space-between; flex-direction: row-reverse; gap: 12px; min-height: var(--control-height); padding: 0 10px; font-size: 12px; }
+/* Filterhinweis */
+.content :global(.calendar-filter-hint) { display: flex; align-items: center; justify-content: center; gap: 10px; min-height: 34px; padding: 0 12px; border-bottom: 1px solid var(--line); background: color-mix(in srgb,var(--foreground) 3%,transparent); color: var(--muted); font-size: 12px; flex: 0 0 auto; }
+.content :global(.calendar-filter-hint) b { color: var(--foreground); }
+.workspace .content :global(.calendar-filter-hint) button { min-height: 24px; padding: 0 12px; border-radius: var(--radius-control); font-size: 11px; }
+/* Planung füllt die Höhe */
+.workspace .content :global(.calendar-board) { flex: 1 1 auto; max-height: none; min-height: 0; margin: 0; border: 0; border-radius: 0; box-shadow: none; }
+.content :global(.calendar-error), .content :global(.calendar-message), .content > :global(.incident-notice) { margin: 8px 12px; flex: 0 0 auto; }
+/* Abgeblendete Termine bei aktivem Terminfilter */
+.content :global(.calendar-bar.is-dimmed) { opacity: .28; box-shadow: none; }
+.content :global(.calendar-bar.is-dimmed:hover), .content :global(.calendar-bar.is-dimmed:focus-within) { opacity: .7; }
+/* Statusleiste */
+.content :global(.calendar-statusbar) { display: flex; align-items: center; justify-content: center; gap: 10px; min-height: 32px; padding: 0 12px; border-top: 1px solid var(--line); color: var(--muted); font-size: 11px; flex: 0 0 auto; flex-wrap: wrap; }
+.content :global(.calendar-status-dot) { width: 6px; height: 6px; border-radius: 50%; background: #30d158; }
+.content :global(.calendar-statusbar .calendar-summary)>span { font-size: 11px; }
+.workspace .content :global(.calendar-statusbar .calendar-refresh) { min-height: 22px; padding: 0 10px; border: 1px solid var(--planner-line); border-radius: var(--radius-control); background: transparent; color: var(--foreground); font-size: 11px; }
+@media (max-width: 1100px) {
+  .content :global(.calendar-toolbar.calendar-toolbar-r1) { grid-template-columns: 1fr auto; }
+  .content :global(.calendar-toolbar-end) { grid-column: 1 / -1; justify-content: flex-start; flex-wrap: wrap; }
+  .content :global(.calendar-token-search) { flex: 1 1 220px; width: auto; }
+}
+@media (max-width: 650px) {
+  .workspace { margin: 4px; }
+  .content { height: auto; min-height: calc(100dvh - var(--platform-bar-height) - 10px); }
+  .content :global(.calendar-toolbar.calendar-toolbar-r1) { grid-template-columns: 1fr; }
+  .workspace .content :global(.calendar-board) { min-height: 60dvh; }
+}
+.workspace .content :global(.calendar-toolbar-r1) button, .content :global(.calendar-toolbar-r1 .calendar-period-caption) { white-space: nowrap; }
+.content :global(.calendar-token-search) { width: min(320px,24vw); }
+.workspace .content :global(.calendar-token) input { flex: 0 0 auto; }
+.content :global(.calendar-token) { max-width: none; flex: 0 0 auto; }
+.content :global(.calendar-token-search) input::-webkit-search-cancel-button { display: none; }
+.content :global(.calendar-token-search) { width: min(300px,22vw); overflow: visible; }
+.workspace .content :global(.calendar-filter-hint) button { background: color-mix(in srgb,var(--foreground) 8%,transparent); border: 1px solid var(--planner-line); color: var(--foreground); font-weight: 500; }
+.content :global(.calendar-toolbar.calendar-toolbar-r1) { grid-template-columns: auto 1fr auto; }
+.content :global(.calendar-toolbar-r1 .calendar-views) { justify-self: center; }
+.workspace { width: auto; }
+.content :global(.calendar-token-search) > svg { flex: none; }
+@media (max-width: 650px) {
+  .workspace .content :global(.calendar-toolbar-r1) button, .content :global(.calendar-toolbar-r1 .calendar-period-caption) { white-space: normal; }
+  .content :global(.calendar-toolbar-start) { flex-wrap: wrap; }
+  .content :global(.calendar-toolbar-r1 .calendar-views) { justify-self: stretch; }
+  .content :global(.calendar-token-search) { width: auto; flex: 1 1 100%; }
+}
+/* Schmale Ansicht zuletzt, damit sie die Desktop-Regeln oben sicher überschreibt. */
+@media (max-width: 1100px) {
+  .content :global(.calendar-toolbar.calendar-toolbar-r1) { grid-template-columns: 1fr auto; }
+  .content :global(.calendar-toolbar-r1 .calendar-views) { justify-self: end; }
+}
+@media (max-width: 650px) {
+  .content :global(.calendar-toolbar.calendar-toolbar-r1) { grid-template-columns: 1fr; }
+  .content :global(.calendar-toolbar-start), .content :global(.calendar-toolbar-start) > * { width: 100%; }
+  .content :global(.calendar-toolbar-r1 .calendar-date-navigation) { border-radius: var(--radius-panel); }
+  .workspace .content :global(.calendar-toolbar-r1) button, .content :global(.calendar-toolbar-r1 .calendar-period-caption) { white-space: nowrap; }
+  .content :global(.calendar-toolbar-r1 .calendar-views) { justify-self: stretch; display: grid; grid-template-columns: repeat(3,1fr); }
+}
+/* Ressourcenzeile nach Mockup R1: Name, Gruppe · Nummer, Auslastungsbalken, Rest von Soll */
+.workspace .content :global(.calendar-resource) { display: flex; flex-direction: column; gap: 4px; padding: 12px 14px; }
+.content :global(.calendar-resource)>strong { font-size: 13px; }
+.content :global(.calendar-resource-group) { color: var(--muted); font-size: 11px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.content :global(.calendar-capacity-bar) { display: block; height: 6px; margin-top: 4px; border-radius: 3px; background: color-mix(in srgb,var(--foreground) 10%,transparent); overflow: hidden; }
+.content :global(.calendar-capacity-bar) i { display: block; height: 100%; border-radius: 3px; background: #30d158; }
+.content :global(.calendar-capacity-bar[data-over]) i { background: var(--primary); }
+.content :global(.calendar-resource-times) { font-size: 11px; color: var(--muted); }
+/* Heutiger Tag als rote Kapsel, Ansicht exakt mittig */
+.content :global(.calendar-day-head.is-today) strong { display: inline-block; padding: 0 8px; border-radius: var(--radius-control); background: var(--primary); color: #fff; }
+.content :global(.calendar-toolbar.calendar-toolbar-r1) { grid-template-columns: minmax(0,1fr) auto minmax(0,1fr); }
+.content :global(.calendar-token-search) { width: clamp(180px,18vw,300px); }
+@media (max-width: 1400px) and (min-width: 1101px) {
+  .content :global(.calendar-toolbar.calendar-toolbar-r1) { grid-template-columns: auto minmax(0,1fr) auto; }
+  .content :global(.calendar-toolbar-r1 .calendar-views) { justify-self: center; }
+}
+
+/* ===== Werkzeugleiste R1: maßgebliche Breitenbereiche (zuletzt, überschreibt alle Regeln oben) ===== */
+@media (min-width: 1401px) {
+  .content :global(.calendar-toolbar.calendar-toolbar-r1) { grid-template-columns: minmax(0,1fr) auto minmax(0,1fr); }
+  .content :global(.calendar-toolbar-r1 .calendar-views) { justify-self: center; }
+}
+@media (min-width: 1101px) and (max-width: 1400px) {
+  .content :global(.calendar-toolbar.calendar-toolbar-r1) { grid-template-columns: auto minmax(0,1fr) auto; }
+  .content :global(.calendar-toolbar-r1 .calendar-views) { justify-self: center; }
+}
+@media (min-width: 651px) and (max-width: 1100px) {
+  .content :global(.calendar-toolbar.calendar-toolbar-r1) { grid-template-columns: minmax(0,1fr) auto; }
+  .content :global(.calendar-toolbar-r1 .calendar-views) { justify-self: end; }
+  .content :global(.calendar-toolbar-end) { grid-column: 1 / -1; justify-content: flex-start; flex-wrap: wrap; }
+  .content :global(.calendar-token-search) { flex: 1 1 220px; width: auto; }
+}
+@media (max-width: 650px) {
+  .content :global(.calendar-toolbar.calendar-toolbar-r1) { grid-template-columns: minmax(0,1fr); }
+  .content :global(.calendar-toolbar-start), .content :global(.calendar-toolbar-start) > * { width: 100%; }
+  .content :global(.calendar-toolbar-r1 .calendar-date-navigation) { border-radius: var(--radius-panel); }
+  .content :global(.calendar-toolbar-r1 .calendar-views) { justify-self: stretch; display: grid; grid-template-columns: repeat(3,1fr); }
+  .content :global(.calendar-toolbar-end) { grid-column: auto; justify-content: flex-start; flex-wrap: wrap; }
+  .content :global(.calendar-token-search) { width: auto; flex: 1 1 100%; }
+}
+/* Innenabstände passend zur Rundung; Menüzeilen als abgerundete Rechtecke */
+.content :global(.calendar-token-search) { padding-left: 14px; }
+.workspace .content :global(.calendar-menu) button, .workspace .content :global(.calendar-menu .calendar-duty-link), .workspace .content :global(.calendar-search-suggestions) button { border-radius: var(--radius-item); padding: 0 12px; }
+/* Materialien Stufe B: Fensterrahmen aus Glas, Planung deckend */
+.workspace { background: var(--glass-thin); backdrop-filter: var(--glass-blur); -webkit-backdrop-filter: var(--glass-blur); border-color: var(--glass-line); box-shadow: var(--glass-edge), var(--shadow-3); }
+.workspace .content :global(.calendar-board) { background: var(--surface); box-shadow: var(--shadow-1); }
+.content :global(.calendar-statusbar) { border-top-color: var(--glass-line); }
+.content :global(.calendar-toolbar.calendar-toolbar-r1), .content :global(.calendar-filter-hint) { border-bottom-color: var(--glass-line); }

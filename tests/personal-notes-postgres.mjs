@@ -1,0 +1,12 @@
+import assert from 'node:assert/strict';
+import {personalNotes} from '../src/apps/notizen/repository.ts';
+import {appRoleRepository} from '../src/platform/app-access/repository.ts';
+import {personalExport} from '../src/platform/data-lifecycle/export.ts';
+export async function checkPersonalNotes(pool){
+ const user='notes:'+crypto.randomUUID(),other='notes:'+crypto.randomUUID();await pool.query("INSERT INTO platform.users(id,display_name,role,enabled) VALUES($1,'Fiktive Notiz A','reader',true),($2,'Fiktive Notiz B','reader',true)",[user,other]);const store=personalNotes(pool);
+ try{assert.deepEqual(await store.read(user),{body:'',version:0,updatedAt:null});const saved=(await store.write(user,'Persönliche Notiz',0)).note;assert.equal(saved.version,1);assert.equal((await store.write(user,'Persönliche Notiz',0)).note.version,1);assert.equal((await store.read(other)).body,'');const races=await Promise.all([store.write(user,'Erste parallele Änderung',1),store.write(user,'Zweite parallele Änderung',1)]);assert.equal(races.filter(result=>result.conflict).length,1);assert.equal((await store.read(user)).version,2);await assert.rejects(store.write(user,'x'.repeat(20001),2),error=>error.status===400);const final=await store.read(user);assert.ok(final.body.includes('parallele'));const exported=[];for await(const row of personalExport(pool,{actor:user,subject:user,admin:false},{business:false}))if(row.type==='personal-notes')exported.push(row.value);assert.equal(exported[0].body,final.body);
+  const admin=(await pool.query("SELECT id FROM platform.users WHERE enabled AND role='admin' LIMIT 1")).rows[0].id;const metadata=[];for await(const row of personalExport(pool,{actor:admin,subject:user,admin:true},{business:false}))if(row.type==='personal-notes')metadata.push(row.value);assert.equal(metadata[0].body,undefined);assert.equal(metadata[0].characters,final.body.length);
+  const roles=appRoleRepository(pool),role=await roles.mutate(admin,{action:'save',name:'Fiktive unabhängige Notizen '+crypto.randomUUID(),apps:[],writeApps:[],tools:['notes']});assert.equal((await roles.read()).roles.find(row=>row.id===role.id).tools[0],'notes');await pool.query('DELETE FROM platform.app_roles WHERE id=$1',[role.id]);
+  const client=await pool.connect();try{assert.equal((await client.query('SELECT body FROM platform.personal_notes WHERE user_id=$1',[user])).rows[0].body,final.body);}finally{client.release();}
+ }finally{await pool.query('DELETE FROM platform.users WHERE id=ANY($1::text[])',[[user,other]]);}
+}

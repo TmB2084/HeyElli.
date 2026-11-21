@@ -1,0 +1,10 @@
+[
+  {
+    "terminUUID": "cccccccc-cccc-4ccc-8ccc-000000000012",
+    "genehmigungsstatus": "GENEHMIGT"
+  },
+  {
+    "terminUUID": "cccccccc-cccc-4ccc-8ccc-000000000014",
+    "genehmigungsstatus": "BEANTRAGT"
+  }
+]

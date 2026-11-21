@@ -1,0 +1,31 @@
+.group { margin: 0 0 22px; min-width: 0; }
+.group>h3 { margin: 0 0 8px 14px; font-size: 12px; font-weight: 600; color: var(--muted); }
+.surface { overflow: hidden; border: 1px solid var(--settings-line,var(--border)); border-radius: var(--radius-panel); background: var(--surface); box-shadow: none; }
+.row { display: grid; grid-template-columns: minmax(0,1fr) minmax(160px,40%); gap: 18px; align-items: center; min-height: 54px; padding: 14px 16px; }
+.row+.row,.destination+.destination { border-top: 1px solid var(--settings-line,var(--border)); }
+.label { display: grid; gap: 4px; min-width: 0; }
+.label>label,.label>span { margin: 0; font-size: 13px; font-weight: 500; }
+.label small,.note { color: var(--muted); font-size: 11px; line-height: 1.5; }
+.control { display: flex; align-items: center; justify-content: flex-end; gap: 8px; min-width: 0; flex-wrap: wrap; }
+.control select,.control input:not([type=checkbox]) { width: 100%; }
+.wide { grid-template-columns: 1fr; gap: 12px; }
+.wide .control { display: block; }
+.note { margin: 8px 14px 0; }
+.surface .destination { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 70px; padding: 13px 16px; border: 0; border-radius: 0; background: transparent; color: var(--foreground); text-align: left; box-shadow: none; font: inherit; }
+.surface .destination+.destination { border-top: 1px solid var(--settings-line,var(--border)); }
+.surface .destination:hover { background: var(--settings-hover); filter: none; }
+.destination:focus-visible { outline: 2px solid var(--focus); outline-offset: -3px; }
+.avatar { display: grid; place-items: center; width: 36px; height: 36px; flex: 0 0 auto; border-radius: 50%; background: color-mix(in srgb,var(--foreground) 12%,var(--surface)); color: var(--muted); font-size: 12px; font-weight: 600; }
+.identity { display: grid; gap: 3px; min-width: 0; flex: 1; }
+.identity strong { font-size: 13px; font-weight: 550; }
+.identity small { color: var(--muted); font-size: 11px; overflow-wrap: anywhere; }
+.accessory { color: var(--muted); font-size: 11px; }
+.destination svg { width: 13px; height: 13px; fill: none; stroke: var(--muted); stroke-width: 1.5; flex: 0 0 auto; }
+.identityCard { display: flex; align-items: center; gap: 14px; padding: 20px; margin-bottom: 22px; border: 1px solid var(--settings-line,var(--border)); border-radius: var(--radius-panel); background: var(--surface); }
+.identityCard .avatar { width: 54px; height: 54px; font-size: 18px; }
+.identity h3 { margin: 0; font-size: 19px; font-weight: 650; letter-spacing: -.025em; }
+@media(max-width:720px) { .row { grid-template-columns: minmax(0,1fr) minmax(100px,46%); padding: 13px; gap: 12px; } .wide { grid-template-columns: 1fr; } .label>label,.label>span { font-size: 12px; } .control select { font-size: 12px; } .identityCard { padding: 16px; } .accessory { max-width: 85px; text-align: right; } }
+@media(max-width:480px) {
+ .row:has(select),.row:has(input:not([type='checkbox'])) { grid-template-columns: 1fr; gap: 8px; }
+ .control select,.control input:not([type='checkbox']) { min-width: 0; max-width: 100%; }
+}

@@ -1,0 +1,17 @@
+{
+  "_hinweis": "Fiktive CRM-Aufgaben für den PDS-Simulator (Schemas PdsAPIAufgabeTypRESTModel / PdsAPIAufgabeDetailsRESTModel). Keine Produktivdaten.",
+  "types": [
+    {"uuid": "sim-task-type-1", "dbid": 1, "bezeichnung": "Rückruf", "standard": true},
+    {"uuid": "sim-task-type-2", "dbid": 2, "bezeichnung": "Angebot erstellen", "standard": false},
+    {"uuid": "sim-task-type-3", "dbid": 3, "bezeichnung": "Klärung", "standard": false},
+    {"uuid": "sim-task-type-4", "dbid": 4, "bezeichnung": "Dokument senden", "standard": false}
+  ],
+  "tasks": [
+    {"uuid": "sim-task-1", "dbid": 7001, "betreff": "Rückruf wegen Angebot Speichertausch", "typUUID": "sim-task-type-1", "faelligam": "2026-11-20T15:00:00Z", "gueltigab": "2026-11-19T08:00:00Z", "personUUID": "SIM-K-100", "objektUUID": "sim-object-2", "status": "IN_BEARBEITUNG", "beschreibung": "Hausverwaltung möchte ein Angebot für den Austausch des Warmwasserspeichers. Maße und Zugang klären.", "zuweisungen": [{"uuid": "sim-task-1-a1", "dbid": 1, "benutzerUUID": "sim-user-2", "zugewiesen": "2026-11-19T08:12:00Z"}, {"uuid": "sim-task-1-a2", "dbid": 2, "benutzerUUID": "sim-user-3", "zugewiesen": "2026-11-19T10:40:00Z"}]},
+    {"uuid": "sim-task-2", "dbid": 7002, "betreff": "Melder 12 – Ursache klären", "typUUID": "sim-task-type-3", "faelligam": "2026-11-16T16:00:00Z", "personUUID": "SIM-K-200", "objektUUID": "sim-unit-4", "status": "OFFEN", "beschreibung": "Melder 12 löst sporadisch aus. Ursache mit Hersteller klären.", "zuweisungen": [{"uuid": "sim-task-2-a1", "dbid": 3, "benutzerUUID": "sim-user-2", "zugewiesen": "2026-11-12T09:00:00Z"}]},
+    {"uuid": "sim-task-3", "dbid": 7003, "betreff": "Prüfbericht BMA an Kunde senden", "typUUID": "sim-task-type-4", "faelligam": "2026-11-27T12:00:00Z", "personUUID": "SIM-K-200", "objektUUID": "sim-object-3", "status": "OFFEN", "beschreibung": "", "zuweisungen": [{"uuid": "sim-task-3-a1", "dbid": 4, "benutzerUUID": "sim-user-3", "zugewiesen": "2026-11-18T07:30:00Z"}]},
+    {"uuid": "sim-task-4", "dbid": 7004, "betreff": "Angebot Lüftungswartung vorbereiten", "typUUID": "sim-task-type-2", "faelligam": "2026-11-25T12:00:00Z", "personUUID": "SIM-K-100", "objektUUID": "sim-unit-2", "status": "WARTEN", "beschreibung": "Wartet auf Rückmeldung zu Filtergrößen.", "zuweisungen": [{"uuid": "sim-task-4-a1", "dbid": 5, "benutzerUUID": "sim-user-1", "zugewiesen": "2026-11-17T11:00:00Z"}]},
+    {"uuid": "sim-task-5", "dbid": 7005, "betreff": "Zugang Werkschutz für Wartung anmelden", "typUUID": "sim-task-type-3", "faelligam": "2026-11-23T08:00:00Z", "personUUID": "SIM-K-200", "objektUUID": "sim-object-3", "status": "OFFEN", "beschreibung": "", "zuweisungen": []},
+    {"uuid": "sim-task-6", "dbid": 7006, "betreff": "Dichtungssatz nachbestellt – Kunde informieren", "typUUID": "sim-task-type-1", "faelligam": "2026-11-10T12:00:00Z", "personUUID": "SIM-K-100", "objektUUID": "sim-unit-3", "status": "ERLEDIGT", "beschreibung": "", "zuweisungen": [{"uuid": "sim-task-6-a1", "dbid": 6, "benutzerUUID": "sim-user-1", "zugewiesen": "2026-11-05T12:00:00Z"}]}
+  ]
+}

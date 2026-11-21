@@ -1,0 +1,19 @@
+/* macOS-Popup-Knopf: Kapsel 32 px, Wert + ⌃⌄, Menü auf der gemeinsamen Glas-Menüoberfläche. */
+.root { position: relative; display: inline-flex; min-width: 0; }
+.root .trigger { display: inline-flex; align-items: center; gap: 7px; height: 32px; min-height: 32px; max-width: 100%; margin: 0; padding: 0 10px 0 14px; border: 1px solid var(--line); border-radius: var(--radius-control); background: color-mix(in srgb, var(--foreground) 6%, transparent); color: var(--foreground); font: inherit; font-size: 13px; font-weight: 500; box-shadow: none; cursor: default; white-space: nowrap; }
+.trigger:hover:not(:disabled) { background: color-mix(in srgb, var(--foreground) 10%, transparent); }
+.trigger[aria-expanded='true'] { background: color-mix(in srgb, var(--foreground) 12%, transparent); }
+.trigger[data-active] { background: var(--foreground); color: var(--background); border-color: transparent; }
+.trigger:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+.trigger:disabled { opacity: .5; }
+.value { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+.icon { display: inline-grid; color: var(--muted); }
+.icon svg { width: 15px; height: 15px; }
+.chevrons { flex: none; opacity: .65; }
+.menu { position: absolute; top: calc(100% + 6px); left: 0; z-index: 40; min-width: max(100%, 180px); max-width: min(320px, calc(100vw - 32px)); max-height: min(360px, 60vh); overflow: auto; }
+.menu[data-align='right'] { left: auto; right: 0; }
+.entry { display: contents; }
+.root .menu button[role='option'] { display: flex; align-items: center; gap: 6px; width: 100%; min-height: var(--command-menu-row-height, 28px); margin: 0; padding: 4px 10px 4px 6px; border: 0; border-radius: var(--radius-small); background: transparent; color: var(--foreground); font: inherit; font-size: 13px; text-align: left; box-shadow: none; white-space: nowrap; }
+.menu button[role='option']:hover, .menu button[role='option']:focus-visible { background: var(--command-menu-hover, var(--primary)); color: #fff; outline: none; }
+.check { width: 16px; flex: none; text-align: center; font-size: 12px; }
+@media (prefers-reduced-transparency: reduce) { .menu { backdrop-filter: none; } }
