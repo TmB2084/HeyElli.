@@ -16,4 +16,4 @@ export const appReleases:Record<string,AppRelease>={
 export const defaultAppRelease:AppRelease={year:26,publication:1,publishedOn:'2026-11-11',creator:'Tim Braun'};
 
 // Platform release tracks technical infrastructure and shared menu bar independently.
-export const platformRelease:AppRelease={year:26,publication:50,publishedOn:'2026-11-22',creator:'Tim Braun'};
+export const platformRelease:AppRelease={year:26,publication:51,publishedOn:'2026-11-22',creator:'Tim Braun'};

@@ -58,3 +58,14 @@ Keine Produktionsfreigabe: externes unabhängiges Monitoring mit eigenem Dienstk
 ### Gesicherte Historien nachliefern
 
 Der lokale Dienst überträgt nach jedem Überwachungstakt bis zu 100 bereits bestätigte Historienaufträge aus der lokalen SQLite-Ablage nach PostgreSQL. Die Fachänderung wird niemals wiederholt. Benutzer, ursprünglicher Änderungszeitpunkt sowie alte und neue Werte stammen aus dem unveränderlichen Auftrag. Ein PostgreSQL-Beleg verhindert Duplikate auch bei Abbruch nach erfolgreicher Übertragung und vor lokaler Bestätigung. Ausfälle erhalten den ausstehenden Auftrag; der nächste Takt versucht die Übertragung erneut. Nach Neustart setzt der Dienst dies fort. Die Fachendpunkte versuchen ebenfalls eine sofortige Nachlieferung. Das Nachholen setzt die neuen Migrationen voraus; zuvor schon verlorene Historien ohne Auftrag lassen sich nicht verlässlich rekonstruieren.
+
+
+## Abgebrochene Anfragen und Antwortdaten
+
+Ein Clientabbruch ist kein Ausfall einer Fachquelle. Ist die Anfrage bereits abgebrochen, erzeugt die Antwortüberwachung weder einen Fehlerlogeintrag noch Ausfallmetriken. Echte Antworten ab Status 500 werden weiterhin mit fester Bereichsklasse und serverseitiger Diagnosekennung erfasst.
+
+Die Überwachung liest oder ersetzt den Antwort-Stream nicht. Die Diagnosekennung wird nur gesetzt, wenn die vorhandenen Header veränderbar sind; bei unveränderlichen Fetch-/Redirect-Headern bleibt die ursprüngliche Antwort vollständig erhalten. Status, Nutzdaten und Cookies dürfen durch die Beobachtung nicht verloren gehen.
+
+Die Belegung des Anfragebudgets endet genau einmal bei Abschluss, Lesefehler oder Abbruch. Bei einem frühen Abbruch wird der ursprüngliche Stream verworfen und nicht erneut als Antwort verwendet. Während einer laufenden Übertragung wird auch ein wartender Lesevorgang beendet. Eine hängende Quellstornierung hält die Aufnahmebelegung nicht fest; Fachaktionen werden dabei nicht erneut ausgeführt.
+
+Modultests prüfen diese Fälle ohne Datenbank. Die registrierte isolierte HTTP-Prüfung ergänzt echte Verbindungsabbrüche vor den Headern und während paralleler Übertragungen, anonyme Zugriffsverweigerung und weiterhin protokollierte echte Serverfehler. Zusätzliche Browser-Serverdiagnosen zählen ausschließlich feste Stream-Fehlerklassen. Bei solchen Fehlern schlägt die automatische Browserabnahme auch dann fehl, wenn die Oberfläche wieder bedienbar ist. Rohprotokolle werden dabei nicht als Artefakt gespeichert.

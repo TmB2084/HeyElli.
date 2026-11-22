@@ -1,3 +1,4 @@
+import {installResponseAbortFixture,checkResponseAborts} from './response-abort-http.mjs';
 import {spawnTestProcess,stopTestProcess} from '../scripts/test-process.mjs';
 import {checkResourceLoad,installMemoryProbe} from './resource-load.mjs';
 import {encryptDraft} from '../src/apps/planboard/entwuerfe/crypto.ts';
@@ -24,11 +25,12 @@ export async function checkPlatformHttp(pool) {
   const port=listener.address().port;await new Promise(resolve=>listener.close(resolve));
   const settingsDirectory=join(directory,'.local','test-settings');await mkdir(settingsDirectory,{recursive:true});
   const base=`http://127.0.0.1:${port}`,password=randomBytes(32).toString('hex');
-  const memory=await installMemoryProbe(directory);
-  let server;
+  const memory=await installMemoryProbe(directory);await installResponseAbortFixture(directory);
+  let server;const serverDiagnostics=[];
   async function stop(){await stopTestProcess(server);}
   async function start(){
-    server=spawnTestProcess(process.execPath,[resolve('node_modules/next/dist/bin/next'),'dev','--webpack','--hostname','127.0.0.1','--port',String(port)],{env:{...process.env,APP_ENV:'test',HEYELLI_TEST_SETTINGS_DIR:settingsDirectory,NEXT_TELEMETRY_DISABLED:'1',NODE_OPTIONS:memory.option},stdio:'ignore',cwd:directory});
+    server=spawnTestProcess(process.execPath,[resolve('node_modules/next/dist/bin/next'),'dev','--webpack','--hostname','127.0.0.1','--port',String(port)],{env:{...process.env,APP_ENV:'test',HEYELLI_TEST_SETTINGS_DIR:settingsDirectory,NEXT_TELEMETRY_DISABLED:'1',NODE_OPTIONS:memory.option},stdio:['ignore','pipe','pipe'],cwd:directory});
+    for(const stream of [server.stdout,server.stderr])stream.on('data',chunk=>{const text=chunk.toString();for(const match of text.matchAll(/(?:TypeError|ReferenceError|SyntaxError|Error):/g))serverDiagnostics.push({class:match[0].slice(0,-1),mentions:['AbortSignal','Response','Request','releaseResponse','withRouteAccess','abort','json'].filter(name=>text.slice(match.index,match.index+300).includes(name)),category:/not a function/.test(text)?'not-callable':/disturbed or locked/.test(text)?'response-body-state':/Cannot read properties/.test(text)?'missing-property':/AbortSignal/.test(text)?'signal':'other'});for(const match of text.matchAll(/(src\/[a-zA-Z0-9_./-]+\.[a-z]+):(\d+):(\d+)/g))serverDiagnostics.push({source:match[1],line:Number(match[2])});if(serverDiagnostics.length>64)serverDiagnostics.splice(0,serverDiagnostics.length-64);});
     for(let attempt=0;attempt<120;attempt++) {
       if(server.exitCode!==null)throw new Error('Isolated HTTP test server exited.');
       try{const response=await fetch(base+'/api/simulator-session',{signal:AbortSignal.timeout(3000)});if(response.ok)return;}catch{}
@@ -91,6 +93,7 @@ export async function checkPlatformHttp(pool) {
       const protectedTarget=await fetch(target,{redirect:'manual'});assert.equal(protectedTarget.status,303);assert.equal(new URL(protectedTarget.headers.get('location'),base).pathname,'/anmeldung');
     }
     let {cookie,body}=await login();
+    try{await checkResponseAborts({pool,base,cookie});}catch(error){console.log('RESPONSE_ABORT_SERVER_DIAGNOSTICS '+JSON.stringify(serverDiagnostics.slice(-20)));throw error;}
     await checkResourceLoad({pool,base,cookieName:cookie.split('=')[0],memoryFile:memory.memoryFile,adminCookie:cookie,sqlitePath:join(directory,'.local/pds-simulator/development.sqlite')});
 
     const loginPage=await request('/anmeldung'),loginPolicy=loginPage.headers.get('content-security-policy');assert.match(loginPolicy,/'nonce-([A-Za-z0-9+/=]+)' 'strict-dynamic'/);assert.doesNotMatch(loginPolicy.split(';')[1],/unsafe-inline/);assert.equal(loginPage.headers.get('content-security-policy-report-only'),null);const pageMarkup=await loginPage.text(),nonce=loginPolicy.match(/'nonce-([^']+)'/)[1];assert.ok(pageMarkup.includes('nonce="'+nonce+'"'));const nextPolicy=(await request('/anmeldung')).headers.get('content-security-policy');assert.notEqual(nextPolicy,loginPolicy);
