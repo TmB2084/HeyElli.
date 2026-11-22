@@ -11,3 +11,11 @@ test('browser failure reports keep numeric comparisons without response content 
  const serialized=JSON.stringify(reporter.cases);
  for(const forbidden of ['private.example.invalid','fictitious-secret','fictitious-cookie','Fiktiver Fachtext'])assert.ok(!serialized.includes(forbidden));
 });
+
+test('browser failure locations include only numeric source coordinates',()=>{
+ const reporter=new SafeReporter(),info={title:'Fiktive Prüfung',parent:{project:()=>({name:'webkit'})}};
+ reporter.onStepEnd(info,{}, {category:'pw:api',location:{line:789,column:123,file:'fictitious-private-path'},error:{message:'Timeout fictitious-secret'}});
+ assert.equal(reporter.steps[0].line,789);assert.equal(reporter.steps[0].column,123);assert.equal(reporter.steps[0].failureClass,'timeout');
+ reporter.onStepEnd(info,{}, {category:'pw:api',location:{line:789,column:'fictitious-secret'},error:{message:'Timeout'}});
+ assert.equal(reporter.steps[1].column,undefined);assert.ok(!JSON.stringify(reporter.steps).includes('fictitious-'));
+});

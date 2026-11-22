@@ -43,3 +43,9 @@ Der Lauf verwendet ausschließlich den exportierten Commit, eigene Datenbanken, 
 Details: [Betriebsüberwachung](monitoring.md#abgebrochene-anfragen-und-antwortdaten). Lokale Zwischenläufe liegen unter `.local/verification/response-abort-*`; diese Protokolle und Browserbilder werden nicht eingecheckt.
 
 Dies ist eine lokale Abnahme auf `codex/aborted-response-fix`, keine ausgeführte GitHub- oder GitLab-Pipeline. Der nachträgliche Bericht wird getrennt vom geprüften Codecommit eingecheckt. Es wurden weder Push noch Merge, Tag, Release oder Deployment ausgeführt.
+
+## Nachprüfung auf GitHub
+
+Der erste [GitHub-Lauf 44970502934](https://github.com/TmB2084/HeyElli./actions/runs/44970502934) prüfte den PR-Mergecommit `30dc90ef9cd33109c184857b4bb9d563fd4041d7`. Installation, Modul-/Datenbanktests, Lint, Build und Typprüfung bestanden. Von 115 Browserfällen bestanden 114; E46 (WebKit, mobile Benutzerkonto-Suche) meldete einen Timeout in der zusammengefassten mobilen Navigationszeile. Beide Server-Streamfehlerzähler waren 0, die Prüfbestände wurden vollständig entfernt. Der Lauf war insgesamt fehlgeschlagen; Gegenprüfungen und Abhängigkeitsprüfung wurden danach nicht ausgeführt.
+
+E46 prüft die mobile Navigation jetzt in fünf benannten Schritten. Der Test wartet ausdrücklich auf die Detailansicht, den mobilen Zurückmodus, die sichtbare Bereichsliste und den abgeschlossenen Fokuswechsel. Es gibt keine feste Wartezeit, keine automatische Wiederholung und keine gelockerte fachliche Erwartung. Der genaue ursprüngliche Teilschritt ist aus dem ersten, gröberen Nachweis nicht rekonstruierbar; eine zusätzliche numerische Spaltenangabe verbessert künftige Fehlernachweise ohne Fachinhalte oder Zugangsdaten. Der überarbeitete gezielte WebKit-Lauf und der ergänzte Reporter-Modultest bestehen lokal. Die vollständige erneute Abnahme wird getrennt erfasst.
