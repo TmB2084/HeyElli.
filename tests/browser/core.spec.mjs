@@ -560,8 +560,13 @@ test('E32 Gesperrte Entwurfsablage blockiert keine Aktualisierung und verbindet 
  // recovery must validate its owner with the server before restoring writes.
  await page.evaluate(()=>window.dispatchEvent(new Event('heyelli:session-invalid')));await page.evaluate(()=>window.dispatchEvent(new Event('focus')));
  await expect.poll(()=>reads).toBeGreaterThan(0);await expect.poll(()=>keys).toBeGreaterThan(0);await expect(title).toHaveValue(nextTitle);
- await expect(page.getByRole('button',{name:'Änderung speichern',exact:true})).toBeEnabled();await page.getByRole('button',{name:'Änderung speichern',exact:true}).click();await expect(page.getByRole('dialog',{name:'Termin bearbeiten',exact:true})).toBeHidden();
- const saved=await (await context.request.get(fixture.base+'/api/ressourcenkalender?from='+fixture.day+'&to='+fixture.day)).json();expect(saved.events.filter(event=>event.id===original.id&&event.title===nextTitle)).toHaveLength(1);expect(saved.permissions.serviceRead).toBe(true);
+ let releaseWrite,writeStarted=false;const pendingWrite=new Promise(resolve=>{releaseWrite=resolve;});
+ await page.route('**/api/ressourcenkalender',async route=>{if(route.request().method()==='POST'){writeStarted=true;await pendingWrite;}await route.continue();});
+ try{
+  await expect(page.getByRole('button',{name:'Änderung speichern',exact:true})).toBeEnabled();await page.getByRole('button',{name:'Änderung speichern',exact:true}).click();await expect(page.getByRole('dialog',{name:'Termin bearbeiten',exact:true})).toBeHidden();
+  await expect.poll(()=>writeStarted).toBe(true);releaseWrite();let saved;
+  await expect.poll(async()=>{saved=await (await context.request.get(fixture.base+'/api/ressourcenkalender?from='+fixture.day+'&to='+fixture.day)).json();return saved.events?.filter(event=>event.id===original.id&&event.title===nextTitle).length??0;},{timeout:25000}).toBe(1);expect(saved.permissions.serviceRead).toBe(true);
+ }finally{releaseWrite();}
 });
 
 test('E33 Offener Werkzeugauftrag markiert Eingaben und blockiert weder Kalender noch Appnavigation',async({page,context,browserName})=>{
