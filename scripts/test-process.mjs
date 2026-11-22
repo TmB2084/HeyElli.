@@ -36,3 +36,14 @@ export function stopTestProcess(child,{graceMs=10000}={}){
   await closed;
  })();
 }
+
+// Keep the parent event loop free to drain a concurrently running fixture server.
+export async function runTestProcess(command,args,options={},timeoutMs=600000){
+ const child=spawnTestProcess(command,args,options);let timer,timedOut=false;
+ try{
+  return await new Promise((resolve,reject)=>{
+   child.once('error',reject);child.once('close',(status)=>timedOut?reject(Error('Prüfprozess-Zeitbudget überschritten.')):resolve({status}));
+   timer=setTimeout(()=>{timedOut=true;void stopTestProcess(child).then(()=>reject(Error('Prüfprozess-Zeitbudget überschritten.')),reject);},timeoutMs);
+  });
+ }finally{clearTimeout(timer);await stopTestProcess(child);}
+}
