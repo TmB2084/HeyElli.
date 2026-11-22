@@ -450,7 +450,8 @@ test('E28 Kunden Objekt und Einheitenakten zeigen Fokusfelder und behalten Zuord
  test.setTimeout(120000);await authenticate(context);const file=page.getByRole('complementary',{name:'Akte',exact:true});
  const customer=await (await context.request.get(fixture.base+'/api/service?kind=customer&id=SIM-K-100&part=base')).json();
  await enter(page,'/servicehub?ansicht=files&akte=customer&id=SIM-K-100');await expect(file.getByRole('heading',{name:customer.name,exact:true})).toBeVisible();const customerFocus=file.locator('dl[aria-label="Kundeninformationen"]');await expect(customerFocus.getByText('SIM-K-100',{exact:true})).toBeVisible();await expect(customerFocus.getByText(customer.address,{exact:true})).toBeVisible();const contacts=file.getByRole('region',{name:'Ansprechpartner',exact:true});await expect(contacts).toBeVisible();const phone=customer.contacts?.flatMap(contact=>contact.phones)[0];if(phone)await expect(contacts.getByRole('link',{name:phone,exact:true}).first()).toHaveAttribute('href','tel:'+phone.replace(/[^+\d]/g,''));
- await file.locator('details').filter({has:page.locator(':scope > summary',{hasText:'Objekte & technische Einheiten'})}).locator(':scope > summary').focus();await page.keyboard.press('Enter');await expect(file.getByRole('button',{name:/Beispielhaus Nord.*Objekt/})).toBeVisible();
+ const objectGroup=file.locator('details').filter({has:page.locator(':scope > summary',{hasText:'Objekte & technische Einheiten'})}),objectSummary=objectGroup.locator(':scope > summary');
+ await objectSummary.press('Enter');await expect(objectGroup).toHaveAttribute('open','');await expect(file.getByRole('button',{name:/Beispielhaus Nord.*Objekt/})).toBeVisible();
  const cases=[['customer','SIM-K-100','Kundeninformationen','SIM-K-100'],['object','sim-object-1','Objektinformationen','SIM-OBJ-100'],['object','sim-unit-4','Anlageninformationen','SIM-TE-301']];
  for(const [kind,id,label,number]of cases){await enter(page,'/servicehub?'+new URLSearchParams({ansicht:'files',akte:kind,id}));const focus=file.locator('dl[aria-label="'+label+'"]');await expect(focus.getByText(number,{exact:true})).toBeVisible();if(id==='sim-object-1'){await expect(focus.getByText('Musterweg 12, 00000 Demostadt',{exact:true})).toBeVisible();await expect(focus.getByText('SIM-KST-100',{exact:true})).toBeVisible();}
   if(id==='sim-unit-4'){await expect(focus.getByText('Testallee 3, 00000 Musterstadt',{exact:true})).toBeVisible();await expect(focus.getByText('Standort des übergeordneten Objekts · Zentrale EG',{exact:true})).toBeVisible();await expect(focus.getByText('MusterSignal',{exact:true})).toBeVisible();await expect(focus.getByText('MS-300',{exact:true})).toBeVisible();await expect(file.getByRole('region',{name:'Weitere Angaben',exact:true}).getByText('Elektro',{exact:true})).toBeVisible();const costs=file.getByRole('region',{name:'Kostenträger der technischen Einheit',exact:true});await expect(costs.getByText('SIM-KTR-100',{exact:true})).toBeVisible();const contracts=file.getByRole('region',{name:'Wartungsverträge',exact:true});await expect(contracts.getByText('Kostenträger Wartung',{exact:true}).first()).toBeVisible();await expect(contracts.getByText('Kostenträger Rechnung',{exact:true}).first()).toBeVisible();}
@@ -786,7 +787,28 @@ test('E46 Einstellungssuche indexiert Funktionen und bleibt mit Tastatur, mobil 
  await search.fill('Statusfarbe');await search.press('Enter');await expect(page).toHaveURL(/resources%3Acolors%2Fpalette%3A2/);await expect(page.getByRole('heading',{name:'Statusfarbe',exact:true})).toBeVisible();await search.fill('Mitarbeiterzuordnung');await search.press('Enter');await expect(page).toHaveURL(/users%3Aaccounts/);
  await search.fill('Direct-Line-Secret');await search.press('Enter');await expect(page.getByRole('textbox',{name:'Bot-ID',exact:true})).toBeVisible();await page.getByRole('textbox',{name:'Bot-ID',exact:true}).fill('fiktive-ungespeicherte-eingabe');await search.fill('Sitzungsdauer');await search.press('Enter');const guard=page.getByRole('alertdialog',{name:'Eingaben verwerfen?',exact:true});await expect(guard).toBeVisible();await guard.getByRole('button',{name:'Weiter bearbeiten',exact:true}).click();await expect(page.getByRole('textbox',{name:'Bot-ID',exact:true})).toHaveValue('fiktive-ungespeicherte-eingabe');await search.press('Enter');await guard.getByRole('button',{name:'Eingaben verwerfen',exact:true}).click();await expect(page.getByRole('heading',{name:'Sitzungsdauer',exact:true})).toBeVisible();
  await search.fill('Client Secret');await expect(page.getByRole('listbox',{name:'Gefundene Einstellungsfunktionen',exact:true})).toBeVisible();for(const theme of ['light','dark']){await page.evaluate(theme=>{document.documentElement.dataset.theme=theme;},theme);const axe=await new AxeBuilder({page}).include('[data-settings-workspace]').analyze();await writeFile(join(artifacts,'settings-search-'+browserName+'-'+theme+'.axe.json'),JSON.stringify(axe.violations.map(item=>({id:item.id,impact:item.impact,count:item.nodes.length}))));expect(axe.violations).toEqual([]);await page.screenshot({path:join(artifacts,'settings-search-'+browserName+'-'+theme+'.png'),mask:[page.locator('input[type=password]')]});}await search.press('Escape');await expect(search).toHaveValue('');await expect(search).toBeFocused();await search.fill('FantasiemodulOhneTreffer');await expect(page.getByRole('status').filter({hasText:'Keine passenden Einstellungen gefunden.'})).toBeVisible();await page.getByRole('button',{name:'Suche löschen',exact:true}).click();await expect(search).toBeFocused();
- await page.setViewportSize({width:390,height:844});await page.goto(fixture.base+'/benutzerkonto?bereich=account&seite=account%3Aprofile');await page.getByRole('button',{name:'In Benutzerkonto zurück',exact:true}).click();const personal=page.getByRole('combobox',{name:'Einstellungen suchen',exact:true});await personal.fill('dunkel');await personal.press('Enter');await expect(page.getByRole('heading',{name:'Anzeige',exact:true})).toBeVisible();await page.setViewportSize({width:1280,height:900});await expect(personal).toHaveValue('dunkel');await expect(page.getByRole('heading',{name:'Anzeige',exact:true})).toBeVisible();await personal.fill('lokale Kopien');await personal.press('Enter');await expect(page.getByRole('heading',{name:'Gerät & Entwürfe',exact:true})).toBeVisible();await personal.fill('Tenant-ID');await expect(page.getByRole('option')).toHaveCount(0);await expect(page.getByRole('status').filter({hasText:'Keine passenden Einstellungen gefunden.'})).toBeVisible();await personal.fill('Notizen');await personal.press('Enter');await expect(page.getByRole('heading',{name:'Werkzeuge',exact:true})).toBeVisible();expect(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth)).toBe(false);await page.screenshot({path:join(artifacts,'account-search-'+browserName+'.png')});expect((await sql("SELECT enabled FROM platform.copilot_settings WHERE id='central'")).rows[0].enabled).toBe(false);
+ const personal=page.getByRole('combobox',{name:'Einstellungen suchen',exact:true}),workspace=page.locator('[data-settings-workspace]:visible');
+ await test.step('Mobiler Direktlink und Zurueck zur Bereichsliste',async()=>{
+  await page.setViewportSize({width:390,height:844});await enter(page,'/benutzerkonto?bereich=account&seite=account%3Aprofile');
+  await expect(workspace).toHaveCount(1);await expect(workspace).toHaveAttribute('data-detail','true');
+  const back=page.getByRole('button',{name:'In Benutzerkonto zurück',exact:true});await expect(back).toHaveAttribute('title','Zur Bereichsliste');await back.click();
+  await expect(workspace).toHaveAttribute('data-detail','false');await expect(personal).toBeVisible();
+ });
+ await test.step('Mobile Suche oeffnet Anzeige und Desktop behaelt Auswahl',async()=>{
+  await personal.fill('dunkel');await expect(page.getByRole('option',{name:/^Erscheinungsbild/})).toHaveCount(1);await personal.press('Enter');
+  await expect(page.getByRole('heading',{name:'Anzeige',exact:true})).toBeFocused();await page.setViewportSize({width:1280,height:900});
+  await expect(personal).toHaveValue('dunkel');await expect(page.getByRole('heading',{name:'Anzeige',exact:true})).toBeVisible();
+ });
+ await test.step('Persoenliche Suche oeffnet Geraet und Entwuerfe',async()=>{
+  await personal.fill('lokale Kopien');await personal.press('Enter');await expect(page.getByRole('heading',{name:'Gerät & Entwürfe',exact:true})).toBeFocused();
+ });
+ await test.step('Persoenliche Suche enthaelt keine administrativen Zugangsdaten',async()=>{
+  await personal.fill('Tenant-ID');await expect(page.getByRole('option')).toHaveCount(0);await expect(page.getByRole('status').filter({hasText:'Keine passenden Einstellungen gefunden.'})).toBeVisible();
+ });
+ await test.step('Werkzeugsuche bleibt schmal und aendert keine Integrationsfreigabe',async()=>{
+  await personal.fill('Notizen');await personal.press('Enter');await expect(page.getByRole('heading',{name:'Werkzeuge',exact:true})).toBeFocused();
+  expect(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth)).toBe(false);await page.screenshot({path:join(artifacts,'account-search-'+browserName+'.png')});expect((await sql("SELECT enabled FROM platform.copilot_settings WHERE id='central'")).rows[0].enabled).toBe(false);
+ });
 });
 
 test('E47 Schnelles Ersetzen der Service-Suche bleibt exakt und folgt Vor-Zurück sowie Direktlinks',async({page,context})=>{
@@ -859,11 +881,24 @@ test('E50 MailDesk-Postfachquelle in den Einstellungen: Microsoft 365 erst nach 
 });
 
 test('E51 SharePoint-Ablagestruktur zeigt die Ordnervorgabe und pflegt Ablagetypen mit einem Speichern',async({page,context})=>{
- await authenticate(context);await enter(page,'/einstellungen?bereich=sharepoint&seite=sharepoint%3Astorage');
+ await authenticate(context);
+ // Hold the first Strict Mode load past the second load and a real user edit.
+ await page.addInitScript(()=>{
+  const fetch=window.fetch.bind(window);let release;const pending=new Promise(resolve=>{release=resolve;});
+  const probe=window.__heyelliStorageProbe={requests:0,settled:false,release:()=>release()};
+  window.fetch=(input,init)=>{const url=new URL(typeof input==='string'?input:input instanceof URL?input.href:input.url,location.href),method=init?.method??(input instanceof Request?input.method:'GET');
+   if(url.pathname!=='/api/verwaltung/sharepoint/ablage'||method!=='GET'||++probe.requests!==1)return fetch(input,init);
+   return(async()=>{try{const response=await fetch(input,init),body=await response.text();await pending;return new Response(body,{status:response.status,headers:response.headers});}finally{probe.settled=true;}})();
+  };
+ });
+ await enter(page,'/einstellungen?bereich=sharepoint&seite=sharepoint%3Astorage');
  await expect(page.getByText('Objekte/Duisburg/hauptstraße_21/Brandmelde/Brandmeldeanlage_4711/Mails',{exact:true})).toBeVisible();
  await expect(page.getByText('Kunden/musterwerk_west_K-200/Mails',{exact:true})).toBeVisible();
  const save=page.getByRole('button',{name:'Speichern',exact:true}),first=page.getByLabel('Bezeichnung 1',{exact:true});await expect(first).toHaveValue('Mails');await expect(save).toBeDisabled();
- await first.fill('E-Mails');await expect(save).toBeEnabled();await expect(page.getByText('Objekte/Duisburg/hauptstraße_21/Brandmelde/Brandmeldeanlage_4711/E-Mails',{exact:true})).toBeVisible();
+ await expect.poll(()=>page.evaluate(()=>window.__heyelliStorageProbe.requests)).toBeGreaterThanOrEqual(2);
+ await first.fill('E-Mails');await page.evaluate(()=>window.__heyelliStorageProbe.release());await page.waitForFunction(()=>window.__heyelliStorageProbe.settled);
+ await page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));await expect(first).toHaveValue('E-Mails');
+ await expect(save).toBeEnabled();await expect(page.getByText('Objekte/Duisburg/hauptstraße_21/Brandmelde/Brandmeldeanlage_4711/E-Mails',{exact:true})).toBeVisible();
  await save.click();await expect(page.getByRole('status').filter({hasText:'Ablagetypen gespeichert.'})).toBeVisible();
  await page.reload();await expect(page.getByLabel('Bezeichnung 1',{exact:true})).toHaveValue('E-Mails');
  await page.getByLabel('Bezeichnung 1',{exact:true}).fill('Mails');await page.getByRole('button',{name:'Speichern',exact:true}).click();await expect(page.getByRole('status').filter({hasText:'Ablagetypen gespeichert.'})).toBeVisible();

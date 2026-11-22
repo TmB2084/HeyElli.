@@ -11,9 +11,9 @@ export const appReleases:Record<string,AppRelease>={
  '/missioncontrol':{year:26,publication:1,publishedOn:'2026-11-21',creator:'Tim Braun'},
  '/dutyboard':{year:26,publication:4,publishedOn:'2026-11-21',creator:'Tim Braun'},
  '/benutzerkonto':{year:26,publication:8,publishedOn:'2026-11-21',creator:'Tim Braun'},
- '/einstellungen':{year:26,publication:41,publishedOn:'2026-11-21',creator:'Tim Braun'},
+ '/einstellungen':{year:26,publication:42,publishedOn:'2026-11-22',creator:'Tim Braun'},
 };
 export const defaultAppRelease:AppRelease={year:26,publication:1,publishedOn:'2026-11-11',creator:'Tim Braun'};
 
 // Platform release tracks technical infrastructure and shared menu bar independently.
-export const platformRelease:AppRelease={year:26,publication:50,publishedOn:'2026-11-22',creator:'Tim Braun'};
+export const platformRelease:AppRelease={year:26,publication:51,publishedOn:'2026-11-22',creator:'Tim Braun'};

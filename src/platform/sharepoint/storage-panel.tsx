@@ -10,7 +10,7 @@ const example={kind:'unit' as const,city:'Duisburg',street:'Hauptstraße 21',tra
 export function SharePointStoragePanel({enabled}:{enabled:boolean}){
  const [saved,setSaved]=useState<StorageType[]|null>(null),[rows,setRows]=useState<Row[]>([]),[error,setError]=useState(''),[message,setMessage]=useState(''),[busy,setBusy]=useState(false),[plan,setPlan]=useState<Plan|null>(null),[confirming,setConfirming]=useState(false);
  const apply=useCallback((types:StorageType[])=>{setSaved(types);setRows(types.map(type=>({key:type.key,label:type.label,active:type.active})));},[]);
- useEffect(()=>{void(async()=>{try{const response=await fetch('/api/verwaltung/sharepoint/ablage',{cache:'no-store'}),value=await response.json();if(!response.ok)throw Error(value.error);apply(value.types);}catch(problem){setError(problem instanceof Error?problem.message:'Ablagestruktur nicht erreichbar.');}})();},[apply]);
+ useEffect(()=>{const controller=new AbortController();void(async()=>{try{const response=await fetch('/api/verwaltung/sharepoint/ablage',{cache:'no-store',signal:controller.signal}),value=await response.json();if(!response.ok)throw Error(value.error);if(!controller.signal.aborted)apply(value.types);}catch(problem){if(!controller.signal.aborted)setError(problem instanceof Error?problem.message:'Ablagestruktur nicht erreichbar.');}})();return()=>controller.abort();},[apply]);
  const dirty=!!saved&&JSON.stringify(rows)!==JSON.stringify(saved.map(type=>({key:type.key,label:type.label,active:type.active})));
  const discard=useCallback(()=>{if(saved)apply(saved);},[saved,apply]);
  useDraftNavigationGuard(dirty,busy,discard);

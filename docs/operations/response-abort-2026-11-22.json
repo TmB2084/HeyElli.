@@ -1,0 +1,130 @@
+{
+  "format": 1,
+  "commit": "21cc31a4664c2d3224ddb042d9bac1ae2803ae72",
+  "sourceDigest": "c1114d7044c96aeb7565b2cc81f92b44f777a49d0ec956323e386a6794cf99f5",
+  "node": "v24.11.1",
+  "startedAt": "2026-11-22T01:00:22.782Z",
+  "finishedAt": "2026-11-22T01:09:55.784Z",
+  "status": "passed",
+  "steps": [
+    {
+      "name": "install",
+      "status": "passed",
+      "seconds": 18
+    },
+    {
+      "name": "unit",
+      "status": "passed",
+      "seconds": 12
+    },
+    {
+      "name": "platform",
+      "status": "passed",
+      "seconds": 130
+    },
+    {
+      "name": "chat",
+      "status": "passed",
+      "seconds": 3
+    },
+    {
+      "name": "lint",
+      "status": "passed",
+      "seconds": 13
+    },
+    {
+      "name": "build",
+      "status": "passed",
+      "seconds": 8
+    },
+    {
+      "name": "types",
+      "status": "passed",
+      "seconds": 4
+    },
+    {
+      "name": "browser",
+      "status": "passed",
+      "seconds": 345
+    },
+    {
+      "name": "browser-mutations",
+      "status": "passed",
+      "seconds": 39
+    },
+    {
+      "name": "dependencies",
+      "status": "passed",
+      "seconds": 1
+    }
+  ],
+  "testCounts": {
+    "unit": 542,
+    "platform": 70,
+    "chat": 1
+  },
+  "browserSummary": {
+    "chromium": {
+      "passed": 58,
+      "failed": 0
+    },
+    "webkit": {
+      "passed": 57,
+      "failed": 0
+    }
+  },
+  "serverDiagnostics": {
+    "status": "passed",
+    "counts": {
+      "responseBodyState": 0,
+      "streamControllerState": 0
+    }
+  },
+  "browserMutations": {
+    "status": "passed",
+    "results": [
+      {
+        "mutation": "navigation",
+        "case": "E04",
+        "detected": true
+      },
+      {
+        "mutation": "rights",
+        "case": "E02",
+        "detected": true
+      }
+    ]
+  },
+  "cleanup": {
+    ".": {
+      "status": "passed",
+      "ownServerStopped": true,
+      "ownDatabaseAndVolumeRemoved": true,
+      "ownSourceRemoved": true
+    },
+    "mutation-navigation": {
+      "status": "passed",
+      "ownServerStopped": true,
+      "ownDatabaseAndVolumeRemoved": true,
+      "ownSourceRemoved": true
+    },
+    "mutation-rights": {
+      "status": "passed",
+      "ownServerStopped": true,
+      "ownDatabaseAndVolumeRemoved": true,
+      "ownSourceRemoved": true
+    }
+  },
+  "responseAbortHttp": {
+    "status": "passed",
+    "earlyCancellation": true,
+    "disconnectBeforeHeaders": true,
+    "parallelStreamCancellation": true,
+    "leasesReleased": true,
+    "abortsDoNotRaiseOutageMetrics": true,
+    "realFailuresStillRecorded": true,
+    "anonymousDenied": true,
+    "existingDataUsed": false
+  },
+  "existingConfigurationUnchanged": true
+}

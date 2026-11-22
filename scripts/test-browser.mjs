@@ -1,5 +1,6 @@
+import {browserServerDiagnostics} from './browser-server-diagnostics.mjs';
 import {mergeBrowserReports} from './browser-results.mjs';
-import {spawnTestProcess,stopTestProcess} from './test-process.mjs';
+import {spawnTestProcess,stopTestProcess,runTestProcess} from './test-process.mjs';
 import {installReturnBrowserFixture} from '../tests/return-browser-fixture.mjs';
 import {installSharePointFixture} from '../tests/sharepoint-fixture.mjs';
 import {verificationEnvironment} from './verification-plan.mjs';
@@ -20,9 +21,10 @@ const manual=process.argv.includes('--manual'),metadata=join(root,'.local/verifi
 const grep=process.argv.find(value=>value.startsWith('--grep='))?.slice(7);
 const engine=process.env.HEYELLI_BROWSER_ENGINE;if(engine&&!['chromium','webkit'].includes(engine))throw Error('Unbekannter Prüfbrowser.');const engines=engine?[engine]:['chromium','webkit'];
 const mutation=process.argv.find(value=>value.startsWith('--mutation='))?.split('=')[1];if(mutation&&!['navigation','rights'].includes(mutation))throw Error('Unbekannte Prüfstörung.');
-let pool,server,started=false,cleaned=false;
+const browserAbort=new AbortController();
+let pool,server,started=false,cleaned=false;const serverDiagnostics=browserServerDiagnostics();
 function compose(args,capture=false){const result=spawnSync('docker',['compose','--env-file','/dev/null','-f',join(root,'compose.test.yaml'),'-p',project,...args],{env,encoding:'utf8',stdio:capture?'pipe':'inherit'});if(result.status!==0)throw Error('Isolierte Browser-Datenbank nicht verfügbar.');return result.stdout;}
-async function cleanup(){if(cleaned)return;cleaned=true;await stopTestProcess(server);await pool?.end();let removed=!started;try{if(started){compose(['down','-v','--remove-orphans']);removed=true;}}finally{await rm(directory,{recursive:true,force:true});if(manual)await rm(metadata,{force:true});await writeFile(join(artifacts,'cleanup.json'),JSON.stringify({status:removed?'passed':'failed',ownServerStopped:true,ownDatabaseAndVolumeRemoved:removed,ownSourceRemoved:true})+'\n');}}
+async function cleanup(){if(cleaned)return;cleaned=true;browserAbort.abort();await stopTestProcess(server);await pool?.end();let removed=!started;try{if(started){compose(['down','-v','--remove-orphans']);removed=true;}}finally{await rm(directory,{recursive:true,force:true});if(manual)await rm(metadata,{force:true});await writeFile(join(artifacts,'cleanup.json'),JSON.stringify({status:removed?'passed':'failed',ownServerStopped:true,ownDatabaseAndVolumeRemoved:removed,ownSourceRemoved:true})+'\n');}}
 for(const signal of ['SIGINT','SIGTERM'])process.on(signal,()=>void cleanup().then(()=>process.exit(1)));
 try{
  await mkdir(source);await mkdir(env.HEYELLI_TEST_SETTINGS_DIR);await mkdir(artifacts,{recursive:true});for(const name of await readdir(artifacts))if(/^(results\.json|cleanup\.json|(?:chromium|webkit)-(?:[EAK][0-9]+\.png|[a-z-]+\.axe\.json))$/.test(name))await rm(join(artifacts,name),{force:true});
@@ -38,7 +40,8 @@ try{
  const listener=createServer();listener.listen(0,'127.0.0.1');await once(listener,'listening');const webPort=listener.address().port;await new Promise(r=>listener.close(r));const base=`http://127.0.0.1:${webPort}`;
  const fixture=join(directory,'fixture.json');await writeFile(fixture,JSON.stringify({base,username:'service',password,database:url.href,admin,mixed,day,simulatorDatabase:join(source,'.local/pds-simulator/development.sqlite')}),{mode:0o600});
  // No debug logs/traces with credentials. Only sanitized reporter artifacts survive.
- server=spawnTestProcess(process.execPath,[resolve('node_modules/next/dist/bin/next'),'dev','--hostname','127.0.0.1','--port',String(webPort)],{cwd:source,env,stdio:'ignore'});
+ server=spawnTestProcess(process.execPath,[resolve('node_modules/next/dist/bin/next'),'dev','--hostname','127.0.0.1','--port',String(webPort)],{cwd:source,env,stdio:['ignore','pipe','pipe']});
+ server.stdout.on('data',chunk=>serverDiagnostics.record('stdout',chunk));server.stderr.on('data',chunk=>serverDiagnostics.record('stderr',chunk));
  let ready=false;for(let n=0;n<160;n++){if(server.exitCode!==null)throw Error('Browser-Prüfserver beendet.');try{if((await fetch(base+'/api/simulator-session',{signal:AbortSignal.timeout(1000)})).ok){ready=true;break;}}catch{}await new Promise(r=>setTimeout(r,200));}if(!ready)throw Error('Browser-Prüfserver nicht bereit.');
  if(manual){await mkdir(join(root,'.local/verification'),{recursive:true});await writeFile(metadata,JSON.stringify({base,fixture,project}),{mode:0o600});console.log(JSON.stringify({ready:true,base,metadata}));const lines=createInterface({input:process.stdin});for await(const line of lines)if(line.trim()==='stop')break;lines.close();}else{
  const browserEnv={...env,HEYELLI_BROWSER_FIXTURE_FILE:fixture,HEYELLI_BROWSER_ARTIFACTS:artifacts,HEYELLI_BROWSER_TEMP_DIR:join(directory,'playwright-results')};
@@ -46,11 +49,12 @@ try{
  const installed=spawnSync(process.execPath,['node_modules/playwright/cli.js','install',...(process.platform==='linux'&&process.env.HEYELLI_BROWSER_SYSTEM_DEPS!=='installed'?['--with-deps']:[]),...selected],{env:browserEnv,stdio:'inherit',timeout:300000});if(installed.status!==0)throw Error('Prüfbrowser konnten nicht installiert werden.');
  for(const engine of selected){
   await rm(join(artifacts,'results.json'),{force:true});
-  const result=spawnSync(process.execPath,['node_modules/playwright/cli.js','test','--config=playwright.config.mjs','--project='+engine,...(mutation?['--grep',mutation==='navigation'?'E04 ':'E02 ']:grep?['--grep',grep]:[])],{env:browserEnv,stdio:'inherit',timeout:600000});
+  const result=await runTestProcess(process.execPath,['node_modules/playwright/cli.js','test','--config=playwright.config.mjs','--project='+engine,...(mutation?['--grep',mutation==='navigation'?'E04 ':'E02 ']:grep?['--grep',grep]:[])],{env:browserEnv,stdio:'inherit',signal:browserAbort.signal});
   let report;try{report=JSON.parse(await readFile(join(artifacts,'results.json'),'utf8'));}catch{report={status:'failed',cases:[],steps:[]};}
   if(result.status!==0)report.status='failed';parts.push({engine,report});
  }
- const report=mergeBrowserReports(selected,parts);await writeFile(join(artifacts,'results.json'),JSON.stringify(report,null,2)+'\n');if(report.status!=='passed')throw Error('Automatische Browserprüfung fehlgeschlagen.');
+ await stopTestProcess(server);server=undefined;
+ const report=mergeBrowserReports(selected,parts);report.serverDiagnostics=serverDiagnostics.snapshot();if(report.serverDiagnostics.status!=='passed')report.status='failed';console.log('BROWSER_SERVER_REPORT '+JSON.stringify(report.serverDiagnostics));await writeFile(join(artifacts,'results.json'),JSON.stringify(report,null,2)+'\n');if(report.status!=='passed')throw Error('Automatische Browserprüfung fehlgeschlagen.');
  console.log('Browserprüfung abgeschlossen; ausschließlich bereinigte Artefakte: '+artifacts);
  }
 }catch(error){console.error(error.message);process.exitCode=1;}finally{await cleanup();}
