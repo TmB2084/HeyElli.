@@ -1,0 +1,45 @@
+# Abgebrochene Antworten: Korrektur und Prüfnachweis
+
+Stand: 22. November 2026. Der vollständige isolierte Lauf für Codecommit `21cc31a4664c2d3224ddb042d9bac1ae2803ae72` ist erfolgreich. Der [maschinenlesbare Nachweis](response-abort-2026-11-22.json) enthält Quelldigest, Laufzeiten und Ergebnisse.
+
+## Ursache und Korrektur
+
+Bei schnellen App-Wechseln wurden noch laufende Antworten abgebrochen. Die Zugriffsabsicherung stornierte den Antwort-Stream und gab anschließend dieselbe Antwort weiter. Die Überwachung verpackte diesen bereits verwendeten Stream erneut in eine `Response`. Das führte zu `Response body object should not be disturbed or locked`.
+
+- Die Überwachung verändert ausschließlich veränderbare Header und übernimmt keinen Antwort-Stream mehr. Bei unveränderlichen Headern bleibt die ursprüngliche Antwort erhalten.
+- Ein früher Abbruch verwirft den Stream und liefert eine frische leere Antwort. Während der Übertragung beendet das Abbruchsignal auch wartende Lesevorgänge. Aufnahmebelegungen werden genau einmal freigegeben, selbst wenn die Quellstornierung hängt.
+- Abgebrochene Anfragen erzeugen keine falschen Ausfallmeldungen. Echte Serverfehler bleiben erfasst. Fachaktionen werden nicht wiederholt; Zugriffsschutz und Speicherlogik bleiben erhalten.
+- Die Plattformversion steigt auf 26.51. Fach-App-Versionen ändern sich nicht.
+
+## Tests und Ergebnis
+
+```bash
+npm run verify -- --commit 21cc31a4664c2d3224ddb042d9bac1ae2803ae72 --report .local/verification/response-abort-verify-final-2026-11-22.json
+```
+
+Lauf am 22. November 2026 von 02:00:22 bis 02:09:55 Uhr (Europe/Berlin), Node `v24.11.1`.
+
+| Prüfung | Ergebnis |
+| --- | --- |
+| Frische Quellkopie und Lockinstallation | bestanden |
+| Modultests | 542 bestanden |
+| Plattformtests mit eigener PostgreSQL-Datenbank | 70 bestanden |
+| Chat-Datenbanktest | 1 bestanden |
+| Lint, Build und anschließende Typprüfung | bestanden |
+| Chromium / WebKit | 58 / 57 bestanden; insgesamt 115 ohne Fehlschlag |
+| Serverdiagnosen während Browserprüfung | 0 Fehler mit verwendetem/gesperrtem Antwort-Stream; 0 bereits geschlossene Stream-Controller |
+| Absichtlich falsches Navigationsziel und Schreibrecht | beide Fehler erkannt |
+| Abhängigkeitsprüfung | 0 bekannte Schwachstellen |
+| Bereinigung aller drei Browser-Prüfbestände | eigene Server, Datenbanken, Volumes und Quellkopien entfernt |
+
+19 zusätzliche Modultests prüfen Antwortbeobachtung, vorzeitigen Abbruch, wartende Übertragungen, hängende Stornierungen, genau einmalige Freigabe, echte Fehler sowie den Browser-Prüfprozess. Die registrierte HTTP-Prüfung verwendet echte Verbindungsabbrüche vor den Headern und während drei paralleler Übertragungen. Sie prüft freigegebene Belegungen, unveränderte Ausfallzähler, weiterhin erfasste echte Fehler und anonyme Abweisung.
+
+Die Browserabnahme zählt jetzt zusätzlich feste Server-Fehlerklassen und schlägt bei deren Auftreten auch bei bedienbarer Oberfläche fehl. Sie speichert keine Rohprotokolle. Im ersten vollständigen Lauf mit Commit `6131c17` blockierte die neu angehängte Ausgabepipe, weil der synchrone Browseraufruf ihr Einlesen verhinderte. Der Prüfer wartet jetzt asynchron, liest weiter und beendet nur seine eigenen Prüfprozessgruppen. Zusätzliche Tests prüfen große parallele Ausgaben, Zeitüberschreitung und Abbruch. Der oben genannte erfolgreiche Lauf verwendet diese Korrektur; der erste Lauf gilt nicht als erfolgreiche Abnahme.
+
+## Schutz und Grenzen
+
+Der Lauf verwendet ausschließlich den exportierten Commit, eigene Datenbanken, Volumes, Ports, neu erzeugte Zugangsdaten und fiktive Datensätze. Vorhandene Umgebungsdateien, Geheimnisse, Entwürfe und lokale Datenbanken werden nicht in die Prüfung übernommen. Der Vergleich der vorhandenen Konfiguration und des Entwurfsschlüssels mit dem gesicherten Ausgangsstand ist unverändert. Es wurden keine Migrationen, Seeds oder Kontoeinrichtungen auf bestehenden Beständen ausgeführt und keine Integration freigegeben.
+
+Details: [Betriebsüberwachung](monitoring.md#abgebrochene-anfragen-und-antwortdaten). Lokale Zwischenläufe liegen unter `.local/verification/response-abort-*`; diese Protokolle und Browserbilder werden nicht eingecheckt.
+
+Dies ist eine lokale Abnahme auf `codex/aborted-response-fix`, keine ausgeführte GitHub- oder GitLab-Pipeline. Der nachträgliche Bericht wird getrennt vom geprüften Codecommit eingecheckt. Es wurden weder Push noch Merge, Tag, Release oder Deployment ausgeführt.
