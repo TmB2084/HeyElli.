@@ -881,11 +881,24 @@ test('E50 MailDesk-Postfachquelle in den Einstellungen: Microsoft 365 erst nach 
 });
 
 test('E51 SharePoint-Ablagestruktur zeigt die Ordnervorgabe und pflegt Ablagetypen mit einem Speichern',async({page,context})=>{
- await authenticate(context);await enter(page,'/einstellungen?bereich=sharepoint&seite=sharepoint%3Astorage');
+ await authenticate(context);
+ // Hold the first Strict Mode load past the second load and a real user edit.
+ await page.addInitScript(()=>{
+  const fetch=window.fetch.bind(window);let release;const pending=new Promise(resolve=>{release=resolve;});
+  const probe=window.__heyelliStorageProbe={requests:0,settled:false,release:()=>release()};
+  window.fetch=(input,init)=>{const url=new URL(typeof input==='string'?input:input instanceof URL?input.href:input.url,location.href),method=init?.method??(input instanceof Request?input.method:'GET');
+   if(url.pathname!=='/api/verwaltung/sharepoint/ablage'||method!=='GET'||++probe.requests!==1)return fetch(input,init);
+   return(async()=>{try{const response=await fetch(input,init),body=await response.text();await pending;return new Response(body,{status:response.status,headers:response.headers});}finally{probe.settled=true;}})();
+  };
+ });
+ await enter(page,'/einstellungen?bereich=sharepoint&seite=sharepoint%3Astorage');
  await expect(page.getByText('Objekte/Duisburg/hauptstraße_21/Brandmelde/Brandmeldeanlage_4711/Mails',{exact:true})).toBeVisible();
  await expect(page.getByText('Kunden/musterwerk_west_K-200/Mails',{exact:true})).toBeVisible();
  const save=page.getByRole('button',{name:'Speichern',exact:true}),first=page.getByLabel('Bezeichnung 1',{exact:true});await expect(first).toHaveValue('Mails');await expect(save).toBeDisabled();
- await first.fill('E-Mails');await expect(save).toBeEnabled();await expect(page.getByText('Objekte/Duisburg/hauptstraße_21/Brandmelde/Brandmeldeanlage_4711/E-Mails',{exact:true})).toBeVisible();
+ await expect.poll(()=>page.evaluate(()=>window.__heyelliStorageProbe.requests)).toBeGreaterThanOrEqual(2);
+ await first.fill('E-Mails');await page.evaluate(()=>window.__heyelliStorageProbe.release());await page.waitForFunction(()=>window.__heyelliStorageProbe.settled);
+ await page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));await expect(first).toHaveValue('E-Mails');
+ await expect(save).toBeEnabled();await expect(page.getByText('Objekte/Duisburg/hauptstraße_21/Brandmelde/Brandmeldeanlage_4711/E-Mails',{exact:true})).toBeVisible();
  await save.click();await expect(page.getByRole('status').filter({hasText:'Ablagetypen gespeichert.'})).toBeVisible();
  await page.reload();await expect(page.getByLabel('Bezeichnung 1',{exact:true})).toHaveValue('E-Mails');
  await page.getByLabel('Bezeichnung 1',{exact:true}).fill('Mails');await page.getByRole('button',{name:'Speichern',exact:true}).click();await expect(page.getByRole('status').filter({hasText:'Ablagetypen gespeichert.'})).toBeVisible();
