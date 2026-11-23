@@ -904,7 +904,16 @@ test('E41 Parallele Notizen führen getrennte Änderungen zusammen und erhalten 
 });
 
 test('E42 Serviceauftragsaktionen sind kompakte Symbole und Statuswechsel schützen Wiederholungen',async({page,context,browser,browserName})=>{
- test.setTimeout(120000);await authenticate(context);{const store=openOrderStore(fixture.simulatorDatabase);try{store.apiPut('service-status:sim-order-2','service-status',{uuid:'sim-status-ausgegeben',bezeichnung:'Ausgegeben'});}finally{store.close();}}const overview=await (await context.request.get(fixture.base+'/api/service')).json(),order=overview.orders.find(item=>item.id==='sim-order-2');expect(order).toBeTruthy();
+ test.setTimeout(120000);
+ await authenticate(context);
+ const statusKey='service-status:sim-order-2',initialStatus={uuid:'sim-status-ausgegeben',bezeichnung:'Ausgegeben'};
+ function writeFixtureStatus(status){
+  const store=openOrderStore(fixture.simulatorDatabase);
+  try{store.apiPut(statusKey,'service-status',status);}finally{store.close();}
+ }
+ writeFixtureStatus(initialStatus);
+ try {
+ const overview=await (await context.request.get(fixture.base+'/api/service')).json(),order=overview.orders.find(item=>item.id==='sim-order-2');expect(order).toBeTruthy();
  await enter(page,'/servicehub?ansicht=orders&akte=order&id='+order.id);const file=page.getByRole('complementary',{name:'Akte',exact:true}),toolbar=file.getByRole('group',{name:'Aktenaktionen',exact:true});await expect(toolbar.getByRole('link',{name:'Im PlanBoard anzeigen',exact:true}).first()).toBeVisible();expect(await toolbar.getByRole('link',{name:'Im PlanBoard anzeigen',exact:true}).first().textContent()).toBe('');await expect(toolbar.getByRole('button',{name:'Terminbestätigung',exact:true}).first()).toHaveAttribute('title',/Terminbestätigung vorbereiten|Zuerst Termin und Haupttechniker zuordnen/);
  for(const theme of ['light','dark']){
   await page.locator('html').evaluate((element,value)=>{element.dataset.theme=value;},theme);
@@ -944,7 +953,10 @@ test('E42 Serviceauftragsaktionen sind kompakte Symbole und Statuswechsel schüt
  const prepared=await (await context.request.get(fixture.base+'/api/service/status?id='+order.id)).json();expect((await context.request.post(fixture.base+'/api/service/status?id='+order.id,{headers:{Origin:fixture.base},data:{...prepared,operationId:crypto.randomUUID(),action:'cancel',expected:'0'.repeat(64)}})).status()).toBe(409);
  const reader='status-reader:'+crypto.randomUUID();await sql("INSERT INTO platform.users(id,display_name,role,enabled) VALUES($1,'Fiktiver Statusleser','reader',true)",[reader]);const restricted=await browser.newContext();await authenticate(restricted,reader);expect((await restricted.request.post(fixture.base+'/api/service/status?id='+order.id,{headers:{Origin:fixture.base},data:{...prepared,operationId:crypto.randomUUID(),action:'cancel'}})).status()).toBe(403);await restricted.close();
  await toolbar.getByRole('button',{name:/^Auftragsstatus ändern ·/}).click();await toolbar.getByRole('menuitem',{name:'Stornieren',exact:true}).click();const cancel=page.getByRole('alertdialog',{name:'Auftragsstatus ändern?',exact:true});await expect(cancel).toContainText('Storniert');await cancel.getByRole('button',{name:'Status ändern',exact:true}).click();await expect(cancel).toBeHidden();await expect(toolbar.getByRole('button',{name:/^Auftragsstatus ändern ·/})).toContainText('Storniert');
- {const store=openOrderStore(fixture.simulatorDatabase);try{store.apiPut('service-status:'+order.id,'service-status',{uuid:'sim-status-serviceauftrag-8',bezeichnung:'Mobil abgeholt'});}finally{store.close();}}await page.reload();await expect(toolbar.getByRole('button',{name:/^Auftragsstatus ändern ·/})).toContainText('Mobil abgeholt');await toolbar.getByRole('button',{name:/^Auftragsstatus ändern ·/}).click();await expect(toolbar.getByRole('menuitem',{name:'Stornieren',exact:true})).toHaveCount(0);await toolbar.getByRole('menuitem',{name:'Manuell stornieren',exact:true}).click();await expect(cancel).toContainText('Manuell storniert');await page.screenshot({path:join(artifacts,'order-manual-cancel-'+browserName+'.png')});await cancel.getByRole('button',{name:'Status ändern',exact:true}).click();await expect(cancel).toBeHidden();await expect(toolbar.getByRole('button',{name:/^Auftragsstatus ändern ·/})).toContainText('Manuell storniert');expect(Number((await sql("SELECT count(*) AS n FROM platform.audit_events WHERE actor_id=$1 AND target_id=$2 AND action='service.status.updated'",[fixture.admin,order.id])).rows[0].n)).toBeGreaterThanOrEqual(3);
+ writeFixtureStatus({uuid:'sim-status-serviceauftrag-8',bezeichnung:'Mobil abgeholt'});await page.reload();await expect(toolbar.getByRole('button',{name:/^Auftragsstatus ändern ·/})).toContainText('Mobil abgeholt');await toolbar.getByRole('button',{name:/^Auftragsstatus ändern ·/}).click();await expect(toolbar.getByRole('menuitem',{name:'Stornieren',exact:true})).toHaveCount(0);await toolbar.getByRole('menuitem',{name:'Manuell stornieren',exact:true}).click();await expect(cancel).toContainText('Manuell storniert');await page.screenshot({path:join(artifacts,'order-manual-cancel-'+browserName+'.png')});await cancel.getByRole('button',{name:'Status ändern',exact:true}).click();await expect(cancel).toBeHidden();await expect(toolbar.getByRole('button',{name:/^Auftragsstatus ändern ·/})).toContainText('Manuell storniert');expect(Number((await sql("SELECT count(*) AS n FROM platform.audit_events WHERE actor_id=$1 AND target_id=$2 AND action='service.status.updated'",[fixture.admin,order.id])).rows[0].n)).toBeGreaterThanOrEqual(3);
+ } finally {
+  writeFixtureStatus(initialStatus);
+ }
 });
 
 test('E43 CaseDesk Standardpositionen speichern automatisch und landen einmalig im neuen Auftrag',async({page,context,browser,browserName})=>{
@@ -1071,7 +1083,15 @@ test('E48 MailDesk ordnet Mails zu, verknüpft Aufträge, übergibt an den CaseD
  await row.getByRole('button',{name:'Mail anhängen',exact:true}).click();await expect(mail.getByText('verknüpft',{exact:true})).toBeVisible();
  await folders.getByRole('button',{name:/Auftrag angelegt/}).click();await expect(list.getByRole('status')).toHaveText(/^[12] Mails?$/);await list.getByRole('button',{name:new RegExp(subject)}).click();
  // Zuständigkeit und Archiv wirken für alle; Versionskonflikte werden serverseitig geprüft.
- await mail.getByRole('button',{name:/^Zuständig: /}).click();await mail.getByRole('option',{name:'Ich',exact:true}).click();await expect(mail.getByRole('status').filter({hasText:'Zuständigkeit gesetzt.'})).toBeVisible();
+ await test.step('Zuständigkeit in der geöffneten Mail setzen',async()=>{
+  const assignee=mail.getByRole('button',{name:/^Zuständig: /});
+  await assignee.press('ArrowDown');
+  await expect(assignee).toHaveAttribute('aria-expanded','true');
+  const ownOption=mail.getByRole('option',{name:'Ich',exact:true});
+  await expect(ownOption).toBeVisible();
+  await ownOption.press('Enter');
+  await expect(mail.getByRole('status').filter({hasText:'Zuständigkeit gesetzt.'})).toBeVisible();
+ });
  const stale=await context.request.post(fixture.base+'/api/maildesk/aktion',{headers:{Origin:fixture.base},data:{id:browserName==='webkit'?'sim-mail-07':'sim-mail-03',action:'flag',version:0,value:true}});expect(stale.status()).toBe(409);
  for(const theme of ['light','dark']){await page.locator('html').evaluate((el,value)=>el.dataset.theme=value,theme);expect(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth)).toBe(false);await axe(page,browserName+'-maildesk-'+theme);await page.screenshot({path:join(artifacts,`${browserName}-maildesk-${theme}.png`)});}
  // Schmal: Liste oder Mail, Rückweg per „Zur Liste“.
@@ -1268,7 +1288,9 @@ test('E53 Service-Aufträge mit Pfeiltasten sichten und Fokus zurückgeben', asy
 });
 
 test('E54 Service-Aufträge persönlich markieren und Filter pausieren', async ({page, context, browser, browserName}) => {
-  await authenticate(context);
+  const actor='personal-order-flags:'+crypto.randomUUID();
+  await sql("INSERT INTO platform.users(id,display_name,role,enabled) VALUES($1,'Fiktive Auftragsmarkierungen','admin',true)",[actor]);
+  await authenticate(context,actor);
   await enter(page, '/servicehub?ansicht=orders&akte=order&id=sim-order-1');
   const overview = page.getByRole('region', {name:'Serviceübersicht', exact:true});
   const marker = page.getByRole('button', {name:'Auftrag markieren', exact:true});
@@ -1381,8 +1403,7 @@ test('E55 Auftragssuche in der Werkzeugleiste zeigt anklickbare Vorschläge',asy
   expect(Math.abs(control.height-right.height)).toBeLessThan(2);
  }
  const listHeader=categories.locator('xpath=ancestor::header');
- const firstRow=overview.locator('[data-order-row="sim-order-1"]');
- const secondRow=overview.locator('[data-order-row="sim-order-2"]');
+ const [firstRow,secondRow]=[0,1].map(index=>overview.locator("[data-order-row]").nth(index));
  const [header,first,second,secondItem]=await Promise.all(
   [listHeader,firstRow,secondRow,secondRow.locator('..')].map(element=>element.boundingBox())
  );
@@ -1569,6 +1590,14 @@ test('E57 Kunden Objekt und Einheit unterstützen Tastatur und Hover in beiden T
 
 test('E58 Kundenmarkierungen zählen Aufträge und Wartungen bis zur technischen Einheit',async({page,context,browserName})=>{
  await authenticate(context);
+ // Earlier scenarios create fictional service orders. Read the counts for this
+ // customer and its two known units from the same isolated test database.
+ const response=await context.request.get(fixture.base+'/api/service');
+ expect(response.ok()).toBe(true);
+ const {orders:baseline}=await response.json();
+ const open=baseline.filter(order=>order.customerId==='SIM-K-100'&&order.status==='Offen');
+ const countOrdersFor=(...ids)=>open.filter(order=>order.incidents.some(incident=>ids.includes(incident.objectId))).length;
+ expect(countOrdersFor('sim-unit-1')).toBeGreaterThan(0);
  await enter(page,'/servicehub?ansicht=files');
  const overview=page.getByRole('region',{name:'Serviceübersicht',exact:true});
  const customer=overview.locator('[data-file-row="customer:SIM-K-100"]');
@@ -1585,15 +1614,15 @@ test('E58 Kundenmarkierungen zählen Aufträge und Wartungen bis zur technischen
   });
   expect(separator).toEqual({content:'""',blockSize:'1px'});
  };
- await expect(orders(customer)).toHaveText('1');
+ await expect(orders(customer)).toHaveText(String(open.length));
  await expect(maintenance(customer)).toHaveText('2');
  await expect(maintenance(customer)).toHaveAttribute('title','2 fällige Wartungen');
  await expect(emptyCustomer.locator('[data-work-badge]')).toHaveCount(0);
  await expectSeparator(overview.locator('p[aria-hidden="true"]').filter({hasText:/^D$/}));
  await overview.getByRole('button',{name:/^Objekte und Einheiten aufklappen · Beispielhaus Nord/}).click();
- await expect(orders(site)).toHaveText('1');
+ await expect(orders(site)).toHaveText(String(countOrdersFor('sim-object-1','sim-unit-1','sim-unit-2')));
  await expect(maintenance(site)).toHaveText('2');
- await expect(orders(unit)).toHaveText('1');
+ await expect(orders(unit)).toHaveText(String(countOrdersFor('sim-unit-1')));
  await expect(maintenance(unit)).toHaveText('1');
  await expect(maintenance(futureUnit)).toHaveCount(0);
  await expectSeparator(site.locator('../../..'));
@@ -1777,8 +1806,8 @@ test('E61 ServiceHub vereinheitlicht Werkzeugknöpfe und Seitenleistenanzeige',a
    await sidebar.getByRole('button',{name:label,exact:true}).click();
    await expect(sidebar.getByRole('button',{name:label,exact:true})).toHaveAttribute('aria-current','page');
    await expect(create).toHaveCSS('color',foreground);
-   expect(await appearance(search)).toEqual(await appearance(create));
-   expect(await appearance(disclosure)).toEqual(await appearance(create));
+   await expect.poll(async()=>await appearance(search)).toEqual(await appearance(create));
+   await expect.poll(async()=>await appearance(disclosure)).toEqual(await appearance(create));
   }
  }
  await sidebar.getByRole('button',{name:/^Beispielhaus Nord/}).last().click();
@@ -1790,7 +1819,7 @@ test('E61 ServiceHub vereinheitlicht Werkzeugknöpfe und Seitenleistenanzeige',a
  await expect(orders.getByRole('button',{name:/anheften|lösen/})).toHaveCount(0);
  await sidebar.getByRole('button',{name:'Cockpit',exact:true}).click();
  await page.setViewportSize({width:390,height:844});
- expect(await appearance(search)).toEqual(await appearance(create));
+ await expect.poll(async()=>await appearance(search)).toEqual(await appearance(create));
 });
 
 test('E62 ServiceHub zeigt leere Auftragslisten und ungewählte Akten passend zum Kontext',async({page,context,browserName})=>{

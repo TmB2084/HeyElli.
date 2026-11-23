@@ -3,7 +3,7 @@ export type AppRelease={year:number;publication:number;publishedOn:string;creato
 export const appReleases:Record<string,AppRelease>={
  '/':{year:26,publication:55,publishedOn:'2026-11-22',creator:'Tim Braun'},
  '/hilfe':{year:26,publication:56,publishedOn:'2026-11-20',creator:'Tim Braun'},
- '/servicehub':{year:26,publication:77,publishedOn:'2026-11-22',creator:'Tim Braun'},
+ '/servicehub':{year:26,publication:78,publishedOn:'2026-11-23',creator:'Tim Braun'},
  '/casedesk':{year:26,publication:20,publishedOn:'2026-11-22',creator:'Tim Braun'},
  '/planboard':{year:26,publication:17,publishedOn:'2026-11-21',creator:'Tim Braun'},
  '/maildesk':{year:26,publication:8,publishedOn:'2026-11-21',creator:'Tim Braun'},

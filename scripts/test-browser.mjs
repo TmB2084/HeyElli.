@@ -3,7 +3,7 @@ import {mergeBrowserReports} from './browser-results.mjs';
 import {spawnTestProcess,stopTestProcess,runTestProcess} from './test-process.mjs';
 import {installReturnBrowserFixture} from '../tests/return-browser-fixture.mjs';
 import {installSharePointFixture} from '../tests/sharepoint-fixture.mjs';
-import {verificationEnvironment} from './verification-plan.mjs';
+import {browserEngineTimeout,verificationEnvironment} from './verification-plan.mjs';
 // Automatic browser gate: disposable source, database, credentials and browser profiles.
 import {spawnSync} from 'node:child_process';
 import {mkdtemp,mkdir,cp,readFile,writeFile,readdir,rm} from 'node:fs/promises';
@@ -49,7 +49,7 @@ try{
  const installed=spawnSync(process.execPath,['node_modules/playwright/cli.js','install',...(process.platform==='linux'&&process.env.HEYELLI_BROWSER_SYSTEM_DEPS!=='installed'?['--with-deps']:[]),...selected],{env:browserEnv,stdio:'inherit',timeout:300000});if(installed.status!==0)throw Error('Prüfbrowser konnten nicht installiert werden.');
  for(const engine of selected){
   await rm(join(artifacts,'results.json'),{force:true});
-  const result=await runTestProcess(process.execPath,['node_modules/playwright/cli.js','test','--config=playwright.config.mjs','--project='+engine,...(mutation?['--grep',mutation==='navigation'?'E04 ':'E02 ']:grep?['--grep',grep]:[])],{env:browserEnv,stdio:'inherit',signal:browserAbort.signal});
+  const result=await runTestProcess(process.execPath,['node_modules/playwright/cli.js','test','--config=playwright.config.mjs','--project='+engine,...(mutation?['--grep',mutation==='navigation'?'E04 ':'E02 ']:grep?['--grep',grep]:[])],{env:browserEnv,stdio:'inherit',signal:browserAbort.signal},browserEngineTimeout);
   let report;try{report=JSON.parse(await readFile(join(artifacts,'results.json'),'utf8'));}catch{report={status:'failed',cases:[],steps:[]};}
   if(result.status!==0)report.status='failed';parts.push({engine,report});
  }

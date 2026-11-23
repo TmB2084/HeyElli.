@@ -2,7 +2,7 @@
 import {Button,Switch} from '@/platform/ui';
 import {useCallback,useEffect,useRef,useState} from 'react';
 import {Notice} from '@/platform/shell';
-import type {ServiceFile,ServiceOverview,ServiceIncident} from './model';
+import type {ServiceFile,ServiceOverview} from './model';
 import type {DispatchCatalog,DispatchContext,DispatchDocument,DispatchSelection,DispatchTarget} from './dispatch-model';
 import {OrderIncident} from './order-incident';
 import styles from './dispatch.module.css';
@@ -12,7 +12,7 @@ import {MaterialList} from './material-list';
 type Selection={scope:string;sourceRevision:string;canWrite:boolean;selection:DispatchSelection[]};
 type Bma={links:{aid:number;number:string;name:string;url:string;object:string}[];notices:string[]};
 function date(value:string){return value&&Number.isFinite(Date.parse(value))?new Intl.DateTimeFormat('de-DE',{timeZone:'Europe/Berlin',dateStyle:'short',timeStyle:'short'}).format(new Date(value)):'Noch nicht geplant';}
-export function DispatchPack({file,orderId,data,onPlan,onConfirm}:{file:ServiceFile&{sourceRevision?:string};orderId:string;data:ServiceOverview;onPlan:(incident:ServiceIncident)=>void;onConfirm:(id:string)=>void}){
+export function DispatchPack({file,orderId,data}:{file:ServiceFile&{sourceRevision?:string};orderId:string;data:ServiceOverview}){
  // Aufbau nach Mockup V1: Einsätze mit Fokusfeldern zuerst, dann Kunde, dann aufklappbare Zeilen
  // Einsatzmappe (Dokumente, Ansprechpartner, BMACloud – lädt erst beim Öffnen), Rücklauf und Material.
  // Zugeklappt wie im Mockup; einmal geöffnet bleibt die Einsatzmappe in dieser Sitzung offen (auch nach Neuladen).
@@ -20,7 +20,7 @@ export function DispatchPack({file,orderId,data,onPlan,onConfirm}:{file:ServiceF
  const [open,setOpen]=useState(()=>{try{return typeof window!=='undefined'&&sessionStorage.getItem('heyelli:einsatzmappe-offen')==='1';}catch{return false;}});
  function toggle(next:boolean){setOpen(next);try{sessionStorage.setItem('heyelli:einsatzmappe-offen',next?'1':'0');}catch{}}
  return <>
-  {file.incidents?.map((incident,index)=><OrderIncident orderId={orderId} key={incident.id} incident={incident} index={index} count={file.incidents?.length} data={data} orderStatus={file.status} onPlan={onPlan} onConfirm={onConfirm}/>)}
+  {file.incidents?.map((incident,index)=><OrderIncident key={incident.id} incident={incident} index={index} count={file.incidents?.length} data={data} orderStatus={file.status}/>)}
   <div className={styles.packGroup}><details className={styles.pack} open={open} onToggle={event=>{if(event.currentTarget.open!==open)toggle(event.currentTarget.open);}}><summary onClick={event=>{event.preventDefault();toggle(!open);}}>Einsatzmappe</summary>{open&&<PackContent file={file} orderId={orderId}/>}</details>
   <ReturnControl key={orderId+file.sourceRevision} orderId={orderId} revision={file.sourceRevision??''} objects={data.objects}/><MaterialList orderId={orderId} revision={file.sourceRevision??''} objects={data.objects}/></div>
  </>;

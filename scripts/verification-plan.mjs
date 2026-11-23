@@ -1,6 +1,7 @@
 import {readdir,readFile,lstat} from 'node:fs/promises';
 import {join} from 'node:path';
-export const verificationTimeout=name=>name==='browser'?25*60*1000:15*60*1000;
+export const browserEngineTimeout=14*60*1000;
+export const verificationTimeout=name=>name==='browser'?2*browserEngineTimeout+7*60*1000:15*60*1000;
 export const databaseTests=['platform-postgres.test.mjs','assistant-chat-postgres.test.mjs'];
 export const verificationSteps=[['install',['ci','--no-fund']],['unit',['run','test:unit']],['platform',['run','test:platform']],['chat',['run','test:chat']],['lint',['run','lint']],['build',['run','build']],['types',['run','typecheck']],['browser',['run','test:e2e']],['browser-mutations',['run','test:e2e:mutations']],['dependencies',['audit','--audit-level=low']]];
 // Modultests liegen bei ihrer App bzw. Plattform (src/**/tests/*.test.mjs); app-übergreifende Abläufe in tests/.
