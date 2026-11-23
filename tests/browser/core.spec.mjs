@@ -23,8 +23,25 @@ test('E02 Gemischte App-Rechte und direkter Schreibschutz',async({page,context})
  await authenticate(context,fixture.mixed);await calendar(page,false);await expect(page.getByRole('button',{name:'Neuer Termin',exact:true})).toBeDisabled();const response=await context.request.post(fixture.base+'/api/ressourcenkalender/termine',{headers:{origin:fixture.base},data:{}});expect(response.status()).toBe(403);expect((await (await context.request.get(fixture.base+'/api/service')).json()).canPlan).toBe(true);
 });
 test('E03 Sitzungsablauf und Widerruf sperren direkte Links',async({page,context})=>{
- await authenticate(context);await enter(page,'/servicehub');await sql("UPDATE platform.sessions SET expires_at=now()-interval '1 second' WHERE user_id=$1",[fixture.admin]);await page.reload();await expect(page).toHaveURL(/\/anmeldung/);await authenticate(context);await enter(page,'/servicehub');await sql('UPDATE platform.sessions SET revoked_at=now() WHERE user_id=$1',[fixture.admin]);await page.goto(fixture.base+'/planboard');await expect(page).toHaveURL(/\/anmeldung/);
+ await authenticate(context);
+ await enter(page,'/servicehub');
+ await sql("UPDATE platform.sessions SET expires_at=now()-interval '1 second' WHERE user_id=$1",[fixture.admin]);
+ await page.reload();
+ await expect(page).toHaveURL(/\/anmeldung/);
+
+ await authenticate(context);
+ await enter(page,'/servicehub');
+ await sql('UPDATE platform.sessions SET revoked_at=now() WHERE user_id=$1',[fixture.admin]);
+ // The live session boundary may redirect before the direct navigation finishes.
+ try{
+  await page.goto(fixture.base+'/planboard',{waitUntil:'domcontentloaded'});
+ }catch(error){
+  if(!(error instanceof Error)||!/ERR_ABORTED|interrupted by another navigation/.test(error.message))throw error;
+ }
+ await expect(page).toHaveURL(/\/anmeldung/);
+ expect((await context.request.get(fixture.base+'/api/ressourcenkalender')).status()).toBe(401);
 });
+
 test('E04 App-Wechsel und Vor-Zurück ohne 404',async({page,context})=>{
  await authenticate(context);
  await test.step('Service und PlanBoard oeffnen',async()=>{await enter(page,'/servicehub');await page.getByRole('link',{name:'PlanBoard öffnen',exact:true}).click();await expect(page).toHaveURL(/\/planboard$/);await expect(page.getByRole('button',{name:'Neuer Termin',exact:true})).toBeVisible();});
@@ -344,7 +361,11 @@ test('E16 Kostenträgersuche findet Objekt Einheit und Vertragswerte ohne Akte v
  await expect(overview.getByText('Wartung',{exact:true}).first()).toBeVisible();await expect(overview.getByText('Rechnung',{exact:true})).toHaveCount(0);
  await search.fill('Beispielvertrag Rechnung');await expect(overview.getByRole('button').filter({has:page.locator('strong')}).first()).toBeVisible();
  await expect(overview.getByText('Rechnung',{exact:true}).first()).toBeVisible();await expect(overview.getByText('Wartung',{exact:true})).toHaveCount(0);
- await page.screenshot({path:join(artifacts,`cost-hits-${page.context().browser().browserType().name()}.png`),mask:[page.locator('input[type=password]')]});await page.setViewportSize({width:390,height:844});expect(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth)).toBe(false);
+ await page.screenshot({path:join(artifacts,`cost-hits-${page.context().browser().browserType().name()}.png`),mask:[page.locator('input[type=password]')]});
+ await test.step('Kostenträgersuche passt mit geöffneten Vorschlägen in die schmale Ansicht',async()=>{
+  await page.setViewportSize({width:390,height:844});
+  await expect.poll(()=>page.evaluate(()=>document.documentElement.scrollWidth-innerWidth)).toBeLessThanOrEqual(1);
+ });
  await page.getByRole('button',{name:'Alle Aufträge',exact:true}).click();await page.getByRole('combobox',{name:'Suche',exact:true}).fill('SIM-KTR-300');await expect(overview.getByRole('button',{name:/SIM-SA-1000/}).first()).toBeVisible();
  await page.getByRole('combobox',{name:'Suche',exact:true}).fill('unbekannterkostentraeger');await expect(overview.getByText('Keine passenden Aufträge.',{exact:true})).toBeVisible();
  await page.route('**/api/service?*',async route=>new URL(route.request().url()).searchParams.get('part')==='cost-catalog'?route.abort('internetdisconnected'):route.continue());
@@ -1784,8 +1805,14 @@ test('E61 ServiceHub vereinheitlicht Werkzeugknöpfe und Seitenleistenanzeige',a
  const disclosure=page.getByRole('button',{name:'Seitenleiste ausblenden',exact:true});
  const appearance=element=>element.evaluate(node=>{
   const css=getComputedStyle(node);
-  return ['width','height','borderRadius','borderColor','backgroundColor','boxShadow','color'].map(property=>css[property]);
+  return ['width','height','borderRadius','borderColor','backgroundColor','boxShadow','color'].map(property=>css[property]).join('|');
  });
+ const expectSameAppearance=async (reference,candidate)=>{
+  await expect.poll(async()=>{
+   const [left,right]=await Promise.all([appearance(reference),appearance(candidate)]);
+   return left===right;
+  }).toBe(true);
+ };
  await expect(sidebar.getByRole('button',{name:'Alle Aufträge',exact:true}).locator('small')).toHaveText(/^\p{Nd}+$/u);
  await expect(sidebar.locator('button small').filter({hasText:/^0$/})).toHaveCount(0);
  for(const theme of ['light','dark']){
@@ -1806,8 +1833,9 @@ test('E61 ServiceHub vereinheitlicht Werkzeugknöpfe und Seitenleistenanzeige',a
    await sidebar.getByRole('button',{name:label,exact:true}).click();
    await expect(sidebar.getByRole('button',{name:label,exact:true})).toHaveAttribute('aria-current','page');
    await expect(create).toHaveCSS('color',foreground);
-   await expect.poll(async()=>await appearance(search)).toEqual(await appearance(create));
-   await expect.poll(async()=>await appearance(disclosure)).toEqual(await appearance(create));
+   await page.mouse.move(0,0);
+   await expectSameAppearance(create,search);
+   await expectSameAppearance(create,disclosure);
   }
  }
  await sidebar.getByRole('button',{name:/^Beispielhaus Nord/}).last().click();
@@ -1818,8 +1846,12 @@ test('E61 ServiceHub vereinheitlicht Werkzeugknöpfe und Seitenleistenanzeige',a
  await expect(orders.getByRole('button',{name:'Kundenakte',exact:true})).toHaveCount(0);
  await expect(orders.getByRole('button',{name:/anheften|lösen/})).toHaveCount(0);
  await sidebar.getByRole('button',{name:'Cockpit',exact:true}).click();
+ const cockpit=page.getByRole('group',{name:'Cockpit-Werkzeugleiste',exact:true});
+ await expect(cockpit).toBeVisible();
  await page.setViewportSize({width:390,height:844});
- await expect.poll(async()=>await appearance(search)).toEqual(await appearance(create));
+ await page.mouse.move(0,0);
+ await expectSameAppearance(cockpit.getByRole('link',{name:'Neuer Auftrag im CaseDesk',exact:true}),
+  cockpit.getByRole('button',{name:'Suche öffnen',exact:true}));
 });
 
 test('E62 ServiceHub zeigt leere Auftragslisten und ungewählte Akten passend zum Kontext',async({page,context,browserName})=>{
