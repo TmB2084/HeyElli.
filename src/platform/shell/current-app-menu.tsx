@@ -13,7 +13,7 @@ const apps:Record<string,AppInfo>={
   "/":{name:"AskElli",icon:"elli",description:"Bedienhilfe im Gespräch: Fragen zu HeyElli stellen und direkt zum richtigen Bedienweg springen."},
   "/hilfe":{name:"Hilfe",icon:"help",description:"Bedienungsanleitung nach Apps und Themen durchsuchen."},
   "/servicehub":{name:"ServiceHub",icon:"service",description:"Aufträge, Kunden, Objekte und Akten: der zentrale Bestand mit Cockpit, Kundenakte und Kunde 360."},
-  "/casedesk":{name:"CaseDesk",icon:"incident",description:"Meldung in drei Schritten zum Auftrag: Objekt, Meldung und Kontakt, Techniker und Termin.",settings:"/einstellungen?bereich=incident",adminSettings:true},
+  "/casedesk":{name:"CaseDesk",icon:"incident",description:"Meldung in vier Schritten zum Auftrag: Objekt, Meldung und Kontakt, Techniker und Termin, Abschluss.",settings:"/einstellungen?bereich=incident",adminSettings:true},
   "/planboard":{name:"PlanBoard",icon:"resource",description:"Termine und Teams disponieren: Techniker einplanen, Auslastung überblicken und Serviceaufträge mobil ausgeben.",settings:"/einstellungen?bereich=colors",adminSettings:true},
   "/maildesk":{name:"MailDesk",icon:"maildesk",description:"Geteiltes Service-Postfach: Mails automatisch Kunden zuordnen, beantworten und daraus Serviceaufträge anlegen."},
   "/taskhub":{name:"TaskHub",icon:"tasks",description:"Gemeinsame Aufgabenliste des Teams: PDS-Aufgaben, zugewiesene Mails und Aufträge ohne Termin zuweisen und abarbeiten."},

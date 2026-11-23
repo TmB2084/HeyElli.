@@ -1,0 +1,8 @@
+.card {
+  min-inline-size: 0;
+  color: var(--foreground);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-panel);
+  box-shadow: var(--shadow-1);
+}

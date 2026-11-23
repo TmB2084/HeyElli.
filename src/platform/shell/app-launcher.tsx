@@ -14,7 +14,7 @@ type Category='Service'|'System & Konto';
 type Entry={category:Category;href:string;label:string;detail:string;icon:string;color:string;keywords:string};
 const apps:Entry[]=[
  {category:'System & Konto',href:'/hilfe',label:'Hilfe',detail:'HeyElli verstehen',icon:'help',color:appIconBackground.help,keywords:'Anleitung Bedienung Handbuch Unterstützung'},
- {category:'Service',href:'/casedesk',label:'CaseDesk',detail:'Meldung in drei Schritten zum Auftrag',icon:'incident',color:appIconBackground.incident,keywords:'StörungsMeister Planer Störung Auftrag Kunde Serviceaufnahme'},
+ {category:'Service',href:'/casedesk',label:'CaseDesk',detail:'Meldung in vier Schritten zum Auftrag',icon:'incident',color:appIconBackground.incident,keywords:'StörungsMeister Planer Störung Auftrag Kunde Serviceaufnahme'},
  {category:'Service',href:'/planboard',label:'PlanBoard',detail:'Termine und Teams disponieren',icon:'resource',color:appIconBackground.resource,keywords:'RessourcenMeister Planer Kalender Ressourcen Techniker Einsatzplanung'},
  {category:'Service',href:'/maildesk',label:'MailDesk',detail:'Geteiltes Postfach zuordnen',icon:'maildesk',color:appIconBackground.maildesk,keywords:'Mail E-Mail Postfach Posteingang Kundenpost Kostenträger zuordnen Outlook'},
  {category:'Service',href:'/taskhub',label:'TaskHub',detail:'Gemeinsame Aufgabenliste des Teams',icon:'tasks',color:appIconBackground.tasks,keywords:'Aufgaben Aufgaben To-do Erinnerungen Wiedervorlage CRM Rückruf zuweisen fällig überfällig Checkliste'},

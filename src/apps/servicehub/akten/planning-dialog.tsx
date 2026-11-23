@@ -1,4 +1,5 @@
 'use client';
+import {Button,Dialog} from '@/platform/ui';
 import {useEffect,useRef,useState,type FormEvent} from 'react';
 import {PlanningFields,type PlanningPerson} from '@/apps/casedesk/erfassung';
 import {ConfirmationDialog,Notice,useDraftNavigationGuard} from '@/platform/shell';
@@ -11,11 +12,11 @@ export function ExistingPlanningDialog({orderId,incident,onClose,onSaved}:{order
  useEffect(()=>{dialog.current?.showModal();},[]);useDraftNavigationGuard(dirty||busy,busy,()=>setDirty(false));
  async function save(event:FormEvent<HTMLFormElement>){event.preventDefault();if(busy)return;if(!technician){setError('Bitte einen Haupttechniker auswählen.');return;}const values=new FormData(event.currentTarget);setBusy(true);setError('');try{const response=await fetch('/api/service/planung',{method:'POST',headers:{'Content-Type':'application/json'},signal:AbortSignal.timeout(25000),body:JSON.stringify({orderId,incidentId:incident.id,expected:incident.planningVersion,appointment:values.get('appointment'),duration:Number(values.get('appointmentDuration')),technicianId:technician.id,companionIds:companions.map(item=>item.id)})}),result=await response.json();if(!response.ok)throw Error(result.error);setDirty(false);onSaved(result.warning||'');}catch(problem){setError(problem instanceof Error&&!['TypeError','AbortError','TimeoutError'].includes(problem.name)?problem.message:'Verbindung unterbrochen. Eingaben bleiben erhalten. Erneut speichern ist möglich.');}finally{setBusy(false);}}
  function close(){if(busy)return;if(dirty)setDiscardOpen(true);else onClose();}
- return <><dialog ref={dialog} className={styles.dialog} aria-labelledby="existing-planning-title" onCancel={event=>{event.preventDefault();close();}}>
+ return <><Dialog ref={dialog} className={styles.dialog} aria-labelledby="existing-planning-title" onCancel={event=>{event.preventDefault();close();}}>
   <form onSubmit={save} onChange={()=>setDirty(true)} aria-busy={busy}>
    <header className={styles.heading}>
     <h2 id="existing-planning-title">Termin vergeben</h2>
-    <button type="button" className={`${styles.close} heyelli-close`} aria-label="Dialog schließen" disabled={busy} onClick={close}>×</button>
+    <Button variant="close" aria-label="Dialog schließen" disabled={busy} onClick={close}></Button>
    </header>
    <div className={styles.body}>
     {incident.work&&<p className={styles.context} title={incident.work}>{incident.work.length>160?incident.work.slice(0,157)+'…':incident.work}</p>}
@@ -25,9 +26,9 @@ export function ExistingPlanningDialog({orderId,incident,onClose,onSaved}:{order
     {error&&<Notice tone="error" role="alert">{error}</Notice>}
    </div>
    <footer className={styles.footer}>
-    <button type="button" disabled={busy} onClick={close}>Abbrechen</button>
-    <button type="submit" className={styles.save} disabled={busy}>{busy?'Wird gespeichert …':'Termin vergeben'}</button>
+    <Button variant="outline" disabled={busy} onClick={close}>Abbrechen</Button>
+    <Button type="submit" disabled={busy}>{busy?'Wird gespeichert …':'Termin vergeben'}</Button>
    </footer>
   </form>
- </dialog><ConfirmationDialog open={discardOpen} title="Planung verwerfen?" description="Die ungespeicherten Angaben zu Techniker und Termin werden verworfen. Der bestehende Auftrag bleibt erhalten." confirmLabel="Planung verwerfen" busy={busy} onCancel={()=>setDiscardOpen(false)} onConfirm={()=>{setDiscardOpen(false);onClose();}}/></>;
+ </Dialog><ConfirmationDialog open={discardOpen} title="Planung verwerfen?" description="Die ungespeicherten Angaben zu Techniker und Termin werden verworfen. Der bestehende Auftrag bleibt erhalten." confirmLabel="Planung verwerfen" busy={busy} onCancel={()=>setDiscardOpen(false)} onConfirm={()=>{setDiscardOpen(false);onClose();}}/></>;
 }

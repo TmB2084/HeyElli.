@@ -31,7 +31,12 @@ export async function readOverview(api:PdsTransport){
  const [rows,people,objectRows,employeeRows]=await Promise.all([readList(api,'/service/liststoerungen'),readList(api,'/person/listkunden'),readList(api,'/objekt/listobjekte'),readList(api,'/mitarbeiter/listmitarbeiter')]);
  const employees=new Map(employeeRows.map(row=>[id(row),[text(row.vorname),text(row.nachname)].filter(Boolean).join(' ')]));
  const customers:ServiceCustomer[]=people.map(row=>({id:id(row),name:text(row.name)||'Kunde ohne Namen',number:row.kundenRolle?text(record(row.kundenRolle).kundennummer):''}));
- const objects:ServiceObject[]=objectRows.map(row=>({id:id(row),name:text(row.bezeichnung)||'Objekt ohne Namen',customerId:text(row.personUUID),parentId:text(row.parentUUID),type:text(row.typ),address:address(row.standort)}));
+ const objects:ServiceObject[]=objectRows.map(row=>{
+  const fields=Array.isArray(row.objektInfoFelder)?row.objektInfoFelder:[];
+  const number=text(fields.find(field=>text(field?.bezeichnung).trim().toLocaleLowerCase('de')==='nummer')?.wert).trim();
+  return {id:id(row),name:text(row.bezeichnung)||'Objekt ohne Namen',customerId:text(row.personUUID),parentId:text(row.parentUUID),
+   type:text(row.typ),address:address(row.standort),...(number&&number.length<=200?{number}:{})};
+ });
  const grouped=new Map<string,ServiceOrder>();
  for(const row of rows){const service=record(row.serviceAuftrag),key=id(service);let order=grouped.get(key);if(!order){order={id:key,number:text(service.vorgangsNummer)||'Ohne Nummer',title:text(service.bezeichnung),status:status(service.vorgangStatus),customerId:text(service.personUUID),incidents:[]};grouped.set(key,order);}const entry=incident(row.serviceAuftragEbene,employees);if(!order.incidents.some(existing=>existing.id===entry.id))order.incidents.push(entry);}
  return {orders:[...grouped.values()].sort((a,b)=>a.number.localeCompare(b.number,'de',{numeric:true})),customers,objects};

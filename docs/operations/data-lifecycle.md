@@ -1,5 +1,7 @@
 # Datenaufbewahrung, Export und bestätigte Bereinigung
 
+Persönliche ServiceHub-Auftragsmarkierungen sind an Konto und Quelle gebunden. Der persönliche Export enthält Auftragskennung, Quelle und Zeitpunkt der Markierung. Beim Lösen wird nur die eigene Markierung entfernt.
+
 Stand: 13.11.2026. Gilt für den lokalen Entwicklungsbetrieb mit fiktiven Daten. Keine juristische oder produktive Datenschutzfreigabe.
 
 ## Bedienung

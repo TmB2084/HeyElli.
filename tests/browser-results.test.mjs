@@ -1,6 +1,6 @@
 import {test} from 'node:test';import assert from 'node:assert/strict';
 import {mergeBrowserReports} from '../scripts/browser-results.mjs';
-import {verificationTimeout} from '../scripts/verification-plan.mjs';
+import {browserEngineTimeout,browserInstallTimeout,verificationTimeout} from '../scripts/verification-plan.mjs';
 const part=(engine,status='passed')=>({engine,report:{status,cases:[{id:'fixture',engine,status}],steps:[]}});
 test('browser matrix retains both results and never turns partial, failed or stale evidence green',()=>{
  const engines=['chromium','webkit'];assert.equal(mergeBrowserReports(engines,engines.map(e=>part(e))).cases.length,2);
@@ -9,4 +9,4 @@ test('browser matrix retains both results and never turns partial, failed or sta
  assert.throws(()=>mergeBrowserReports(engines,[part('chromium')]));assert.throws(()=>mergeBrowserReports(engines,[part('chromium'),part('chromium')]));
  assert.throws(()=>mergeBrowserReports(['chromium'],[{engine:'chromium',report:{status:'passed',cases:[{engine:'webkit',status:'passed'}]}}]));
 });
-test('total browser budget covers two bounded engine runs plus setup; ordinary gate budgets stay unchanged',()=>{assert.equal(verificationTimeout('browser'),25*60*1000);for(const name of ['unit','platform','chat','lint','build','types','dependencies'])assert.equal(verificationTimeout(name),15*60*1000);});
+test('total browser budget covers two bounded engine runs plus setup; ordinary gate budgets stay unchanged',()=>{assert.equal(browserInstallTimeout,10*60*1000);assert.equal(browserEngineTimeout,14*60*1000);assert.equal(verificationTimeout('browser'),browserInstallTimeout+2*browserEngineTimeout+2*60*1000);for(const name of ['unit','platform','chat','lint','build','types','dependencies'])assert.equal(verificationTimeout(name),15*60*1000);});

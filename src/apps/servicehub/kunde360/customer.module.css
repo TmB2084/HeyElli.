@@ -21,9 +21,6 @@
 .kpi[data-warn] b { color: #ff8f9a; }
 :root[data-theme="light"] .kpi[data-warn] b { color: #b4232f; }
 .actions { display: flex; flex-wrap: wrap; gap: 8px; }
-.action { display: inline-flex; align-items: center; gap: 6px; height: 32px; padding: 0 14px; border-radius: var(--radius-control); border: 1px solid var(--glass-line); background: var(--glass-regular); color: var(--foreground); font: inherit; font-size: 13px; font-weight: 600; cursor: pointer; }
-.action[data-primary] { background: var(--primary); border-color: transparent; color: #fff; }
-.action:disabled { opacity: .5; cursor: default; }
 .card { border-radius: var(--radius-panel); background: var(--glass-thin); border: 1px solid var(--glass-line); overflow: hidden; }
 .card > header { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 10px 14px; border-bottom: 1px solid var(--glass-line); }
 .card > header small { color: var(--muted); font-size: 11.5px; }
@@ -38,8 +35,6 @@ a.row:hover { background: color-mix(in srgb, var(--foreground) 5%, transparent);
 .late { color: #ff8f9a; font-weight: 600; }
 :root[data-theme="light"] .late { color: #b4232f; }
 .chips { display: flex; flex-wrap: wrap; gap: 6px; }
-.chip { height: 28px; padding: 0 12px; border-radius: var(--radius-control); border: 1px solid var(--glass-line); background: transparent; color: var(--foreground); font: inherit; font-size: 12.5px; cursor: pointer; }
-.chip[aria-pressed='true'] { background: var(--foreground); color: var(--background); border-color: transparent; }
 .timeline { position: relative; margin: 0; padding: 0 0 0 28px; list-style: none; }
 .timeline::before { content: ''; position: absolute; left: 11px; top: 6px; bottom: 6px; width: 2px; background: var(--glass-line); }
 .day { margin: 10px 0 6px -28px; font-size: 11.5px; font-weight: 650; color: var(--muted); }
@@ -53,15 +48,13 @@ a.row:hover { background: color-mix(in srgb, var(--foreground) 5%, transparent);
 .eventHead span { color: var(--muted); font-size: 11.5px; white-space: nowrap; }
 .event small { display: block; color: var(--muted); font-size: 12px; margin-top: 2px; }
 .noteForm { display: grid; gap: 8px; padding: 12px 14px; }
-.noteForm textarea { margin: 0; padding: 8px 10px; min-height: 70px; border: 1px solid var(--glass-line); border-radius: var(--radius-small); background: color-mix(in srgb, var(--foreground) 4%, transparent); color: var(--foreground); font: inherit; font-size: 13.5px; resize: vertical; }
+.noteForm textarea { min-height: 70px; }
 .noteForm div { display: flex; justify-content: flex-end; gap: 8px; }
-.remove { border: 0; background: none; padding: 0 4px; min-height: 0; color: var(--muted); font: inherit; font-size: 12px; cursor: pointer; }
 .empty { margin: 0; padding: 12px 14px; color: var(--muted); font-size: 12.5px; }
 .muted { color: var(--muted); font-size: 12px; }
 /* Innerhalb der Akte gelten allgemeine Akten-Stile; hier gezielt zurücksetzen. */
 .root > * { margin: 0; }
 .root .card > header h3 { margin: 0; font-size: 13px; line-height: 1.3; }
 .root .card > header { min-height: 40px; }
-.root button.remove { display: inline; height: auto; min-height: 0; padding: 0 2px; border: 0; border-radius: 0; background: none; color: var(--muted); font: inherit; font-size: 12px; font-weight: 600; text-decoration: underline; cursor: pointer; }
 .root .timeline > li.day { margin: 12px 0 6px -28px; list-style: none; }
 .root .timeline > li.day:first-child { margin-top: 0; }

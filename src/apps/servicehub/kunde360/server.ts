@@ -5,12 +5,11 @@ import {maildeskOverview} from '../../maildesk';
 import {PdsProtocolError,PdsTasks,PdsVisits,openTaskStatuses} from '../../../platform/pds/api';
 import {pdsApi} from '../../../platform/pds/connection/api';
 import {platformDatabase,PlatformError} from '../../../platform/store';
-import {serviceMatchContext} from '../akten';
+import {isOpenServiceOrder,serviceMatchContext} from '../akten';
 import {customerNotesStore} from './notes-store';
 // Kunde 360: alle Daten eines Kunden an einem Ort – PDS (Aufträge, Aufgaben, Termine vor Ort), MailDesk und Notizen.
 // Nur lesend aus PDS und MailDesk; Notizen speichert heyelli. Jede Quelle erscheint nur mit dem passenden App-Recht.
 export type TimelineEntry={id:string;kind:'mail'|'task'|'order'|'note';at:string;title:string;detail:string;href?:string;status?:string};
-const closedOrder=/erledigt|abgeschlossen|storniert|abgerechnet/i;
 const notes=()=>customerNotesStore(platformDatabase());
 function sourceKey(api:Awaited<ReturnType<typeof pdsApi>>){return api.source.mode==='simulator'?'simulator':'pds:'+api.source.workspaceId;}
 function failure(error:unknown):never{if(error instanceof PlatformError)throw error;if(error instanceof PdsProtocolError)throw new PlatformError(error.message,422);throw error;}
@@ -22,7 +21,7 @@ export async function customerOverview(customerId:unknown){
   const source=sourceKey(api),context=await serviceMatchContext(),customer=context.customers.find(item=>item.id===customerId);
   if(!customer)throw new PlatformError('Kunde nicht gefunden.',404);
   const objects=context.objects.filter(item=>item.customerId===customerId),objectIds=new Set(objects.map(item=>item.id)),objectName=new Map(objects.map(item=>[item.id,item.name]));
-  const orders=context.orders.filter(order=>order.customerId===customerId),openOrders=orders.filter(order=>!closedOrder.test(order.status));
+  const orders=context.orders.filter(order=>order.customerId===customerId),openOrders=orders.filter(isOpenServiceOrder);
   const timeline:TimelineEntry[]=[];const warnings:string[]=[];const now=Date.now();
   for(const order of orders)if(order.nextStart&&Date.parse(order.nextStart)<=now)timeline.push({id:'order:'+order.id,kind:'order',at:order.nextStart,title:`Auftrag ${order.number}${order.title?' · '+order.title:''}`,detail:[order.status,objectName.get(order.objectId)].filter(Boolean).join(' · '),href:'/servicehub?'+new URLSearchParams({ansicht:'files',akte:'order',id:order.id}),status:order.status});
   // Termine vor Ort: PDS liefert Termine nur je Mitarbeiter; gefiltert auf die Objekte und Einheiten dieses Kunden.

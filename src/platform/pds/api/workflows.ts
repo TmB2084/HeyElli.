@@ -2,11 +2,18 @@ import {assignBearbeiter,type PdsActor} from "./bearbeiter.ts";
 import {validateRequest,PdsProtocolError} from "./protocol.ts";
 export type ServicePosition={id:string;articleId:string;name:string;type:"ARTIKEL"|"ARTIKEL_INKL_LOHN";number:string;quantity:number};
 export type ApiCall={method:"POST"|"GET";path:string;body?:unknown};
-export function serviceWorkflow(input:{customerUUID:string;objectUUID:string;description:string;externalNumber:string;reportedAt:string;technicianId:string;companions:string[];mobileIssue?:boolean;start?:string;end?:string;positions?:ServicePosition[]},template:string,actor?:PdsActor) {
+export type ServiceWorkflowInput={customerUUID:string;objectUUID:string;description:string;remark?:string;externalNumber:string;reportedAt:string;technicianId:string;companions:string[];mobileIssue?:boolean;start?:string;end?:string;positions?:ServicePosition[]};
+export function serviceIncidentData(input:ServiceWorkflowInput,serviceId:unknown){
+  return {serviceauftragUUID:serviceId,objektUUID:input.objectUUID,auszufuehrendeArbeiten:input.description,
+    ...(input.remark?{bemerkung:input.remark}:{}),
+    ...(input.technicianId?{hauptmonteurUUID:input.technicianId,weiteremonteureUUIDs:input.companions,startZeitpunkt:input.start,
+      ...(input.end?{endZeitpunkt:input.end}:{})}:{})};
+}
+export function serviceWorkflow(input:ServiceWorkflowInput,template:string,actor?:PdsActor) {
   if(input.mobileIssue===true&&!input.technicianId)throw new PdsProtocolError("Mobile Ausgabe benötigt einen Haupttechniker.");
   const data={personUUID:input.customerUUID,externeNummer:input.externalNumber,belegDatum:input.reportedAt.slice(0,10),texte:{technischeVormerkung:input.description}};
   const calls:ApiCall[]=[{method:"POST",path:"/service/create",body:{context:{vorgangsVorlageName:template},vorgangsdaten:actor ? assignBearbeiter(data,actor) : data}},
-    {method:"POST",path:"/service/createstoerung",body:{serviceauftragUUID:"$service.uuid",objektUUID:input.objectUUID,auszufuehrendeArbeiten:input.description,...(input.technicianId ? {hauptmonteurUUID:input.technicianId,weiteremonteureUUIDs:input.companions,startZeitpunkt:input.start,...(input.end?{endZeitpunkt:input.end}:{})} : {})}}];
+    {method:"POST",path:"/service/createstoerung",body:serviceIncidentData(input,"$service.uuid")}];
   for(const position of input.positions??[])calls.push({method:"POST",path:"/service/createposition",body:{uuid:"$incident.uuid",position:{apiID:"standard:"+position.id,katalogUUID:position.articleId,name:position.name,positionsTyp:position.type,positionsArt:"NORMAL",nummer:position.number,menge:position.quantity}}});
   if(input.mobileIssue??Boolean(input.technicianId))calls.push({method:"POST",path:"/service/mobilausgeben",body:{uuid:"$service.uuid",auftragspool:false}});
   calls.forEach(call=>validateRequest(call.method,call.path,call.body));

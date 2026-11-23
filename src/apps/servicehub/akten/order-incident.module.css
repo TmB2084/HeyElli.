@@ -29,10 +29,10 @@
 .incident .focus > div { border-radius: var(--radius-panel) !important; }
 .incident .description { margin: 14px 2px 0 !important; padding: 0 !important; border: 0 !important; background: transparent !important; font-size: 13.5px; line-height: 1.55; }
 .incident p.description { white-space: pre-wrap; }
-.planCapsule { display: inline-flex !important; align-items: center; gap: 7px; height: 30px; min-height: 30px; padding: 0 14px !important; border: 0 !important; border-radius: var(--radius-control) !important; background: var(--primary) !important; color: #fff !important; font-size: 13px; font-weight: 650; white-space: nowrap; box-shadow: none !important; width: auto !important; flex: none !important; }
-.planCapsule svg { color: #fff !important; }
-.planCapsule:hover { background: var(--primary-hover) !important; }
 @media (max-width: 560px) { .incident .focus { grid-template-columns: 1fr; } }
-.actions .planCapsule.planCapsule { flex: none !important; width: auto !important; height: 30px; padding: 0 14px !important; justify-content: flex-start; background: var(--primary) !important; color: #fff !important; font-size: 13px; }
-.actions .planCapsule.planCapsule svg { width: 15px; height: 15px; color: #fff !important; }
-.actions .planCapsule.planCapsule { font-size: 13px !important; }
+.actions .planCapsule {
+  width: 34px;
+  flex: 0 0 34px;
+  min-height: 30px;
+  padding: 0;
+}

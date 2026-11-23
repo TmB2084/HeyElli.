@@ -9,6 +9,7 @@ import {dispatchId} from './dispatch-reader';
 import {readMaintenancePage} from './maintenance-reader';
 import {readChronicleServices,readChronicleReports,chronicleSourceRevision} from './chronicle-reader';
 import {chronicleDate,type ChronicleEntry} from './chronicle-model';
+export {chronicleSourceRevision};
 export async function chronicleRead(params:URLSearchParams,signal?:AbortSignal){
  await requireAppRead('/servicehub');const id=dispatchId(params.get('id')),expected=params.get('revision');if(!expected||!/^[a-f0-9]{64}$/.test(expected))throw new ServiceReadError('Quellenstand fehlt. Bitte die Akte erneut öffnen.',409);
  const api=await pdsApi();try{

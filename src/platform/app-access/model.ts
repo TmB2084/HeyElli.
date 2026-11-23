@@ -36,6 +36,7 @@ export function writeAppsForRequest(path:string,method:string):string[]{
  if(path==='/api/service/einsatzmappe')return ['/servicehub'];
  if(path==='/api/service/dokumente')return ['/servicehub'];
  if(path==='/api/service/status')return ['/servicehub'];
+ if(path==='/api/service/markierungen')return []; // Eigene Auftragsmarkierungen benötigen Service-Leserecht.
  if(path==='/api/service/planung')return ['/servicehub'];
  if(path==='/api/service/kunde360/notiz')return ['/servicehub'];
  if(path==='/api/maildesk/aktion'||path==='/api/maildesk/antwort')return ['/maildesk'];

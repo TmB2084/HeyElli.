@@ -108,6 +108,12 @@ export class SimulatedPdsApi implements PdsTransport {
       case "/objekt/details":return [...objectRows,...unitRows].find(row=>row.uuid===input.uuid)??{errorCode:"NOT_FOUND"};
       case "/person/listkunden":return page(customerRows);
       case "/person/listpersonen":return page([...customerRows,...personRows]);
+      case "/person/detailsbatch":{
+        const ids=(body as {uuids:string[]}).uuids;
+        if(!Array.isArray(ids)||ids.length>1000)throw Error("Ungültige Personenliste.");
+        const index=new Map([...customerRows,...personRows].map(row=>[row.uuid,row]));
+        return ids.map(id=>{const row=index.get(id);if(!row)throw Error("Person fehlt.");return row;});
+      }
       case "/person/details":return [...customerRows,...personRows].find(row=>row.uuid===input.uuid)??{errorCode:"NOT_FOUND"};
       case "/person/listfunktionen":return new SimulatedWriteApi(this.store,this.workflow??"metadata").request(method,path,body);
       case "/mitarbeiter/listmitarbeiter":return page(employeeRows);

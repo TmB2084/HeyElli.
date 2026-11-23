@@ -3,8 +3,8 @@ import {useEffect,useState} from 'react';
 import type {ServiceOverview} from './model';
 import type {MaintenanceRow} from './maintenance-model';
 type State={key:string;rows:MaintenanceRow[];done:number;loading:boolean;error:string};
-export function useMaintenance(data:ServiceOverview){
- const ids=JSON.stringify(data.objects.map(item=>item.id).sort()),revision=data.costRevision??'',key=revision+':'+ids;
+export function useMaintenance(data:ServiceOverview|null,enabled=true){
+ const ids=JSON.stringify((data?.objects??[]).map(item=>item.id).sort()),revision=enabled?data?.costRevision??'':'',key=revision+':'+ids;
  const [state,setState]=useState<State>({key:'',rows:[],done:0,loading:true,error:''}),[refresh,setRefresh]=useState(0);
  useEffect(()=>{
   if(!revision)return;const controller=new AbortController(),objects:string[]=JSON.parse(ids);let disposed=false;

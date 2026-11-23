@@ -1,6 +1,8 @@
 'use client';
 import {useEffect,useRef,useState,type ReactNode,type FormEvent} from 'react';
 import {Notice,GuardedLink,AppGlyph,appIconBackground} from '@/platform/shell';
+import {Button} from '@/platform/ui';
+import {Conversation,Message,PromptInput,Sources,Suggestion} from '@/platform/ui/ai-elements';
 import styles from './chat.module.css';
 import {greetingFallback,greetingStyleVersion} from './greeting';
 import {ElliIntroduction} from './introduction';
@@ -66,15 +68,81 @@ export function LocalAssistant({shortcuts,footer}:{shortcuts?:ReactNode;footer?:
  function ask(value:string){if(!providerEnabled||!ready||resetting||busy||actionBusy||!value.trim())return;const existing=queue.find(job=>job.question===value.trim());if(existing){setRetry(item=>item+1);return;}const job={id:crypto.randomUUID(),question:value.trim(),draft:{id:editor.current,revision:revision.current+1}};try{localStorage.setItem(prefix(owner,epoch)+'pending:'+job.id,JSON.stringify({job}));}catch{setError('Die Frage konnte nicht sicher auf diesem Gerät vorgemerkt werden. Bitte erneut versuchen.');return;}setStarted(true);setBusy(true);setError('');setQueue(previous=>[...previous,job]);edit('');}
  async function newChat(){if(!ready||resetting||actionBusy)return;controller.current?.abort();controller.current=null;if(draftTimer.current)clearTimeout(draftTimer.current);setBusy(false);setResetting(true);setError('');try{const response=await fetch('/api/assistent/verlauf',{method:'DELETE',headers:{'Content-Type':'application/json'},signal:AbortSignal.timeout(15000),body:JSON.stringify({epoch})}),value=await response.json();if(!response.ok)throw Error(value.error);for(const key of Object.keys(localEntries(owner,epoch)))localStorage.removeItem(key);epochRef.current=value.epoch;setEpoch(value.epoch);setTurns([]);setFeedback([]);setQueue([]);setQuestion('');setRecoveries([]);setStarted(false);editor.current=crypto.randomUUID();revision.current=0;requestAnimationFrame(()=>input.current?.focus({preventScroll:true}));}catch(problem){setError(problem instanceof Error?problem.message:'Der Chat konnte nicht zurückgesetzt werden.');setReady(false);}finally{setResetting(false);}}
  function submit(event:FormEvent){event.preventDefault();ask(question);}
- return <>{!started&&shortcuts}<section className={styles.card} aria-labelledby="assistant-title">
-  <header className={styles.header}><span className={styles.symbol} style={{background:appIconBackground.elli}} aria-hidden="true"><AppGlyph icon="elli"/></span><div><h2 id="assistant-title" className="sr-only">AskElli</h2><p>Bedienhilfe im Gespräch{providerName==='copilot'?' · mit Copilot':providerName==='ollama'?' · lokal mit Ollama':''}</p></div><button type="button" className={styles.newChat} disabled={!ready||resetting||actionBusy} onClick={()=>void newChat()}>{resetting?'Wird zurückgesetzt …':'Neuer Chat'}</button></header>
-  <div ref={conversation} className={styles.conversation} role="log" aria-label="Gespräch mit Elli">{epoch&&(greeting.epoch===epoch?<><ElliIntroduction key={epoch} text={greeting.text}/>{greeting.error&&<p className={styles.status} role="status">Persönliche Begrüßung gerade nicht verfügbar. Du kannst Elli trotzdem ausprobieren.</p>}</>:<p className={styles.status} role="status">Elli formuliert deine Begrüßung …</p>)}{turns.map(turn=><div key={turn.id} className={styles.turn}><p className={styles.question}>{turn.question}</p><div className={styles.reply}><strong className={styles.author}>Elli</strong><p>{turn.answer}</p><nav aria-label="Verwendete Anleitung">{turn.sources.map(source=><GuardedLink key={source.href} href={source.href}>{source.title} ›</GuardedLink>)}</nav>{turn.hasAction&&<ActionConfirmation epoch={epoch} turnId={turn.id} enabled={providerEnabled&&providerWrite} locked={actionBusy} onBusy={setActionBusy}/>}
-{canRate&&<AnswerFeedbackControl key={epoch+turn.id+JSON.stringify(feedback.find(item=>item.turnId===turn.id))} epoch={epoch} turnId={turn.id} initial={feedback.find(item=>item.turnId===turn.id)}/>}</div></div>)}{queue.map(job=><div key={job.id}><p className={styles.question}>{job.question}</p><p className={styles.status} role="status">{!providerEnabled?'Frage gesichert · wartet auf den KI-Anbieter':error?'Frage gesichert · Antwort wird erneut versucht': 'Elli antwortet …'}</p></div>)}</div>
-  {providerLoaded&&!providerEnabled&&<Notice tone="neutral" role="status">Ellis Anbieterstatus ist gerade nicht verfügbar. Deine Eingaben bleiben gesichert.</Notice>}
-  {!ready&&!error&&<p role="status">Gesicherter Chat wird geladen …</p>}{error&&<Notice tone="error">{error}{!ready&&<button type="button" onClick={()=>{setError('');setLoadRevision(value=>value+1);}}>Chat erneut laden</button>}</Notice>}
-  <form onSubmit={submit}><label className="sr-only" htmlFor="assistant-question">Wie kann ich dir helfen?</label><div className={styles.input}><textarea ref={input} id="assistant-question" maxLength={1500} rows={1} placeholder="Frage stellen oder eine Änderung vorbereiten …" value={question} disabled={!ready||resetting||(busy&&providerEnabled)||actionBusy} onChange={event=>edit(event.target.value)} onKeyDown={event=>{if(event.key==='Enter'&&!event.shiftKey&&!event.nativeEvent.isComposing&&event.keyCode!==229){event.preventDefault();ask(question);}}}/><button type="submit" className={styles.send} disabled={!providerEnabled||busy||actionBusy||!ready||resetting||!question.trim()} aria-label="Frage senden"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><path d="M10 15V5m-5 5 5-5 5 5"/></svg></button></div></form>
-  <div className={styles.suggestions} role="group" aria-label="Häufige Bedienungsfragen">{suggestions.map(([label,text])=><button key={label} type="button" disabled={!providerEnabled||busy||actionBusy||!ready||resetting} onClick={()=>ask(text)}>{label}<span aria-hidden="true">↗</span></button>)}</div>
-  {recoveries.some(text=>text!==question)&&<details className={styles.recoveries}><summary>Weitere gesicherte Fragen</summary>{recoveries.filter(text=>text!==question).map(text=><button key={text} title={text} type="button" disabled={busy||!ready||resetting} onClick={()=>{setRecoveries(previous=>[...new Set([...previous,question].filter(Boolean))]);editor.current=crypto.randomUUID();revision.current=0;edit(text);}}>{text}</button>)}</details>}
-  <small className={styles.note}>{providerName==='copilot'?'Copilot verarbeitet Fragen und ausgewählte Kontexte bei Microsoft. Änderungen erst nach Bestätigung. Keine Zugangsdaten eingeben.':providerName==='ollama'?'Lokale Bedienungshilfe mit Ollama. Keine aktuellen Fachdaten oder Schreibaktionen. Keine Zugangsdaten eingeben.':'Anbieterstatus nicht verfügbar. Deine Eingaben bleiben gesichert.'}</small>
- </section>{footer}</>;
+ return (
+  <>
+   {!started&&shortcuts}
+   <section className={styles.card} aria-labelledby="assistant-title">
+    <header className={styles.header}>
+     <span className={styles.symbol} style={{background:appIconBackground.elli}} aria-hidden="true"><AppGlyph icon="elli"/></span>
+     <div>
+      <h2 id="assistant-title" className="sr-only">AskElli</h2>
+      <p>Bedienhilfe im Gespräch{providerName==='copilot'?' · mit Copilot':providerName==='ollama'?' · lokal mit Ollama':''}</p>
+     </div>
+     <Button variant="outline" disabled={!ready||resetting||actionBusy} onClick={()=>void newChat()}>
+      {resetting?'Wird zurückgesetzt …':'Neuer Chat'}
+     </Button>
+    </header>
+    <Conversation ref={conversation} aria-label="Gespräch mit Elli">
+     {epoch&&(greeting.epoch===epoch
+      ? <><ElliIntroduction key={epoch} text={greeting.text}/>{greeting.error&&<p className={styles.status} role="status">Persönliche Begrüßung gerade nicht verfügbar. Du kannst Elli trotzdem ausprobieren.</p>}</>
+      : <p className={styles.status} role="status">Elli formuliert deine Begrüßung …</p>)}
+     {turns.map(turn=>(
+      <div key={turn.id} className={styles.turn}>
+       <Message from="user">{turn.question}</Message>
+       <Message from="assistant">
+        <strong className={styles.author}>Elli</strong>
+        <p className={styles.answer}>{turn.answer}</p>
+        {turn.sources.length>0&&<Sources aria-label="Verwendete Anleitung">
+         {turn.sources.map(source=>(
+          <Button asChild variant="link" key={source.href}><GuardedLink href={source.href}>{source.title} ›</GuardedLink></Button>
+         ))}
+        </Sources>}
+        {turn.hasAction&&<ActionConfirmation epoch={epoch} turnId={turn.id} enabled={providerEnabled&&providerWrite} locked={actionBusy} onBusy={setActionBusy}/>}
+        {canRate&&<AnswerFeedbackControl key={epoch+turn.id+JSON.stringify(feedback.find(item=>item.turnId===turn.id))} epoch={epoch} turnId={turn.id} initial={feedback.find(item=>item.turnId===turn.id)}/>}
+       </Message>
+      </div>
+     ))}
+     {queue.map(job=>(
+      <div key={job.id} className={styles.turn}>
+       <Message from="user">{job.question}</Message>
+       <p className={styles.status} role="status">{!providerEnabled?'Frage gesichert · wartet auf den KI-Anbieter':error?'Frage gesichert · Antwort wird erneut versucht':'Elli antwortet …'}</p>
+      </div>
+     ))}
+    </Conversation>
+    {providerLoaded&&!providerEnabled&&<Notice tone="neutral" role="status">Ellis Anbieterstatus ist gerade nicht verfügbar. Deine Eingaben bleiben gesichert.</Notice>}
+    {!ready&&!error&&<p role="status">Gesicherter Chat wird geladen …</p>}
+    {error&&<Notice tone="error">{error}{!ready&&<Button variant="outline" onClick={()=>{setError('');setLoadRevision(value=>value+1);}}>Chat erneut laden</Button>}</Notice>}
+    <PromptInput
+     ref={input}
+     id="assistant-question"
+     label="Wie kann ich dir helfen?"
+     sendLabel="Frage senden"
+     sendDisabled={!providerEnabled||busy||actionBusy||!ready||resetting||!question.trim()}
+     maxLength={1500}
+     rows={1}
+     placeholder="Frage stellen oder eine Änderung vorbereiten …"
+     value={question}
+     disabled={!ready||resetting||(busy&&providerEnabled)||actionBusy}
+     onChange={event=>edit(event.target.value)}
+     onSubmit={submit}
+    />
+    <div className={styles.suggestions} role="group" aria-label="Häufige Bedienungsfragen">
+     {suggestions.map(([label,text])=><Suggestion key={label} disabled={!providerEnabled||busy||actionBusy||!ready||resetting} onClick={()=>ask(text)}>{label}<span aria-hidden="true">↗</span></Suggestion>)}
+    </div>
+    {recoveries.some(text=>text!==question)&&<details className={styles.recoveries}>
+     <summary>Weitere gesicherte Fragen</summary>
+     {recoveries.filter(text=>text!==question).map(text=>(
+      <Button key={text} title={text} variant="outline" disabled={busy||!ready||resetting} onClick={()=>{
+       setRecoveries(previous=>[...new Set([...previous,question].filter(Boolean))]);
+       editor.current=crypto.randomUUID();
+       revision.current=0;
+       edit(text);
+      }}>{text}</Button>
+     ))}
+    </details>}
+    <small className={styles.note}>{providerName==='copilot'?'Copilot verarbeitet Fragen und ausgewählte Kontexte bei Microsoft. Änderungen erst nach Bestätigung. Keine Zugangsdaten eingeben.':providerName==='ollama'?'Lokale Bedienungshilfe mit Ollama. Keine aktuellen Fachdaten oder Schreibaktionen. Keine Zugangsdaten eingeben.':'Anbieterstatus nicht verfügbar. Deine Eingaben bleiben gesichert.'}</small>
+   </section>
+   {footer}
+  </>
+ );
 }

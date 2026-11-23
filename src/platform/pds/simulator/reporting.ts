@@ -1,4 +1,5 @@
 // Public, browser-safe formatting contract shared by UI and simulator storage.
+export const maxOrderRemarkLength=2000;
 export const reportingChannels = [
   {value:"Telefon",label:"Telefonisch gemeldet und beauftragt",sentence:"telefonisch gemeldet und beauftragt"},
   {value:"E-Mail",label:"Per E-Mail gemeldet und beauftragt",sentence:"per E-Mail gemeldet und beauftragt"},

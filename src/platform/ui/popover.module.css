@@ -1,0 +1,56 @@
+.content {
+  --floating-menu-background: var(--glass-thick);
+  box-sizing: border-box;
+  z-index: 40;
+  width: var(--popover-width, 280px);
+  max-width: min(var(--radix-popover-content-available-width, 100vw), calc(100vw - 24px));
+  padding: 5px;
+  border: 1px solid var(--glass-line);
+  border-radius: var(--radius-panel);
+  color: var(--foreground);
+}
+
+.content[data-scroll] {
+  max-height: min(360px, var(--radix-popover-content-available-height, 60dvh));
+  overflow: auto;
+  overscroll-behavior: contain;
+}
+
+.content .item[data-slot='button'] {
+  display: flex;
+  justify-content: flex-start;
+  width: 100%;
+  min-height: var(--command-menu-row-height);
+  padding: 6px 9px;
+  gap: 8px;
+  margin: 0;
+  border: 0;
+  border-radius: var(--radius-small);
+  background: transparent;
+  color: var(--foreground);
+  box-shadow: none;
+  text-align: start;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  font-weight: 500;
+}
+
+.content .item[data-slot='button']:is([aria-selected='true'],[aria-pressed='true'],:hover:not(:disabled),:focus-visible) {
+  background: color-mix(in srgb, var(--foreground) 11%, transparent);
+  color: var(--foreground);
+}
+
+.content .item[data-slot='button']:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: -2px;
+}
+
+.separator {
+  height: 1px;
+  margin: 4px 8px;
+  background: var(--command-menu-line);
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  .content { --floating-menu-background: var(--surface); }
+}
