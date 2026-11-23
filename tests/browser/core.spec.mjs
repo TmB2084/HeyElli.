@@ -349,28 +349,63 @@ test('E15 Aktennavigation hält vier Symbole stabil und zeigt Auftragsbezüge',a
  await expect(objectMenu.getByRole('option',{name:'Demohaus ohne technische Einheit',exact:true})).toBeVisible();
 });
 
-test('E16 Kostenträgersuche findet Objekt Einheit und Vertragswerte ohne Akte vorher zu öffnen',async({page,context})=>{
- await authenticate(context);await enter(page,'/servicehub?ansicht=files');
- await page.getByRole('button',{name:'Suche öffnen',exact:true}).click();
- const overview=page.getByRole('region',{name:'Serviceübersicht',exact:true}),search=page.getByRole('combobox',{name:'Suche',exact:true});
- await search.fill('SIM-KTR-100');await expect(overview.getByRole('button',{name:/Heizungsanlage/})).toBeVisible();await expect(overview.getByRole('button').filter({has:page.getByText('Beispielhaus Nord',{exact:true})})).toBeVisible();
- await expect(page.getByRole('status').filter({hasText:'Kostenträger werden durchsucht'})).toHaveCount(0);await expect(overview.getByText('Keine passenden Kunden oder technischen Einheiten.',{exact:true})).toHaveCount(0);
- await expect(overview.getByRole('button',{name:/Heizungsanlage/}).getByText('SIM-KTR-100',{exact:true})).toBeVisible();await expect(overview.getByRole('button',{name:/Heizungsanlage/}).getByText('Beispielanlagen – Betrieb',{exact:false})).toBeVisible();await expect(overview.getByText('Wartung',{exact:true})).toHaveCount(0);
- await search.fill('SIM-KST-100');await expect(overview.getByRole('button').filter({has:page.getByText('Beispielhaus Nord',{exact:true})})).toBeVisible();
- await search.fill('SIM-KTR-200');await expect(overview.getByRole('button').filter({has:page.locator('strong')}).first()).toBeVisible();
- await expect(overview.getByText('Wartung',{exact:true}).first()).toBeVisible();await expect(overview.getByText('Rechnung',{exact:true})).toHaveCount(0);
- await search.fill('Beispielvertrag Rechnung');await expect(overview.getByRole('button').filter({has:page.locator('strong')}).first()).toBeVisible();
- await expect(overview.getByText('Rechnung',{exact:true}).first()).toBeVisible();await expect(overview.getByText('Wartung',{exact:true})).toHaveCount(0);
- await page.screenshot({path:join(artifacts,`cost-hits-${page.context().browser().browserType().name()}.png`),mask:[page.locator('input[type=password]')]});
- await test.step('Kostenträgersuche passt mit geöffneten Vorschlägen in die schmale Ansicht',async()=>{
+test('E16 Kostenträgersuche findet Objekt Einheit und Vertragswerte ohne Akte vorher zu öffnen',async({page,context,browserName})=>{
+ await authenticate(context);
+ await enter(page,'/servicehub?ansicht=files');
+ const overview=page.getByRole('region',{name:'Serviceübersicht',exact:true});
+ const search=page.getByRole('combobox',{name:'Suche',exact:true});
+ const heading=page.getByRole('navigation',{name:'Serviceansichten',exact:true}).getByRole('button',{name:'Alle Aufträge',exact:true});
+ const heating=overview.getByRole('button',{name:/Heizungsanlage/});
+ const northernSite=overview.getByRole('button').filter({has:page.getByText('Beispielhaus Nord',{exact:true})});
+ const emptyOrders=overview.getByText('Keine passenden Aufträge.',{exact:true});
+ const costError=page.getByRole('alert').filter({hasText:'Kostenträger konnten nicht vollständig'});
+ async function searchFor(term){
+  await search.fill(term);
+  await expect.poll(()=>new URL(page.url()).searchParams.get('q')).toBe(term);
+ }
+
+ await test.step('Objekt und Einheit nach eigenen Kostendaten finden',async()=>{
+  await page.getByRole('button',{name:'Suche öffnen',exact:true}).click();
+  await searchFor('SIM-KTR-100');
+  await expect(heating.getByText('SIM-KTR-100',{exact:true})).toBeVisible();
+  await expect(heating.getByText('Beispielanlagen – Betrieb',{exact:false})).toBeVisible();
+  await expect(northernSite).toBeVisible();
+  await expect(page.getByRole('status').filter({hasText:'Kostenträger werden durchsucht'})).toHaveCount(0);
+  await expect(overview.getByText('Keine passenden Kunden oder technischen Einheiten.',{exact:true})).toHaveCount(0);
+  await expect(overview.getByText('Wartung',{exact:true})).toHaveCount(0);
+  await searchFor('SIM-KST-100');
+  await expect(northernSite).toBeVisible();
+ });
+ await test.step('Wartungs- und Rechnungskostenträger unterscheiden',async()=>{
+  await searchFor('SIM-KTR-200');
+  await expect(overview.getByText('Wartung',{exact:true}).first()).toBeVisible();
+  await expect(overview.getByText('Rechnung',{exact:true})).toHaveCount(0);
+  await searchFor('Beispielvertrag Rechnung');
+  await expect(overview.getByText('Rechnung',{exact:true}).first()).toBeVisible();
+  await expect(overview.getByText('Wartung',{exact:true})).toHaveCount(0);
+  await page.screenshot({path:join(artifacts,`cost-hits-${browserName}.png`),mask:[page.locator('input[type=password]')]});
+ });
+ await test.step('Kostenbasierte Suche in der schmalen Auftragsliste',async()=>{
   await page.setViewportSize({width:390,height:844});
   await expect.poll(()=>page.evaluate(()=>document.documentElement.scrollWidth-innerWidth)).toBeLessThanOrEqual(1);
+  await heading.click();
+  await expect(heading).toHaveAttribute('aria-current','page');
+  await searchFor('SIM-KTR-300');
+  await expect(overview.getByRole('button',{name:/SIM-SA-1000/}).first()).toBeVisible();
+  await searchFor('unbekannterkostentraeger');
+  await expect(emptyOrders).toBeVisible();
  });
- await page.getByRole('button',{name:'Alle Aufträge',exact:true}).click();await page.getByRole('combobox',{name:'Suche',exact:true}).fill('SIM-KTR-300');await expect(overview.getByRole('button',{name:/SIM-SA-1000/}).first()).toBeVisible();
- await page.getByRole('combobox',{name:'Suche',exact:true}).fill('unbekannterkostentraeger');await expect(overview.getByText('Keine passenden Aufträge.',{exact:true})).toBeVisible();
- await page.route('**/api/service?*',async route=>new URL(route.request().url()).searchParams.get('part')==='cost-catalog'?route.abort('internetdisconnected'):route.continue());
- await page.reload();await expect(page.getByRole('alert').filter({hasText:'Kostenträger konnten nicht vollständig'})).toBeVisible();await expect(overview.getByText('Keine passenden Aufträge.',{exact:true})).toHaveCount(0);await expect(page.getByRole('combobox',{name:'Suche',exact:true})).toBeEnabled();
- await page.unroute('**/api/service?*');await page.getByRole('button',{name:'Erneut versuchen',exact:true}).click();await expect(overview.getByText('Keine passenden Aufträge.',{exact:true})).toBeVisible();await expect(page.getByRole('alert').filter({hasText:'Kostenträger konnten nicht vollständig'})).toHaveCount(0);
+ await test.step('Fehlenden Kostenkatalog anzeigen und danach nachladen',async()=>{
+  await page.route('**/api/service?*',route=>new URL(route.request().url()).searchParams.get('part')==='cost-catalog'?route.abort('internetdisconnected'):route.continue());
+  await page.reload();
+  await expect(costError).toBeVisible();
+  await expect(emptyOrders).toHaveCount(0);
+  await expect(search).toBeEnabled();
+  await page.unroute('**/api/service?*');
+  await costError.getByRole('button',{name:'Erneut versuchen',exact:true}).click();
+  await expect(emptyOrders).toBeVisible();
+  await expect(costError).toHaveCount(0);
+ });
 });
 
 test('E17 Wartungen zeigen echte Fälligkeit und nur gesperrte Auftragserzeugung',async({page,context,browser,browserName})=>{
