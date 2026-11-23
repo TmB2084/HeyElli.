@@ -255,7 +255,14 @@ test('E14 Persönliches Ausblenden bleibt nach erneutem Öffnen erhalten und ist
 
 test('E15 Aktennavigation hält vier Symbole stabil und zeigt Auftragsbezüge',async({page,context,browserName})=>{
  await authenticate(context);const data=await (await context.request.get(fixture.base+'/api/service')).json(),unit=data.objects.find(row=>row.type==='TECHNISCHE_EINHEIT'&&row.parentId),parent=data.objects.find(row=>row.id===unit.parentId),customer=data.customers.find(row=>row.id===parent.customerId);
- await page.route('**/api/service?*',async route=>{const url=new URL(route.request().url());if(url.searchParams.get('id')!==unit.id)return route.continue();const response=await route.fetch(),value=await response.json();if(url.searchParams.get('part')==='base')value.webLink='https://pds.example.invalid/records/toolbar';else if(value.extras)value.extras.contracts=[...(value.extras.contracts??[]),{id:'fictional-toolbar-contract',name:'Fiktiver Vertrag',description:'',bma:{links:[{aid:17,number:'FIKTIV-17',name:'Fiktive Anlage',url:'https://bma.example.invalid/portal.php?action=anlagen_add&aid=17'}]}}];await route.fulfill({response,json:value});});
+ await page.route(url=>url.pathname==='/api/service'&&url.searchParams.get('id')===unit.id,async route=>{
+  const part=new URL(route.request().url()).searchParams.get('part');
+  const response=await route.fetch(),value=await response.json();
+  if(part==='base')value.webLink='https://pds.example.invalid/records/toolbar';
+  else if(value.extras)value.extras.contracts=[...(value.extras.contracts??[]),{id:'fictional-toolbar-contract',name:'Fiktiver Vertrag',description:'',bma:{links:[{aid:17,number:'FIKTIV-17',name:'Fiktive Anlage',url:'https://bma.example.invalid/portal.php?action=anlagen_add&aid=17'}]}}];
+  await route.fulfill({response,json:value});
+ });
+ try {
  await enter(page,'/servicehub?ansicht=files&akte=object&id='+encodeURIComponent(unit.id));
  const file=page.getByRole('complementary',{name:'Akte',exact:true}),bar=file.getByRole('group',{name:'Aktenaktionen',exact:true}),navigation=bar.getByRole('group',{name:'Aktennavigation',exact:true});
  const customerButton=navigation.getByRole('button',{name:'Kundenakte '+customer.name+' öffnen',exact:true}),objectButton=navigation.getByRole('button',{name:/^Objekt:/}),unitButton=navigation.getByRole('button',{name:/^Einheit:/});
@@ -350,6 +357,9 @@ test('E15 Aktennavigation hält vier Symbole stabil und zeigt Auftragsbezüge',a
  await expect(unitButton).toBeDisabled();
  await objectButton.click();
  await expect(objectMenu.getByRole('option',{name:'Demohaus ohne technische Einheit',exact:true})).toBeVisible();
+ } finally {
+  await page.unrouteAll({behavior:'wait'});
+ }
 });
 
 test('E16 Kostenträgersuche findet Objekt Einheit und Vertragswerte ohne Akte vorher zu öffnen',async({page,context,browserName})=>{
