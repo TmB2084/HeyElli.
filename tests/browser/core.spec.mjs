@@ -399,12 +399,13 @@ test('E16 Kostenträgersuche findet Objekt Einheit und Vertragswerte ohne Akte v
   await expect(emptyOrders).toBeVisible();
  });
  await test.step('Fehlenden Kostenkatalog anzeigen und danach nachladen',async()=>{
-  await page.route('**/api/service?*',route=>new URL(route.request().url()).searchParams.get('part')==='cost-catalog'?route.abort('internetdisconnected'):route.continue());
+  await page.route(url=>url.pathname==='/api/service'&&url.searchParams.get('part')==='cost-catalog',
+   route=>route.abort('internetdisconnected'));
   await page.reload();
   await expect(costError).toBeVisible();
   await expect(emptyOrders).toHaveCount(0);
   await expect(search).toBeEnabled();
-  await page.unroute('**/api/service?*');
+  await page.unrouteAll({behavior:'wait'});
   await costError.getByRole('button',{name:'Erneut versuchen',exact:true}).click();
   await expect(emptyOrders).toBeVisible();
   await expect(costError).toHaveCount(0);
