@@ -1,5 +1,6 @@
 .workspace {
   --incident-line: color-mix(in srgb, var(--foreground) 12%, transparent);
+  --incident-complete: light-dark(#236b42, #88cea1);
   --incident-hover: color-mix(in srgb, var(--foreground) 4%, transparent);
   max-width: 1180px;
   padding: 32px 28px 48px;
@@ -8,69 +9,52 @@
   line-height: 1.55;
   -webkit-font-smoothing: antialiased;
 }
-.form { border: 1px solid var(--incident-line); border-radius: var(--radius-panel); background: var(--surface); box-shadow: var(--shadow-1); padding: 0 24px 24px; }
+.form { border: 1px solid var(--glass-line); border-radius: var(--radius-panel); background: transparent; box-shadow: var(--shadow-1); padding: 0 24px; }
 .captureTitle { display: flex; align-items: center; flex-wrap: wrap; gap: 12px; }
 .captureTitle h2 { font-size: 14px; letter-spacing: -.015em; font-weight: 650; margin: 0; }
 .captureTitle>span { color: var(--muted); font-size: 11px; padding-left: 12px; border-left: 1px solid var(--incident-line); }
-.form :global(.incident-toolbar) { margin: 0 -24px; padding: 16px 24px; min-height: 64px; border-bottom: 1px solid var(--incident-line); gap: 12px; }
-.form button { font-family: inherit; font-size: 12px; font-weight: 550; min-height: 32px; padding: 7px 12px; border: 1px solid var(--incident-line); border-radius: var(--radius-small); background: var(--surface); color: var(--foreground); box-shadow: none; line-height: 1.45; }
-.form button:not(:disabled):hover { background: var(--incident-hover); filter: none; }
+.form :global(.incident-toolbar) {
+  margin: 0 -24px;
+  padding: 16px 24px;
+  min-height: 64px;
+  gap: 12px;
+  border-start-start-radius: inherit;
+  border-start-end-radius: inherit;
+  background: color-mix(in srgb, var(--foreground) 4%, var(--glass-thin));
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+}
+.form button:where(:not([data-variant="filter"])) { font-family: inherit; font-size: 12px; font-weight: 550; min-height: 32px; padding: 7px 12px; border: 1px solid var(--incident-line); border-radius: var(--radius-small); background: var(--surface); color: var(--foreground); box-shadow: none; line-height: 1.45; }
+.form button:where(:not([data-variant="filter"])):not(:disabled):hover { background: var(--incident-hover); filter: none; }
 .form button:disabled { cursor: default; opacity: .5; }
 .form button:focus-visible, .form a:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
-.form :global(.discard-order-button) { box-shadow: none; background: transparent; }
+.form :global(.discard-order-button) { box-shadow: none; background: transparent; scroll-margin-block-start: 60px; }
 .form :global(.discard-order-button):not(:disabled):hover { color: var(--focus); border-color: var(--incident-line); }
-.form :global(.incident-steps) { gap: 12px; margin: 24px 0; }
-.form button:global(.step-card) { gap: 12px; min-height: 168px; padding: 18px; border-radius: var(--radius-panel); background: color-mix(in srgb, var(--background) 45%, var(--surface)); text-align: left; box-shadow: none; }
-.form button:global(.step-card):not(:disabled):hover { border-color: color-mix(in srgb, var(--foreground) 28%, transparent); background: var(--incident-hover); }
-.form :global(.step-heading) { font-size: 13px; line-height: 1.4; gap: 9px; font-weight: 600; letter-spacing: -.015em; }
-.form :global(.step-number) { width: 27px; height: 27px; border-radius: var(--radius-item); border: 1px solid var(--incident-line); background: var(--surface); color: var(--muted); font-size: 12px; }
-.form :global(.step-number) svg { width: 19px; height: 19px; }
-.form :global(.step-card) small { color: var(--muted); font-size: 12px; font-weight: 400; line-height: 1.55; }
-.form :global(.step-status) { display: flex; justify-content: space-between; align-items: center; width: 100%; gap: 8px; margin-top: auto; padding-top: 10px; border-top: 1px solid var(--incident-line); font-size: 11px; font-weight: 500; color: var(--muted); }
-.form :global(.step-status) svg { width: 14px; height: 14px; flex-shrink: 0; }
-.workspace .form button:global(.step-card.complete) { color: var(--foreground); border-color: color-mix(in srgb, #41945e 34%, var(--surface)); background: color-mix(in srgb, #41945e 6%, var(--surface)); }
-.form :global(.step-card.complete .step-number) { color: var(--foreground); background: color-mix(in srgb, #41945e 16%, var(--surface)); border-color: transparent; }
-.workspace .form button:global(.step-card.complete.planning-pending) { color: var(--foreground); border-color: color-mix(in srgb, #bc902d 45%, var(--surface)); background: color-mix(in srgb, #bc902d 8%, var(--surface)); }
-.form :global(.step-card.planning-pending .step-number) { color: var(--foreground); background: color-mix(in srgb, #bc902d 20%, var(--surface)); }
-.form button:global(.save-order-button), .form :global(.dialog-footer)>button, .form :global(.step-footer-actions)>button:not(:global(.skip-planning-button)) { background: var(--primary); color: #fff; border-color: var(--primary); box-shadow: var(--shadow-1); }
-.form button:global(.save-order-button):not(:disabled):hover, .form :global(.dialog-footer)>button:not(:disabled):hover, .form :global(.step-footer-actions)>button:not(:global(.skip-planning-button)):not(:disabled):hover { background: var(--primary-hover); }
-.workspace .form button:global(.save-order-button):disabled { background: var(--incident-hover); color: var(--muted); border-color: var(--incident-line); opacity: 1; box-shadow: none; }
 .form label { font-size: 12px; font-weight: 550; margin: 14px 0; }
 .form small { color: var(--muted); font-size: 11px; line-height: 1.5; }
 .form input, .form select, .form textarea { font-family: inherit; font-size: 13px; font-weight: 400; padding: 8px 10px; min-height: 34px; border-radius: var(--radius-small); border: 1px solid var(--incident-line); color: var(--foreground); background: var(--surface); line-height: 1.5; }
 .form input::placeholder, .form textarea::placeholder { color: var(--muted); opacity: 1; }
-.form input:focus-visible, .form select:focus-visible, .form textarea:focus-visible { outline: 2px solid var(--focus); outline-offset: 1px; }
+.form :is(input:not([type="checkbox"]), select, textarea):focus-visible { border-color: transparent; }
 .form input[type="checkbox"] { min-height: 16px; }
 .form input[type="file"] { padding: 8px; }
 .form input[type="file"]::file-selector-button { font: inherit; padding: 5px 10px; margin-right: 10px; border: 1px solid var(--incident-line); border-radius: var(--radius-small); color: var(--foreground); background: var(--incident-hover); }
 .form :global(.required-label) { color: var(--muted); font-weight: 400; font-size: 11px; }
 .form :global(.selection-control) { border: 1px solid var(--incident-line); border-radius: var(--radius-small); min-height: 36px; padding: 3px 6px; background: var(--surface); gap: 5px; }
-.form :global(.selection-control):focus-within { border-color: var(--focus); box-shadow: 0 0 0 1px var(--focus); }
+.form :global(.selection-control.heyelli-field):has(input:focus) { border-color: transparent; }
+.form :global(.selection-control.heyelli-field):has(button:focus) { outline: none !important; }
 .form :global(.selection-control) input { padding: 3px 4px; min-height: 26px; border: 0; box-shadow: none; outline: none; background: transparent; }
 .form :global(.selection-control) input[hidden] { display: none; }
 .workspace .form :global(.selection-pill) { background: var(--incident-hover); color: var(--foreground); font-size: 12px; padding: 3px 4px 3px 8px; gap: 6px; border: 1px solid var(--incident-line); border-radius: var(--radius-small); }
 .workspace .form :global(.selection-pill)>button { width: 23px; height: 23px; min-height: 23px; padding: 0; border: 0; border-radius: var(--radius-small); background: transparent; color: var(--muted); box-shadow: none; font-size: 17px; }
 .form :global(.search-picker)>label { margin: 14px 0 6px; }
 .form :global(.search-hint) { min-height: 17px; font-size: 11px; }
-.form :global(.search-popover) { padding: 6px; border-radius: var(--radius-item); border-color: var(--incident-line); box-shadow: var(--shadow-1); }
-.form :global(.search-results) { border: 0; }
-.form :global(.search-results) [role="option"] { padding: 8px; border-radius: var(--radius-small); font-size: 12px; }
-.form :global(.search-results) [role="option"]:hover, .form :global(.search-results .active) { background:var(--command-menu-hover); color:#fff; outline:1px solid var(--focus); outline-offset:-1px; }
 .form dialog { font-family: inherit; border: 1px solid var(--incident-line); border-radius: var(--radius-panel); background: var(--surface); color: var(--foreground); box-shadow: var(--shadow-1); }
 .form dialog::backdrop { background: #12172066; backdrop-filter: blur(3px); }
 .form dialog h2 { font-size: 16px; font-weight: 650; letter-spacing: -.025em; }
 .form dialog p:not(:global(.app-notice)) { font-size: 12px; color: var(--muted); }
-.form :global(.step-dialog) { width: min(820px, calc(100% - 32px)); }
-.form :global(.step-dialog[open]) { height: min(740px, calc(100dvh - 48px)); }
-.form :global(.step-dialog) > :global(.dialog-heading) { padding: 18px 24px; background: color-mix(in srgb, var(--background) 40%, var(--surface)); border-color: var(--incident-line); align-items: center; gap: 12px; }
 .form :global(.dialog-heading) h2 { font-size: 15px; line-height: 1.4; }
 .form :global(.dialog-heading) button { min-width: 28px; width: 28px; height: 28px; min-height: 28px; border: 0; padding: 0; color: var(--muted); background: var(--incident-hover); box-shadow: none; border-radius: var(--radius-small); font-size: 21px; }
-.form :global(.step-dialog-body) { padding: 8px 24px 24px; }
-.form :global(.step-dialog-body)>p:first-child { margin: 8px 0 12px; }
 .form :global(.incident-grid) { gap: 8px 20px; }
-.form :global(.step-dialog) > :global(.dialog-footer) { padding: 14px 24px; background: color-mix(in srgb, var(--background) 40%, var(--surface)); border-color: var(--incident-line); }
-.form :global(.step-progress) { color: var(--muted); font-size: 11px; font-weight: 500; }
-.form :global(.step-footer-actions) { gap: 8px; }
 .form :global(.technical-units-title) { font-size: 12px; margin: 14px 0 6px; }
 .form :global(.technical-unit-list) { border-radius: var(--radius-item); border-color: var(--incident-line); }
 .form :global(.technical-unit-list) li+li { border-color: var(--incident-line); }
@@ -81,44 +65,18 @@
 .form :global(.incident-notice) p { color: inherit; }
 @media (max-width: 700px) {
   .workspace { padding: 24px 16px 32px; }
-  .form { padding: 0 16px 16px; }
+  .form { padding: 0 16px; }
   .form :global(.incident-toolbar) { margin-inline: -16px; padding: 14px 16px; }
   .captureTitle { gap: 3px; flex-direction: column; align-items: flex-start; }
   .captureTitle>span { padding: 0; border: 0; }
-  .form :global(.incident-steps) { grid-template-columns: 1fr; margin-block: 16px; gap: 10px; }
-  .form button:global(.step-card) { min-height: auto; padding: 16px; gap: 9px; }
-  .form button:global(.save-order-button) { width: 100%; }
-  .form :global(.step-dialog) > :global(.dialog-heading), .form :global(.step-dialog) > :global(.dialog-footer) { padding: 14px 16px; }
-  .form :global(.step-dialog-body) { padding: 4px 16px 20px; }
   .form :global(.incident-grid) { grid-template-columns: 1fr; gap: 0; }
-  .form :global(.step-dialog[open]) { height: calc(100dvh - 24px); width: calc(100% - 20px); }
-  .form button { min-height: 40px; }
+  .form button:where(:not([data-variant="filter"])) { min-height: 40px; }
   .form input, .form select, .form textarea { font-size: 16px; min-height: 40px; }
   .form :global(.selection-control) input { min-height: 32px; }
-  .form :global(.step-footer-actions) { gap: 6px; }
-  .form :global(.step-progress) { max-width: 60px; }
 }
 
-/* A readable, quiet step overview with one clear action per card. */
-.form button:global(.step-card) { min-height:180px; padding:18px; gap:14px; }
-.form :global(.step-heading) { font-size:14px; align-items:flex-start; }
-.form :global(.step-number) { flex-shrink:0; }
-.form :global(.step-card) small { color:var(--foreground); font-size:13px; line-height:1.6; -webkit-line-clamp:4; }
-.form :global(.step-card:not(.complete)) small { color:var(--muted); }
-.form :global(.step-status) { font-size:12px; }
-.form :global(.existing-orders) { margin:20px 0 0; border-top:1px solid var(--incident-line); padding-top:16px; }
-.form :global(.existing-orders) h3 { font-size:13px; margin:0 0 10px; }
-.form :global(.existing-orders) ul { list-style:none; margin:0; padding:0; display:grid; gap:8px; }
-.form :global(.existing-orders) li { padding:12px; border:1px solid var(--incident-line); border-radius:var(--radius-panel); background:var(--surface); }
-.form :global(.existing-order-heading) { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px; font-size:13px; }
-.form :global(.existing-order-heading) span { padding:2px 7px; border-radius:var(--radius-small); background:var(--incident-hover); color:var(--foreground); font-size:11px; }
-.form :global(.existing-orders) li p { margin:6px 0 0; color:var(--foreground) !important; line-height:1.6; display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden; overflow-wrap:anywhere; }
-.form :global(.existing-orders) li a { display:block; margin-top:6px; overflow-wrap:anywhere; font-size:12px; }
-.form :global(.existing-orders-empty) { color:var(--muted); }
-.form button:global(.step-card):disabled { opacity:1; color:var(--muted); }
-
 /* One calm completion surface: assignment, delivery option, then save. */
-.form .completion { padding-top:20px; border-top:1px solid var(--incident-line); }
+.completion { margin: 0; }
 .form .completion h3 { margin:0 0 14px; font-size:14px; letter-spacing:-.015em; }
 .completionFields { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:24px; align-items:start; }
 .form .completionFields :global(.search-picker)>label { margin:0 0 8px; }
@@ -131,7 +89,7 @@
 .completionStatus { min-width:0; }
 .completionStatus strong { display:block; font-size:12px; font-weight:550; overflow-wrap:anywhere; }
 .completionStatus small { display:block; margin-top:3px; }
-.form .completionActions button { flex-shrink:0; min-height:42px; padding:10px 18px; font-size:13px; border-radius:var(--radius-item); }
+.form .completionActions button { flex-shrink:0; min-height:42px; padding:10px 18px; font-size:13px; }
 .savedResult { display:grid; grid-template-columns:36px minmax(0,1fr); align-items:start; gap:12px; padding:16px; border:1px solid color-mix(in srgb,#41945e 30%,var(--surface)); border-radius:var(--radius-panel); background:color-mix(in srgb,#41945e 6%,var(--surface)); }
 .savedIcon { display:grid; place-items:center; width:36px; height:36px; border-radius:50%; background:color-mix(in srgb,#41945e 18%,var(--surface)); font-size:20px; }
 .form .savedResult h3 { margin:0 0 4px; overflow-wrap:anywhere; }
@@ -139,8 +97,6 @@
 .savedActions { grid-column:2; display:flex; flex-direction:column; align-items:flex-start; gap:10px; }
 .savedActions a { font-size:12px; text-underline-offset:3px; }
 @media(max-width:700px) {
-  .form button:global(.step-card) { min-height:150px; }
-  .form :global(.step-dialog-body) { scroll-padding-bottom:16px; }
   .completionFields { grid-template-columns:1fr; gap:8px; }
   .completionActions { flex-direction:column; align-items:stretch; gap:14px; }
   .form .completionActions button { width:100%; }
@@ -153,3 +109,195 @@
 .popUpField { display: flex; flex-direction: column; gap: 6px; font-weight: 600; font-size: 13px; }
 .channelPopUp { display: flex; width: 100%; }
 .channelPopUp > button { width: 100%; height: 40px !important; min-height: 40px !important; justify-content: space-between; border-radius: var(--radius-item) !important; font-weight: 400 !important; }
+
+.accordion {
+  display: grid;
+  grid-template-columns: minmax(0, 7fr) repeat(3, minmax(0, 1fr));
+  margin-inline: -24px;
+  border-block-start: 1px solid var(--glass-line);
+  border-end-start-radius: calc(var(--radius-panel) - 1px);
+  border-end-end-radius: calc(var(--radius-panel) - 1px);
+  background: var(--surface);
+  transition: grid-template-columns 210ms ease-out;
+}
+.accordion[data-active-step="1"] { grid-template-columns: minmax(0, 1fr) minmax(0, 7fr) repeat(2, minmax(0, 1fr)); }
+.accordion[data-active-step="2"] { grid-template-columns: repeat(2, minmax(0, 1fr)) minmax(0, 7fr) minmax(0, 1fr); }
+.accordion[data-active-step="3"] { grid-template-columns: repeat(3, minmax(0, 1fr)) minmax(0, 7fr); }
+.accordionStep { display: flex; flex-direction: column; min-width: 0; }
+.accordionStep + .accordionStep { border-inline-start: 1px solid var(--incident-line); }
+
+.form .stepHeader[data-slot="button"] {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-start;
+  gap: 9px;
+  min-height: 110px;
+  padding: 15px 10px;
+  text-align: start;
+  white-space: normal;
+  border: 0;
+  border-radius: 0;
+  --step-header-background: color-mix(in srgb, var(--background) 58%, var(--surface));
+  background: var(--step-header-background);
+  overflow-wrap: anywhere;
+}
+.form .accordionStep .stepHeader[data-slot="button"]:hover {
+  background: var(--step-header-background);
+  filter: none !important;
+}
+.form .stepHeader[data-slot="button"]:disabled { opacity: 1; color: var(--muted); }
+.form .stepHeader[data-slot="button"]:focus-visible { outline-offset: -3px; }
+.accordionStep[data-current] .stepHeader[data-slot="button"] {
+  flex: none;
+  flex-direction: row;
+  align-items: center;
+  min-height: 64px;
+  padding-inline: 22px;
+  color: var(--foreground);
+  --step-header-background: color-mix(in srgb, var(--foreground) 4%, var(--surface));
+  border-block-end: 1px solid var(--incident-line);
+}
+.stepNumber {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 27px;
+  height: 27px;
+  border-radius: var(--radius-item);
+  border: 1px solid var(--incident-line);
+  background: var(--surface);
+}
+.accordionStep[data-current] .stepNumber {
+  color: var(--focus);
+  background: color-mix(in srgb, var(--primary) 9%, var(--surface));
+}
+.stepIcon { display: inline-flex; color: var(--muted); }
+.stepTitle { font-size: 13px; font-weight: 650; line-height: 1.3; }
+.accordionStep[data-current] .stepTitle { font-size: 17px; letter-spacing: -.02em; }
+.stepSummary {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  overflow: hidden;
+  white-space: pre-line;
+}
+.stepComplete { color: var(--incident-complete); }
+.form .accordionStep[data-complete] .stepHeader[data-slot="button"] {
+  --step-header-background: color-mix(in srgb, var(--incident-complete) 12%, var(--surface));
+}
+.accordionStep[data-complete] .stepNumber {
+  background: color-mix(in srgb, var(--incident-complete) 15%, var(--surface));
+  color: var(--incident-complete);
+}
+
+.stepPanel { margin: 0; }
+.stepPanel:not([hidden]) {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 365px;
+  min-width: 0;
+}
+.stepBody { flex: 1; min-width: 0; padding: 16px 22px 20px; }
+.stepBody > p:first-child { margin: 0 0 12px; color: var(--muted); }
+.stepFooter {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 12px 22px;
+  border-block-start: 1px solid var(--incident-line);
+  background: color-mix(in srgb, var(--background) 54%, var(--surface));
+}
+.accordionStep:first-child :is(.stepHeader[data-slot="button"]:not([aria-expanded="true"]), .stepFooter) {
+  border-end-start-radius: calc(var(--radius-panel) - 1px);
+}
+.accordionStep:last-child :is(.stepHeader[data-slot="button"]:not([aria-expanded="true"]), .stepFooter) {
+  border-end-end-radius: calc(var(--radius-panel) - 1px);
+}
+.stepProgress { font-size: 12px; color: var(--muted); }
+.stepActions { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+
+.reviewFacts {
+  margin: 0 0 14px;
+  padding: 0 12px;
+  border: 1px solid var(--incident-line);
+  border-radius: var(--radius-panel);
+}
+.reviewFacts > div {
+  display: grid;
+  grid-template-columns: minmax(115px, .4fr) minmax(0, 1fr);
+  gap: 10px;
+  padding-block: 9px;
+}
+.reviewFacts > div + div { border-block-start: 1px solid var(--incident-line); }
+.reviewFacts dt { font-weight: 600; }
+.reviewFacts dd { margin: 0; color: var(--muted); white-space: pre-line; overflow-wrap: anywhere; }
+.reviewReport {
+  margin: 0 0 16px;
+  padding: 12px;
+  border: 1px solid var(--incident-line);
+  border-radius: var(--radius-panel);
+  background: var(--incident-hover);
+}
+.form .reviewReport h3 { margin: 0 0 6px; }
+.reportText { margin: 0; white-space: pre-wrap; overflow-wrap: anywhere; }
+
+@media (prefers-reduced-motion: reduce) { .accordion { transition: none; } }
+@media (max-width: 850px) {
+  .accordion[data-active-step] { grid-template-columns: minmax(0, 1fr); transition: none; }
+  .accordionStep:first-child :is(.stepHeader[data-slot="button"], .stepFooter) { border-end-start-radius: 0; }
+  .accordionStep:last-child .stepHeader[data-slot="button"]:not([aria-expanded="true"]) { border-end-start-radius: calc(var(--radius-panel) - 1px); }
+  .accordionStep + .accordionStep { border-inline-start: 0; border-block-start: 1px solid var(--incident-line); }
+  .form .stepHeader[data-slot="button"],
+  .accordionStep[data-current] .stepHeader[data-slot="button"] {
+    flex-direction: row;
+    align-items: center;
+    min-height: 48px;
+    padding: 9px 14px;
+  }
+  .stepIcon { display: none; }
+  .accordionStep[data-current] .stepTitle { font-size: 14px; }
+  .stepSummary { display: none; }
+  .stepComplete { margin-block-start: 0; margin-inline-start: auto; }
+  .stepPanel:not([hidden]) { min-height: 0; }
+  .stepBody { padding: 12px 14px 16px; }
+  .stepFooter { padding: 10px 14px; }
+  .reviewFacts > div { grid-template-columns: minmax(0, 1fr); gap: 3px; }
+  .form .completionActions .stepActions { justify-content: flex-end; }
+  .form .completionActions .stepActions button { width: auto; }
+}
+@media (max-width: 700px) {
+  .accordion { margin-inline: -16px; }
+}
+
+.form .accordionStep[data-deferred] .stepHeader[data-slot="button"] {
+  --step-header-background: color-mix(in srgb, #cb970f 14%, var(--surface));
+}
+.accordionStep[data-deferred] .stepNumber {
+  background: color-mix(in srgb, #cb970f 19%, var(--surface));
+}
+.accordionStep[data-deferred] .stepComplete {
+  margin-block-start: 0;
+  color: light-dark(#875811, #ffe098);
+  font-size: 11px;
+  font-weight: 650;
+}
+.form .reviewReport, .form .completionFields {
+  box-shadow: none;
+  border-color: var(--incident-line);
+}
+.form .completionFields {
+  padding: 12px;
+  background: var(--incident-hover);
+}
+.form .completionFields .mobileChoice {
+  background: transparent;
+  border: 0;
+  padding: 10px 0;
+}
+.form .remarkField { display: block; margin: 0; }
+.form .remarkField textarea { margin-block-start: 8px; font-weight: 400; }

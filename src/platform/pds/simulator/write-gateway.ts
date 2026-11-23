@@ -24,7 +24,7 @@ export async function createSimulatorOrder(store:Store,input:OrderInput,key:stri
   const positions=store.apiStep(workflow,'standard-positions',{},()=>defaults) as StandardPosition[];
   const api=new SimulatedWriteApi(store,workflow);
   const document=input.document ? {name:input.document.name,bytes:store.uploadBytes(input.document.uploadId!,user.id),typeUUID:"sim-document-general"} : undefined;
-  const args={positions,mobileIssue:input.mobileIssue,customerUUID:customer,objectUUID:input.unitId||input.objectId,description:input.reportSummary,externalNumber:input.externalOrderNumber,reportedAt:input.reportedAt,technicianId:input.technicianId,companions:input.companionTechnicianIds,start:input.appointment?berlinInstant(input.appointment):undefined,end:input.appointment?new Date(Date.parse(berlinInstant(input.appointment))+Number(input.appointmentDuration||60)*60000).toISOString():undefined};
+  const args={positions,mobileIssue:input.mobileIssue,customerUUID:customer,objectUUID:input.unitId||input.objectId,description:input.reportSummary,remark:input.remark,externalNumber:input.externalOrderNumber,reportedAt:input.reportedAt,technicianId:input.technicianId,companions:input.companionTechnicianIds,start:input.appointment?berlinInstant(input.appointment):undefined,end:input.appointment?new Date(Date.parse(berlinInstant(input.appointment))+Number(input.appointmentDuration||60)*60000).toISOString():undefined};
   const receipt=await createService(api,args,"SIM-Serviceauftrag",user,document);
   return store.save({...input,bearbeiterUUID,pdsApiCalls:serviceWorkflow(args,"SIM-Serviceauftrag",user),pdsReceipt:receipt},key,user.id);
 }

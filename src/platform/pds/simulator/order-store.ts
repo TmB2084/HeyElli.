@@ -1,6 +1,6 @@
 import {uploadStorage} from './upload-storage.ts';
 import {serviceWorkflow,type ApiCall} from "../api/index.ts";
-import {formatReportSummary} from "./reporting.ts";
+import {formatReportSummary,maxOrderRemarkLength} from "./reporting.ts";
 import {validateDocument, documentName, MAX_DOCUMENT_BYTES, type OrderDocument} from "./document.ts";
 import { DatabaseSync } from "node:sqlite";
 import { createHash, randomUUID } from "node:crypto";
@@ -11,7 +11,7 @@ import { employees, objects, units, persons } from "./fixtures.ts";
 export type CustomerPerson = {id:string;customerNumber:string;name:string;function:string;customerNumbers?:string[];phones:{label:string;number:string}[]};
 export class InvalidOrder extends Error {}
 export type PdsReceipt={uuid:string;number:string;stoerungUUID:string;documentUUID?:string};
-export type OrderInput = {mobileIssue:boolean;bearbeiterUUID?:string;pdsReceipt?:PdsReceipt; reporter: string; reportSummary:string;pdsApiCalls:ApiCall[]; personId:string; personScope:string; document:OrderDocument | null; problem: string; location: string; bauleiterId: string; reportedAt: string; channel: string; contact: string; externalOrderNumber: string; objectId: string; unitId: string; technicianId: string; companionTechnicianIds: string[]; mobilityTechnicianId: string; appointment: string; appointmentDuration:string };
+export type OrderInput = {mobileIssue:boolean;remark?:string;bearbeiterUUID?:string;pdsReceipt?:PdsReceipt; reporter: string; reportSummary:string;pdsApiCalls:ApiCall[]; personId:string; personScope:string; document:OrderDocument | null; problem: string; location: string; bauleiterId: string; reportedAt: string; channel: string; contact: string; externalOrderNumber: string; objectId: string; unitId: string; technicianId: string; companionTechnicianIds: string[]; mobilityTechnicianId: string; appointment: string; appointmentDuration:string };
 export function validateOrder(input: unknown, customerPersons: readonly CustomerPerson[] = persons): OrderInput {
   if (!input || typeof input !== "object") throw new InvalidOrder("Ungültiger Auftrag.");
   const raw = {...input} as Record<string, unknown>;
@@ -26,7 +26,10 @@ export function validateOrder(input: unknown, customerPersons: readonly Customer
   raw.bauleiterId ??= "";
   raw.appointmentDuration ??= raw.technicianId ? "60" : "";
   raw.location = typeof raw.objectId === "string" ? objects.find(object => object.id === raw.objectId)?.street ?? "" : "";
-  const result = {} as Record<Exclude<keyof OrderInput, "mobileIssue" | "companionTechnicianIds" | "mobilityTechnicianId" | "document" | "reportSummary" | "pdsApiCalls" | "pdsReceipt" | "bearbeiterUUID">, string>;
+  if(raw.remark!==undefined&&(typeof raw.remark!=="string"||raw.remark.length>maxOrderRemarkLength))
+    throw new InvalidOrder(`Die PDS-Bemerkung darf höchstens ${maxOrderRemarkLength} Zeichen enthalten.`);
+  const remark=typeof raw.remark==="string"?raw.remark.trim():"";
+  const result = {} as Record<Exclude<keyof OrderInput, "remark" | "mobileIssue" | "companionTechnicianIds" | "mobilityTechnicianId" | "document" | "reportSummary" | "pdsApiCalls" | "pdsReceipt" | "bearbeiterUUID">, string>;
   for (const [key, max] of Object.entries({ reporter:160, personId:100, personScope:20, problem:4000, location:300, bauleiterId:100, reportedAt:16, channel:20, contact:200, externalOrderNumber:160, objectId:100, unitId:100, technicianId:100, appointment:16, appointmentDuration:4 })) {
     if (typeof raw[key] !== "string" || raw[key].length > max) throw new InvalidOrder("Ungültige oder zu lange Eingabe.");
     result[key as keyof typeof result] = raw[key].trim();
@@ -53,8 +56,8 @@ export function validateOrder(input: unknown, customerPersons: readonly Customer
   if(result.technicianId && (!/^\d+$/.test(result.appointmentDuration)||Number(result.appointmentDuration)<15||Number(result.appointmentDuration)>1440||Number(result.appointmentDuration)%15!==0))throw new InvalidOrder("Bitte eine Einsatzdauer von 15 bis 1440 Minuten in 15-Minuten-Schritten angeben.");
   if(!result.technicianId)result.appointmentDuration="";
   if(mobileIssue&&!result.technicianId)throw new InvalidOrder("Für die mobile Ausgabe einen Haupttechniker und Termin zuordnen.");
-  const pdsApiCalls=serviceWorkflow({customerUUID:object.customerNumber,objectUUID:result.unitId || result.objectId,description:formatReportSummary(result),externalNumber:result.externalOrderNumber,reportedAt:result.reportedAt,mobileIssue,technicianId:result.technicianId,companions:[...companions],start:result.appointment ? berlinInstant(result.appointment) : undefined,end:result.appointment ? new Date(Date.parse(berlinInstant(result.appointment))+Number(result.appointmentDuration)*60000).toISOString() : undefined},"SIM-Serviceauftrag");
-  return {...result,mobileIssue,pdsApiCalls, reportSummary:formatReportSummary(result), document, companionTechnicianIds: [...companions].sort(), mobilityTechnicianId:result.technicianId};
+  const pdsApiCalls=serviceWorkflow({customerUUID:object.customerNumber,objectUUID:result.unitId || result.objectId,description:formatReportSummary(result),remark,externalNumber:result.externalOrderNumber,reportedAt:result.reportedAt,mobileIssue,technicianId:result.technicianId,companions:[...companions],start:result.appointment ? berlinInstant(result.appointment) : undefined,end:result.appointment ? new Date(Date.parse(berlinInstant(result.appointment))+Number(result.appointmentDuration)*60000).toISOString() : undefined},"SIM-Serviceauftrag");
+  return {...result,...(remark?{remark}:{}),mobileIssue,pdsApiCalls, reportSummary:formatReportSummary(result), document, companionTechnicianIds: [...companions].sort(), mobilityTechnicianId:result.technicianId};
 }
 // Require exactly one matching instant; reject missing or ambiguous DST wall times.
 export function berlinInstant(value: string) {

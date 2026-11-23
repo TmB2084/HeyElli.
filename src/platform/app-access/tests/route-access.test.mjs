@@ -27,6 +27,9 @@ test('personal Service visibility requires app read access but no business write
  await requirePolicy(mixed,'/api/service/angeheftet','POST',async(id,app,right)=>app==='/servicehub'&&right==='read');
  await assert.rejects(requirePolicy(mixed,'/api/service/angeheftet','GET',async()=>false),e=>e.status===403);
  await assert.rejects(requirePolicy(null,'/api/service/angeheftet','POST',async()=>true),e=>e.status===401);
+ await requirePolicy(mixed,'/api/service/markierungen','POST',async(id,app,right)=>app==='/servicehub'&&right==='read');
+ await assert.rejects(requirePolicy(mixed,'/api/service/markierungen','GET',async()=>false),e=>e.status===403);
+ await assert.rejects(requirePolicy(null,'/api/service/markierungen','POST',async()=>true),e=>e.status===401);
  await requirePolicy(mixed,'/api/maildesk','GET',async(id,app,right)=>app==='/maildesk'&&right==='read');
  await assert.rejects(requirePolicy(mixed,'/api/maildesk/aktion','POST',async(id,app,right)=>app==='/maildesk'&&right==='read'),e=>e.status===403);
  await requirePolicy(mixed,'/api/maildesk/antwort','POST',async(id,app)=>app==='/maildesk');

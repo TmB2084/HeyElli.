@@ -27,6 +27,13 @@ test('validates resource, scope, query length and pagination', () => {
   const page = search({resource:'objects',offset:'1',limit:'1'});
   assert.equal(page.items.length, 1); assert.equal(page.total, 4);
 });
+test('PDS lookups accept a provider object ID outside the simulator catalog',()=>{
+ const params=new URLSearchParams({resource:'units',objectId:'40000000-0000-4000-8000-000000000100'});
+ assert.equal(parseSearch(params,'pds').objectId,params.get('objectId'));
+ assert.throws(()=>parseSearch(params),InvalidSearch);
+ params.set('objectId','../unzulässig');
+ assert.throws(()=>parseSearch(params,'pds'),InvalidSearch);
+});
 test('synthetic references remain internally consistent', () => {
   assert.ok(units.every(unit => objects.some(object => object.id === unit.objectId)));
   assert.ok(orders.every(order => units.some(unit => unit.id === order.unitId && unit.objectId === order.objectId)));

@@ -1,4 +1,5 @@
 'use client';
+import {Button,Dialog} from '@/platform/ui';
 import {useEffect,useRef,useState} from 'react';
 import {Notice} from '@/platform/shell';
 import type {MaintenanceRow} from './maintenance-model';
@@ -8,7 +9,7 @@ import {ExistingPlanningDialog} from './planning-dialog';
 import styles from './planning-dialog.module.css';
 function Pending({error,onRetry,onClose}:{error:string;onRetry:()=>void;onClose:()=>void}){
  const dialog=useRef<HTMLDialogElement>(null);useEffect(()=>{const node=dialog.current;node?.showModal();return()=>node?.close();},[]);
- return <dialog ref={dialog} className={styles.dialog} aria-label="Terminvergabe vorbereiten" onCancel={event=>{event.preventDefault();onClose();}}><form onSubmit={event=>event.preventDefault()}><header className={styles.heading}><h2>Terminvergabe vorbereiten</h2><button type="button" className={`${styles.close} heyelli-close`} aria-label="Dialog schließen" onClick={onClose}>×</button></header><div className={styles.body}><p>Der Auftrag wurde angelegt. Sein aktueller Planungsstand wird gelesen.</p>{error?<Notice tone="error">{error} Der Auftrag wird nicht erneut angelegt.</Notice>:<p role="status">Terminvergabe wird geladen …</p>}</div><footer className={styles.footer}><button type="button" onClick={onClose}>Später planen</button>{error&&<button type="button" onClick={onRetry}>Erneut lesen</button>}</footer></form></dialog>;
+ return <Dialog ref={dialog} className={styles.dialog} aria-label="Terminvergabe vorbereiten" onCancel={event=>{event.preventDefault();onClose();}}><form onSubmit={event=>event.preventDefault()}><header className={styles.heading}><h2>Terminvergabe vorbereiten</h2><Button variant="close" aria-label="Dialog schließen" onClick={onClose}></Button></header><div className={styles.body}><p>Der Auftrag wurde angelegt. Sein aktueller Planungsstand wird gelesen.</p>{error?<Notice tone="error">{error} Der Auftrag wird nicht erneut angelegt.</Notice>:<p role="status">Terminvergabe wird geladen …</p>}</div><footer className={styles.footer}><Button variant="outline" onClick={onClose}>Später planen</Button>{error&&<Button variant="outline" onClick={onRetry}>Erneut lesen</Button>}</footer></form></Dialog>;
 }
 export function MaintenancePlanningDialog({created,row,sourceRevision,onClose,onSaved}:{sourceRevision:string;created:MaintenanceCreation;row:MaintenanceRow;onClose:()=>void;onSaved:(warning:string)=>void}){
  const [target]=useState(()=>({created,row,sourceRevision}));

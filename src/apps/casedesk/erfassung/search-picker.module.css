@@ -1,3 +1,14 @@
 .itemLabel {display:flex;align-items:center;gap:8px;min-width:0}.itemLabel>svg {flex:0 0 17px;width:17px;height:17px}.itemLabel>span {min-width:0;overflow-wrap:anywhere}
 /* Trefferzahl als ruhige Fußzeile der Liste (kein Hinweiskasten) */
 .resultCount { display: block; margin: 4px 0 0; padding: 6px 12px 4px; border-top: 1px solid var(--line); color: var(--muted); font-size: 12px; }
+.resultsPanel { --popover-width: var(--radix-popover-trigger-width, 320px); }
+.results { list-style: none; margin: 0; padding: 0; }
+.pages {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4px 8px;
+  padding: 4px 6px;
+}
+.pages small { font-variant-numeric: tabular-nums; }

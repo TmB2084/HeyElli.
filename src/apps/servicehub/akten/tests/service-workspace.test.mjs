@@ -1,5 +1,5 @@
 import {pdsWebLink} from '../pds-link.ts';
-import {customerObjectGroups,objectRoots} from '../customer-hierarchy.ts';
+import {customerObjectGroups,objectRoots,orderNavigationTargets,serviceFileNavigation} from '../customer-hierarchy.ts';
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {readOverview,readFile,readList} from '../reader.ts';
@@ -118,3 +118,52 @@ test('cost hits show only matching numbers or names, with separate contract role
 });
 
 test('calendar links identify the exact service incident and German date without inventing a calendar UUID',async()=>{const {incidentCalendarHref}=await import('../model.ts');const base={id:'incident / 1',start:'2026-11-09T23:30:00Z',technicianId:'employee+1'};const url=new URL(incidentCalendarHref('order & 1',base),'https://example.invalid');assert.equal(url.pathname,'/planboard');assert.equal(url.searchParams.get('datum'),'2026-11-10');assert.equal(url.searchParams.get('einsatz'),base.id);assert.equal(url.searchParams.get('auftrag'),'order & 1');assert.equal(url.searchParams.get('mitarbeiter'),base.technicianId);assert.equal(incidentCalendarHref('order',{...base,start:''}),null);assert.equal(incidentCalendarHref('order',{...base,start:'invalid'}),null);});
+
+test('file navigation keeps directly linked sites when the order customer differs',()=>{
+ const customers=[{id:'a',name:'Auftraggeber',number:'1'},{id:'b',name:'Betreiber',number:'2'}];
+ const objects=[
+  {id:'a-site',parentId:'',customerId:'a',name:'Haus A',address:'',type:'OBJEKT'},
+  {id:'b-site',parentId:'',customerId:'b',name:'Haus B',address:'',type:'OBJEKT'},
+  {id:'b-unit',parentId:'b-site',customerId:'',name:'Anlage',address:'',type:'TECHNISCHE_EINHEIT'},
+  {id:'b-other',parentId:'b-site',customerId:'',name:'Weitere Anlage',address:'',type:'TECHNISCHE_EINHEIT'},
+ ];
+ const targets=orderNavigationTargets(objects,['b-unit','b-unit','missing']);
+ assert.deepEqual([...targets],['b-unit','b-site']);
+ const order=serviceFileNavigation(customers,objects,'a',['b-unit'],false,targets);
+ assert.equal(order.customer.id,'a');
+ assert.deepEqual(order.objects.map(({value,belongsToOrder})=>[value,belongsToOrder]),[['b-site',true],['a-site',false]]);
+ const hiddenUnit=serviceFileNavigation(customers,objects.filter(object=>object.id!=='b-unit'),'a',['b-unit'],false,targets);
+ assert.equal(hiddenUnit.objects[0].value,'b-site');
+ assert.deepEqual(hiddenUnit.units,[]);
+ assert.deepEqual(order.units.map(({value})=>value),['b-unit']);
+ assert.equal(serviceFileNavigation(customers,objects,'',['b-unit'],false).customer,null);
+ const unit=serviceFileNavigation(customers,objects,'',['b-unit'],true);
+ assert.equal(unit.customer.id,'b');
+ assert.deepEqual(unit.units.map(({value})=>value),['b-unit','b-other']);
+});
+
+test('customer workload rolls up assigned records once and never forwards counts to siblings',async()=>{
+ const {customerWorkCounts}=await import('../customer-work-counts.ts');
+ const {isOpenServiceOrder}=await import('../model.ts');
+ const objects=[
+  {id:'building',parentId:'',customerId:'customer'},
+  {id:'heater',parentId:'building',customerId:''},
+  {id:'vent',parentId:'building',customerId:''},
+ ];
+ const orders=[
+  {customerId:'customer',status:'Offen',incidents:[{objectId:'heater'},{objectId:'heater'}]},
+  {customerId:'customer',status:'Manuell storniert',incidents:[{objectId:'vent'}]},
+ ];
+ const maintenance=[
+  {id:'m1',objectId:'heater',due:'2026-11-22'},
+  {id:'m2',objectId:'building',due:'2026-11-21'},
+  {id:'m3',objectId:'vent',due:'2026-11-23'},
+  {id:'m4',objectId:'vent',due:'2026-11-20',closed:'2026-11-21'},
+ ];
+ assert.equal(isOpenServiceOrder({status:'Teilerledigt'}),true);
+ const totals=customerWorkCounts(orders.filter(isOpenServiceOrder),maintenance,objects,'2026-11-22');
+ assert.deepEqual(totals.customers.get('customer'),{orders:1,maintenance:2});
+ assert.deepEqual(totals.sites.get('building'),{orders:1,maintenance:2});
+ assert.deepEqual(totals.sites.get('heater'),{orders:1,maintenance:1});
+ assert.equal(totals.sites.has('vent'),false);
+});

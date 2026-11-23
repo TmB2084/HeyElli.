@@ -4,13 +4,16 @@ export {saveExistingPlanning} from './planning-server';
 
 export {serviceVisibilityRequest} from './visibility-server';
 export {servicePinRequest} from './pin-server';
+export {serviceFlagRequest} from './flag-server';
 
 export {dispatchRead,dispatchSelect,dispatchDownload,dispatchFailure} from './dispatch-server';
 export {confirmationRequest} from './confirmation-server';
-export {chronicleRead} from './chronicle-server';
+export {chronicleRead,chronicleSourceRevision} from './chronicle-server';
 
 export {serviceOrderActions} from './order-actions-server';
 
 export {serviceVisibility} from './visibility-store';
 export {servicePins} from './pin-store';
 export {serviceMatchContext,type ServiceMatchContext} from './match-context-server';
+
+export {isOpenServiceOrder} from './model';

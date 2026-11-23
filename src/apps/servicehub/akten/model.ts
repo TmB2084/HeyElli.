@@ -1,5 +1,5 @@
 export type ServiceCustomer={id:string;name:string;number:string};
-export type ServiceObject={id:string;name:string;customerId:string;parentId:string;type:string;address:string;costSearch?:string;searchCosts?:ServiceSearchCost[]};
+export type ServiceObject={id:string;name:string;customerId:string;parentId:string;type:string;address:string;number?:string;costSearch?:string;searchCosts?:ServiceSearchCost[]};
 export type ServiceIncident={id:string;intervalId?:string;objectId:string;work:string;status:string;start:string;end:string;technician:string;companions:string[];technicianId?:string;companionIds?:string[];planningVersion?:string};
 export type ServiceOrder={id:string;number:string;title:string;status:string;customerId:string;incidents:ServiceIncident[]};
 export type ServiceOverview={orders:ServiceOrder[];customers:ServiceCustomer[];objects:ServiceObject[];source:'simulator'|'pds-readonly';costRevision?:string;canReadCalendar?:boolean;canPlan?:boolean;canUploadDocuments?:boolean;canPrepareMaintenance?:boolean;loadedAt:string};
@@ -9,6 +9,10 @@ export type ServiceFile={extraNotice?:string;webLink?:string;kind:'order'|'custo
 export type ServiceFileExtras=Pick<ServiceFile,'costCarrier'|'costCarrierError'|'contracts'|'contractError'|'incidents'|'bmaNotice'|'extraNotice'>;
 export type ServiceCore=ServiceFile&{revision:string;sourceRevision?:string};
 export type ServiceExtrasResponse={revision:string;extras:ServiceFileExtras};
+// Same treatment of PDS status descriptions as the customer record.
+export function isOpenServiceOrder(order:Pick<ServiceOrder,'status'>){
+ return !/^(?:erledigt|abgeschlossen|(?:manuell\s+)?storniert|abgerechnet)$/i.test(order.status.trim());
+}
 export function orderObjects(order:ServiceOrder,objects:ServiceObject[]){return objects.filter(object=>order.incidents.some(incident=>incident.objectId===object.id));}
 export function belongsToObject(order:ServiceOrder,id:string,objects:ServiceObject[]){const ids=new Set<string>([id]);for(let depth=0;depth<objects.length;depth++){let changed=false;for(const object of objects)if(ids.has(object.parentId)&&!ids.has(object.id)){ids.add(object.id);changed=true;}if(!changed)break;}return order.incidents.some(incident=>ids.has(incident.objectId));}
 export function berlinDay(value:string){const date=new Date(value);return Number.isFinite(date.getTime())?new Intl.DateTimeFormat('sv-SE',{timeZone:'Europe/Berlin',year:'numeric',month:'2-digit',day:'2-digit'}).format(date):'';}

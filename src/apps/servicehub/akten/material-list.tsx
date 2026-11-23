@@ -1,4 +1,5 @@
 'use client';
+import {Button} from '@/platform/ui';
 import {useEffect,useState} from 'react';
 import {Notice} from '@/platform/shell';
 import type {ServiceObject} from './model';
@@ -17,11 +18,11 @@ function MaterialContent({orderId,revision,objects}:{orderId:string;revision:str
   const initial=setTimeout(()=>void load(),0),timer=setInterval(()=>void load(),30000),wake=()=>void load();window.addEventListener('focus',wake);window.addEventListener('online',wake);document.addEventListener('visibilitychange',wake);return()=>{disposed=true;controller.abort();clearTimeout(initial);clearInterval(timer);window.removeEventListener('focus',wake);window.removeEventListener('online',wake);document.removeEventListener('visibilitychange',wake);};
  },[orderId,revision,refresh]);
  return <section className={styles.body} aria-label="Material- und Leistungsliste" aria-busy={loading}>
- <Notice tone="error">{error?error+(data?' Der zuletzt geladene Stand bleibt sichtbar.':''):''}</Notice>{error&&<button type="button" disabled={loading} onClick={()=>setRefresh(value=>value+1)}>Positionen erneut laden</button>}
+ <Notice tone="error">{error?error+(data?' Der zuletzt geladene Stand bleibt sichtbar.':''):''}</Notice>{error&&<Button variant="outline" disabled={loading} onClick={()=>setRefresh(value=>value+1)}>Positionen erneut laden</Button>}
  {loading&&!data&&!error&&<p role="status" className={styles.hint}>Positionen werden geladen …</p>}
  {data?.notice&&<p className={styles.hint}>{data.notice}</p>}
  {data&&<MaterialGroups data={data} objects={objects} limit={limit}/>}
- {data&&data.count>limit&&<button type="button" onClick={()=>setLimit(value=>value+80)}>Weitere Positionen anzeigen · {Math.min(limit,data.count)} von {data.count}</button>}
+ {data&&data.count>limit&&<Button variant="outline" onClick={()=>setLimit(value=>value+80)}>Weitere Positionen anzeigen · {Math.min(limit,data.count)} von {data.count}</Button>}
  </section>;
 }
 

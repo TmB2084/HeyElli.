@@ -2,14 +2,15 @@ import { employees, objects, orders, units, persons } from "./fixtures.ts";
 import type { LookupResult, PdsReadSource, SearchRequest } from "./model";
 
 export class InvalidSearch extends Error {}
-export function parseSearch(params: URLSearchParams): SearchRequest {
+export function parseSearch(params: URLSearchParams, source: "simulator" | "pds" = "simulator"): SearchRequest {
   const resource = params.get("resource");
   if (resource !== "objects" && resource !== "units" && resource !== "employees" && resource !== "siteManagers" && resource !== "orders" && resource !== "persons" && resource !== "customers" && resource !== "functions") throw new InvalidSearch("Unbekannte Datenart.");
   const query = (params.get("q") ?? "").trim();
   if (query.length > 100) throw new InvalidSearch("Suchbegriff darf höchstens 100 Zeichen enthalten.");
   const objectId = params.get("objectId") || undefined;
   if ((resource === "units" || resource === "orders" || resource === "persons") && !objectId) throw new InvalidSearch("Objektzuordnung erforderlich.");
-  if (objectId && !objects.some(object => object.id === objectId)) throw new InvalidSearch("Unbekanntes Simulationsobjekt.");
+  if (objectId && !/^[a-zA-Z0-9_-]{1,100}$/.test(objectId)) throw new InvalidSearch("Ungültiges Objekt.");
+  if (source === "simulator" && objectId && !objects.some(object => object.id === objectId)) throw new InvalidSearch("Unbekanntes Simulationsobjekt.");
   const integer = (name: string, fallback: number, max: number) => {
     const raw = params.get(name);
     if (raw === null) return fallback;

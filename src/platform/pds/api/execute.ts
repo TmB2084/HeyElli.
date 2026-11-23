@@ -1,4 +1,4 @@
-import type {ServicePosition} from "./workflows.ts";
+import {serviceIncidentData,type ServiceWorkflowInput} from "./workflows.ts";
 import {assignBearbeiter,type PdsActor} from "./bearbeiter.ts";
 import type {PdsTransport} from "./protocol.ts";
 import {PdsProtocolError} from "./protocol.ts";
@@ -13,11 +13,11 @@ export async function createContact(api:PdsTransport,input:{name:string;customer
   await api.request("POST","/person/addansprechpartnerrolle",{uuid:person.uuid,ansprechpartnerBeiUUID:input.customerUUID,funktionUUID:job.uuid,eKommunikationswege:communications,ekommunikationswege:communications});
   return String(person.uuid);
 }
-export async function createService(api:PdsTransport,input:{customerUUID:string;objectUUID:string;description:string;externalNumber:string;reportedAt:string;technicianId:string;companions:string[];mobileIssue?:boolean;start?:string;end?:string;positions?:ServicePosition[]},template:string,actor:PdsActor,document?:{name:string;bytes:Uint8Array;typeUUID:string}) {
+export async function createService(api:PdsTransport,input:ServiceWorkflowInput,template:string,actor:PdsActor,document?:{name:string;bytes:Uint8Array;typeUUID:string}) {
   if(input.mobileIssue===true&&!input.technicianId)throw new PdsProtocolError("Mobile Ausgabe benötigt einen Haupttechniker.");
   const service=response(await api.request("POST","/service/create",{context:{vorgangsVorlageName:template},vorgangsdaten:assignBearbeiter({personUUID:input.customerUUID,externeNummer:input.externalNumber,belegDatum:input.reportedAt.slice(0,10),texte:{technischeVormerkung:input.description}},actor)}));
   if(typeof service.vorgangsNummer!=="string" || !service.vorgangsNummer)throw new PdsProtocolError("PDS liefert keine Serviceauftragsnummer.");
-  const incident=response(await api.request("POST","/service/createstoerung",{serviceauftragUUID:service.uuid,objektUUID:input.objectUUID,auszufuehrendeArbeiten:input.description,...(input.technicianId?{hauptmonteurUUID:input.technicianId,weiteremonteureUUIDs:input.companions,startZeitpunkt:input.start,...(input.end?{endZeitpunkt:input.end}:{})}:{})}));
+  const incident=response(await api.request("POST","/service/createstoerung",serviceIncidentData(input,service.uuid)));
   for(const position of input.positions??[])response(await api.request("POST","/service/createposition",{uuid:incident.uuid,position:{apiID:"standard:"+position.id,katalogUUID:position.articleId,name:position.name,positionsTyp:position.type,positionsArt:"NORMAL",nummer:position.number,menge:position.quantity}}));
   let documentUUID:string|undefined;
   if(document){

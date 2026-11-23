@@ -1,0 +1,352 @@
+{
+  "src/apps/askelli/copilot/panel.tsx": {
+    "no-restricted-syntax": {
+      "count": 9
+    }
+  },
+  "src/apps/askelli/elli/feedback-review.tsx": {
+    "no-restricted-syntax": {
+      "count": 4
+    }
+  },
+  "src/apps/casedesk/erfassung/incident-form.tsx": {
+    "no-restricted-syntax": {
+      "count": 1
+    }
+  },
+  "src/apps/casedesk/erfassung/new-person.tsx": {
+    "no-restricted-syntax": {
+      "count": 7
+    }
+  },
+  "src/apps/casedesk/erfassung/planning-availability.tsx": {
+    "no-restricted-syntax": {
+      "count": 3
+    }
+  },
+  "src/apps/casedesk/standardpositionen/panel.tsx": {
+    "no-restricted-syntax": {
+      "count": 12
+    }
+  },
+  "src/apps/dutyboard/assignment-dialog.tsx": {
+    "no-restricted-syntax": {
+      "count": 2
+    }
+  },
+  "src/apps/dutyboard/event-menu.tsx": {
+    "no-restricted-syntax": {
+      "count": 7
+    }
+  },
+  "src/apps/dutyboard/fairness-accounts.tsx": {
+    "no-restricted-syntax": {
+      "count": 1
+    }
+  },
+  "src/apps/dutyboard/holiday-options.tsx": {
+    "no-restricted-syntax": {
+      "count": 7
+    }
+  },
+  "src/apps/dutyboard/overview.tsx": {
+    "no-restricted-syntax": {
+      "count": 20
+    }
+  },
+  "src/apps/dutyboard/wishes.tsx": {
+    "no-restricted-syntax": {
+      "count": 12
+    }
+  },
+  "src/apps/maildesk/settings-panel.tsx": {
+    "no-restricted-syntax": {
+      "count": 4
+    }
+  },
+  "src/apps/maildesk/workspace.tsx": {
+    "no-restricted-syntax": {
+      "count": 32
+    }
+  },
+  "src/apps/missioncontrol/goals-view.tsx": {
+    "no-restricted-syntax": {
+      "count": 18
+    }
+  },
+  "src/apps/missioncontrol/workspace.tsx": {
+    "no-restricted-syntax": {
+      "count": 27
+    }
+  },
+  "src/apps/notizen/notes-tool.tsx": {
+    "no-restricted-syntax": {
+      "count": 6
+    }
+  },
+  "src/apps/planboard/entwuerfe/device-panel.tsx": {
+    "no-restricted-syntax": {
+      "count": 1
+    }
+  },
+  "src/apps/planboard/kalender/bulk-mobile.tsx": {
+    "no-restricted-syntax": {
+      "count": 5
+    }
+  },
+  "src/apps/planboard/kalender/calendar.tsx": {
+    "no-restricted-syntax": {
+      "count": 33
+    }
+  },
+  "src/apps/planboard/kalender/cancel-order.tsx": {
+    "no-restricted-syntax": {
+      "count": 3
+    }
+  },
+  "src/apps/planboard/kalender/color-dialog.tsx": {
+    "no-restricted-syntax": {
+      "count": 11
+    }
+  },
+  "src/apps/planboard/kalender/companion-picker.tsx": {
+    "no-restricted-syntax": {
+      "count": 2
+    }
+  },
+  "src/apps/planboard/kalender/conflict-dialog.tsx": {
+    "no-restricted-syntax": {
+      "count": 3
+    }
+  },
+  "src/apps/planboard/kalender/continuation-dialog.tsx": {
+    "no-restricted-syntax": {
+      "count": 3
+    }
+  },
+  "src/apps/planboard/kalender/create-dialog.tsx": {
+    "no-restricted-syntax": {
+      "count": 8
+    }
+  },
+  "src/apps/planboard/kalender/date-time-field.tsx": {
+    "no-restricted-syntax": {
+      "count": 3
+    }
+  },
+  "src/apps/planboard/kalender/history.tsx": {
+    "no-restricted-syntax": {
+      "count": 1
+    }
+  },
+  "src/apps/planboard/kalender/legend-dialog.tsx": {
+    "no-restricted-syntax": {
+      "count": 3
+    }
+  },
+  "src/apps/planboard/kalender/mobile-issue.tsx": {
+    "no-restricted-syntax": {
+      "count": 3
+    }
+  },
+  "src/apps/planboard/kalender/option-fields.tsx": {
+    "no-restricted-syntax": {
+      "count": 9
+    }
+  },
+  "src/apps/planboard/kalender/period-picker.tsx": {
+    "no-restricted-syntax": {
+      "count": 10
+    }
+  },
+  "src/apps/planboard/kalender/planning-warning-dialog.tsx": {
+    "no-restricted-syntax": {
+      "count": 2
+    }
+  },
+  "src/apps/planboard/kalender/quick-menu.tsx": {
+    "no-restricted-syntax": {
+      "count": 12
+    }
+  },
+  "src/apps/planboard/kalender/reference-picker.tsx": {
+    "no-restricted-syntax": {
+      "count": 2
+    }
+  },
+  "src/apps/planboard/kalender/resource-selection-dialog.tsx": {
+    "no-restricted-syntax": {
+      "count": 9
+    }
+  },
+  "src/apps/planboard/kalender/team-overview.tsx": {
+    "no-restricted-syntax": {
+      "count": 8
+    }
+  },
+  "src/apps/taskhub/create-dialog.tsx": {
+    "no-restricted-syntax": {
+      "count": 12
+    }
+  },
+  "src/apps/taskhub/workspace.tsx": {
+    "no-restricted-syntax": {
+      "count": 17
+    }
+  },
+  "src/platform/app-access/editor.tsx": {
+    "no-restricted-syntax": {
+      "count": 5
+    }
+  },
+  "src/platform/bmacloud/panel.tsx": {
+    "no-restricted-syntax": {
+      "count": 5
+    }
+  },
+  "src/platform/data-lifecycle/panel.tsx": {
+    "no-restricted-syntax": {
+      "count": 7
+    }
+  },
+  "src/platform/operations/panel.tsx": {
+    "no-restricted-syntax": {
+      "count": 1
+    }
+  },
+  "src/platform/secret-retention/panel.tsx": {
+    "no-restricted-syntax": {
+      "count": 2
+    }
+  },
+  "src/platform/sharepoint/panel.tsx": {
+    "no-restricted-syntax": {
+      "count": 5
+    }
+  },
+  "src/platform/sharepoint/storage-panel.tsx": {
+    "no-restricted-syntax": {
+      "count": 9
+    }
+  },
+  "src/platform/shell/app-launcher.tsx": {
+    "no-restricted-syntax": {
+      "count": 8
+    }
+  },
+  "src/platform/shell/current-app-menu.tsx": {
+    "no-restricted-syntax": {
+      "count": 3
+    }
+  },
+  "src/platform/shell/menu-tools.tsx": {
+    "no-restricted-syntax": {
+      "count": 3
+    }
+  },
+  "src/platform/shell/navigation-guard.tsx": {
+    "no-restricted-syntax": {
+      "count": 2
+    }
+  },
+  "src/platform/shell/platform-bar.tsx": {
+    "no-restricted-syntax": {
+      "count": 2
+    }
+  },
+  "src/platform/shell/session-boundary.tsx": {
+    "no-restricted-syntax": {
+      "count": 1
+    }
+  },
+  "src/platform/shell/settings-controls.tsx": {
+    "no-restricted-syntax": {
+      "count": 1
+    }
+  },
+  "src/platform/shell/settings-pages.tsx": {
+    "no-restricted-syntax": {
+      "count": 1
+    }
+  },
+  "src/platform/shell/settings-search-navigation.tsx": {
+    "no-restricted-syntax": {
+      "count": 4
+    }
+  },
+  "src/platform/shell/settings-workspace.tsx": {
+    "no-restricted-syntax": {
+      "count": 2
+    }
+  },
+  "src/platform/shell/user-menu.tsx": {
+    "no-restricted-syntax": {
+      "count": 5
+    }
+  },
+  "src/system/anmeldung/anmeldung/password-form.tsx": {
+    "no-restricted-syntax": {
+      "count": 4
+    }
+  },
+  "src/system/anmeldung/anmeldung/screen.tsx": {
+    "no-restricted-syntax": {
+      "count": 5
+    }
+  },
+  "src/system/anmeldung/microsoft/panel.tsx": {
+    "no-restricted-syntax": {
+      "count": 11
+    }
+  },
+  "src/system/benutzerkonto/account-profile-card.tsx": {
+    "no-restricted-syntax": {
+      "count": 2
+    }
+  },
+  "src/system/benutzerkonto/appearance-choice.tsx": {
+    "no-restricted-syntax": {
+      "count": 1
+    }
+  },
+  "src/system/benutzerkonto/tools-preferences.tsx": {
+    "no-restricted-syntax": {
+      "count": 2
+    }
+  },
+  "src/system/einstellungen/account-panel.tsx": {
+    "no-restricted-syntax": {
+      "count": 19
+    }
+  },
+  "src/system/einstellungen/admin-panel.tsx": {
+    "no-restricted-syntax": {
+      "count": 1
+    }
+  },
+  "src/system/einstellungen/audit-panel.tsx": {
+    "no-restricted-syntax": {
+      "count": 9
+    }
+  },
+  "src/system/einstellungen/mail-panel.tsx": {
+    "no-restricted-syntax": {
+      "count": 20
+    }
+  },
+  "src/system/einstellungen/pds-panel.tsx": {
+    "no-restricted-syntax": {
+      "count": 12
+    }
+  },
+  "src/system/einstellungen/settings-panel.tsx": {
+    "no-restricted-syntax": {
+      "count": 7
+    }
+  },
+  "src/system/hilfe/help-workspace.tsx": {
+    "no-restricted-syntax": {
+      "count": 2
+    }
+  }
+}

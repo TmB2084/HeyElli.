@@ -9,7 +9,7 @@ import styles from './start-page.module.css';
 const details:Record<string,{icon:AppGlyphName;text:string}>={
  '/':{icon:'elli',text:'Bedienhilfe im Gespräch'},
  '/servicehub':{icon:'service',text:'Aufträge, Kunden, Objekte und Akten'},
- '/casedesk':{icon:'incident',text:'Meldung in drei Schritten zum Auftrag'},
+ '/casedesk':{icon:'incident',text:'Meldung in vier Schritten zum Auftrag'},
  '/planboard':{icon:'resource',text:'Termine und Teams disponieren'},
  '/dutyboard':{icon:'duty',text:'Bereitschaft fair verteilen und tauschen'},
  '/maildesk':{icon:'maildesk',text:'Geteiltes Postfach zuordnen'},

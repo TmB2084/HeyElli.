@@ -32,6 +32,7 @@ export async function* personalExport(pool:Pool,scope:Scope,options:{signal?:Abo
    ['mission-notes','SELECT id,source,item_key,body,created_at FROM platform.mission_notes WHERE author_id=$1 ORDER BY created_at,id',[user]],
    ['mission-settings','SELECT calendar_sync,updated_at FROM platform.mission_settings WHERE user_id=$1',[user]],
    ['mission-done','SELECT source,item_key,title,done_at FROM platform.mission_done WHERE user_id=$1 ORDER BY done_at',[user]],
+   ['service-order-flags','SELECT source,order_id,flagged_at FROM platform.service_order_flags WHERE user_id=$1 ORDER BY source,order_id',[user]],
    ['service-pinned','SELECT source,customer_id,pinned_at FROM platform.service_pinned_customers WHERE user_id=$1 ORDER BY source,customer_id',[user]],
    ['usage','SELECT app_path,visits FROM platform.app_usage WHERE user_id=$1 ORDER BY app_path',[user]],
    ['duty-preferences','SELECT selection,version,holiday_settings,holiday_version,updated_at FROM platform.duty_resource_preferences WHERE user_id=$1 ORDER BY user_id',[user]],

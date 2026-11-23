@@ -23,6 +23,17 @@ export class PdsLookups {
     const value=await this.transport.request("POST",path,{uuid});
     if(!value || typeof value!=="object" || !("uuid" in value) || value.uuid!==uuid)throw new PdsProtocolError("Ungültige PDS-Detailantwort.");return value as Row;
   }
+  private async detailsBatch(path:string,ids:string[]):Promise<Row[]> {
+    const rows:Row[]=[];
+    for(let offset=0;offset<ids.length;offset+=50){
+      const batch=ids.slice(offset,offset+50),expected=new Set(batch);
+      const value=await this.transport.request("POST",path,{uuids:batch}) as Row[];
+      if(!Array.isArray(value)||value.length!==batch.length||value.some(row=>!row||!expected.delete(row.uuid)))
+        throw new PdsProtocolError("PDS liefert unvollständige oder mehrdeutige Details.");
+      rows.push(...value);
+    }
+    return rows;
+  }
   async search(input:{resource:string;query:string;objectId?:string;offset:number;limit:number},scope="customer",visibility:LookupVisibility={customers:[],objects:[]}) {
     let items:Lookup[]=[];const info=(row:Row,name:string)=>row.objektInfoFelder?.find(field=>field.bezeichnung===name)?.wert??"";
     if(input.resource==="objects"||input.resource==="units") {
@@ -38,7 +49,7 @@ export class PdsLookups {
       const customer=input.objectId ? (await this.detail("/objekt/details",input.objectId)).personUUID : undefined;
       items=(await this.list("/person/listkunden")).filter(row=>(!customer||row.uuid===customer)&&!visibility.customers.includes(row.uuid)).map(row=>({id:row.uuid,label:`${row.kundenRolle?.kundennummer??row.uuid} · ${row.name}`}));
     } else if(input.resource==="employees"||input.resource==="siteManagers") {
-      let rows=await Promise.all((await this.list("/mitarbeiter/listmitarbeiter")).map(row=>this.detail("/mitarbeiter/details",row.uuid)));
+      let rows=await this.detailsBatch("/mitarbeiter/detailsbatch",(await this.list("/mitarbeiter/listmitarbeiter")).map(row=>row.uuid));
       if(input.resource==="siteManagers") {
         // No documented employee field defines company-specific project-manager eligibility.
         const candidates=await readApiFirst<Set<string>>(async()=>this.projectManagerFunctions ? new Set(rows.filter(row=>row.funktionUUID && this.projectManagerFunctions!.includes(row.funktionUUID)).map(row=>row.uuid)) : undefined,async()=>new Set((await this.transport.request("POST","/datenansichten/listdaten",{name:"sim_site_managers",page:0,entriesPerPage:500}) as {mitarbeiterUUID:string}[]).map(row=>row.mitarbeiterUUID)));
@@ -47,12 +58,16 @@ export class PdsLookups {
       items=rows.map(row=>({id:row.uuid,label:[row.personalNummer,`${row.vorname??""} ${row.nachname??""}`.trim(),input.resource==="siteManagers"?"Bauleiter":row.berufsbezeichnung,row.abteilungUUID].filter(Boolean).join(" · ")}));
     } else if(input.resource==="persons") {
       const object=await this.detail("/objekt/details",input.objectId!);
-      const customers=await Promise.all((await this.list("/person/listkunden")).map(row=>this.detail("/person/details",row.uuid)));
+      const customers=scope==="all"
+        ?await this.detailsBatch("/person/detailsbatch",(await this.list("/person/listkunden")).map(row=>row.uuid))
+        :object.personUUID?[await this.detail("/person/details",object.personUUID)]:[];
+      const contactIds=[...new Set(customers.flatMap(customer=>(customer.ansprechpartner??[]).map(contact=>contact.person.uuid)))];
+      const details=new Map((await this.detailsBatch("/person/detailsbatch",contactIds)).map(row=>[row.uuid,row]));
       const contacts=new Map<string,Lookup>();
       for(const customer of customers)for(const contact of customer.ansprechpartner??[]) {
         const id=contact.person.uuid,existing=contacts.get(id);
         if(existing){existing.customerNumbers!.push(customer.uuid);continue;}
-        const detail=await this.detail("/person/details",id);
+        const detail=details.get(id)!;
         contacts.set(id,{id,name:detail.name,customerNumber:customer.uuid,customerNumbers:[customer.uuid],function:contact.funktionUUID,label:`${detail.name} · ${contact.funktionUUID??""} · ${customer.uuid}`,phones:(contact.ekommunikationswege??detail.ekommunkationswege??[]).filter(phone=>phone.kategorie==="GESCHAEFTLICH" && (phone.typ==="FESTNETZ"||phone.typ==="MOBIL")).map(phone=>({label:phone.typ==="MOBIL"?"Geschäftliches Mobiltelefon":"Geschäftliches Festnetz",number:phone.value}))});
       }
       items=[...contacts.values()].filter(person=>scope==="all" || person.customerNumbers?.includes(object.personUUID??""));

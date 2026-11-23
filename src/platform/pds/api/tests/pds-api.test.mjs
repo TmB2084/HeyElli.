@@ -56,3 +56,38 @@ test('personal hidden customers and object ancestry are excluded before lookup p
  const units=await lookups.search({...query,resource:'units',objectId:'o2'},'customer',{customers:[],objects:['u2']});assert.equal(units.total,1);assert.equal(units.items[0].id,'u3');assert.equal((await lookups.search({...query,resource:'units',objectId:'o2'})).total,2);
  assert.deepEqual((await lookups.search({...query,resource:'customers'},'customer',hiddenCustomer)).items.map(item=>item.id),['c2']);assert.equal((await lookups.search(query)).total,2);
 });
+
+test('CaseDesk search pages 100 employees and 500 customers, contacts and units',async()=>{
+ const records=(prefix,count,fields)=>Array.from({length:count},(_,index)=>{
+  const number=String(index+1).padStart(3,'0');
+  return {uuid:prefix+number,...fields(number)};
+ });
+ const employees=records('e',100,number=>({personalNummer:number,nachname:'Beispiel',ressourcenplanzeit:{}}));
+ const units=records('u',500,number=>({typ:'TECHNISCHE_EINHEIT',parentUUID:'o1',bezeichnung:'Einheit '+number}));
+ const contacts=records('p',500,number=>({name:'Kontakt '+number}));
+ const customers=records('c',500,number=>({name:'Kunde '+number,ansprechpartner:[{person:{uuid:'p'+number}}]}));
+ const object={uuid:'o1',typ:'OBJEKT',personUUID:'c001'};
+ const lists=new Map([['/mitarbeiter/listmitarbeiter',employees],['/objekt/listobjekte',[object,...units]],['/person/listkunden',customers]]);
+ const details=new Map([...employees,...customers,...contacts].map(row=>[row.uuid,row]));
+ const batches=[];
+ const lookups=new PdsLookups({async request(_method,path,body){
+  const list=lists.get(path);
+  if(list){
+   const offset=body.page*body.entriesPerPage;
+   return {resultList:list.slice(offset,offset+body.entriesPerPage),totalHitCount:list.length};
+  }
+  if(path==='/objekt/details')return object;
+  if(path==='/person/details')return details.get(body.uuid);
+  assert.ok(['/person/detailsbatch','/mitarbeiter/detailsbatch'].includes(path));
+  batches.push(body.uuids.length);
+  return body.uuids.map(uuid=>details.get(uuid));
+ }});
+ for(const [resource,total,limit,last] of [['employees',100,10,'e100'],['customers',500,10,'c500'],['persons',500,10,'p500'],['units',500,8,'u500']]){
+  const result=await lookups.search({resource,objectId:['persons','units'].includes(resource)?'o1':undefined,query:'',offset:total-limit,limit},'all');
+  assert.equal(result.total,total);
+  assert.equal(result.items.length,limit);
+  assert.equal(result.items.at(-1).id,last);
+ }
+ assert.deepEqual(batches,Array(22).fill(50));
+ assert.equal((await lookups.search({resource:'persons',objectId:'o1',query:'',offset:0,limit:10})).total,1);
+});

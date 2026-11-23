@@ -1,0 +1,84 @@
+.conversation {
+  flex: 1;
+  min-block-size: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
+  padding: 4px 4px 18px;
+}
+
+.message {
+  display: flex;
+  min-inline-size: 0;
+}
+
+.message[data-align="end"] {
+  justify-content: flex-end;
+}
+
+.messageContent {
+  inline-size: 100%;
+  min-inline-size: 0;
+  overflow-wrap: anywhere;
+}
+
+.bubble {
+  inline-size: fit-content;
+  max-inline-size: 85%;
+  margin-inline-start: auto;
+}
+
+.bubbleContent {
+  padding: 8px 12px;
+  border-radius: var(--radius-panel);
+  border-end-end-radius: var(--radius-small);
+  background: color-mix(in srgb, var(--foreground) 6%, var(--surface));
+  white-space: pre-wrap;
+}
+
+.sources {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 10px;
+}
+
+.sources > a {
+  max-inline-size: 100%;
+  color: var(--muted);
+}
+
+.prompt {
+  padding-block-start: 10px;
+  border-block-start: 1px solid var(--line);
+}
+
+.inputGroup {
+  display: flex;
+  align-items: flex-end;
+  gap: 6px;
+  padding: 5px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-panel);
+  background: var(--background);
+}
+
+.inputGroup > textarea[data-slot="input-group-control"] {
+  flex: 1;
+  field-sizing: content;
+  min-block-size: var(--control-height);
+  max-block-size: 120px;
+  align-self: center;
+  padding: 6px 7px;
+  border: 0;
+  background: transparent;
+}
+
+.promptActions {
+  flex: none;
+}
+
+@media (pointer: coarse), (max-width: 600px) {
+  .inputGroup > textarea[data-slot="input-group-control"] {
+    min-block-size: 44px;
+  }
+}
