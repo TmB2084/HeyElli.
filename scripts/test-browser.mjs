@@ -3,7 +3,7 @@ import {mergeBrowserReports} from './browser-results.mjs';
 import {spawnTestProcess,stopTestProcess,runTestProcess} from './test-process.mjs';
 import {installReturnBrowserFixture} from '../tests/return-browser-fixture.mjs';
 import {installSharePointFixture} from '../tests/sharepoint-fixture.mjs';
-import {browserEngineTimeout,verificationEnvironment} from './verification-plan.mjs';
+import {browserEngineTimeout,browserInstallTimeout,verificationEnvironment} from './verification-plan.mjs';
 // Automatic browser gate: disposable source, database, credentials and browser profiles.
 import {spawnSync} from 'node:child_process';
 import {mkdtemp,mkdir,cp,readFile,writeFile,readdir,rm} from 'node:fs/promises';
@@ -46,7 +46,7 @@ try{
  if(manual){await mkdir(join(root,'.local/verification'),{recursive:true});await writeFile(metadata,JSON.stringify({base,fixture,project}),{mode:0o600});console.log(JSON.stringify({ready:true,base,metadata}));const lines=createInterface({input:process.stdin});for await(const line of lines)if(line.trim()==='stop')break;lines.close();}else{
  const browserEnv={...env,HEYELLI_BROWSER_FIXTURE_FILE:fixture,HEYELLI_BROWSER_ARTIFACTS:artifacts,HEYELLI_BROWSER_TEMP_DIR:join(directory,'playwright-results')};
  const selected=mutation?['chromium']:engines,parts=[];
- const installed=spawnSync(process.execPath,['node_modules/playwright/cli.js','install',...(process.platform==='linux'&&process.env.HEYELLI_BROWSER_SYSTEM_DEPS!=='installed'?['--with-deps']:[]),...selected],{env:browserEnv,stdio:'inherit',timeout:300000});if(installed.status!==0)throw Error('Prüfbrowser konnten nicht installiert werden.');
+ const installed=spawnSync(process.execPath,['node_modules/playwright/cli.js','install',...(process.platform==='linux'&&process.env.HEYELLI_BROWSER_SYSTEM_DEPS!=='installed'?['--with-deps']:[]),...selected],{env:browserEnv,stdio:'inherit',timeout:browserInstallTimeout});if(installed.error?.code==='ETIMEDOUT')throw Error('Zeitbudget für die Installation der Prüfbrowser überschritten.');if(installed.status!==0)throw Error('Prüfbrowser konnten nicht installiert werden.');
  for(const engine of selected){
   await rm(join(artifacts,'results.json'),{force:true});
   const result=await runTestProcess(process.execPath,['node_modules/playwright/cli.js','test','--config=playwright.config.mjs','--project='+engine,...(mutation?['--grep',mutation==='navigation'?'E04 ':'E02 ']:grep?['--grep',grep]:[])],{env:browserEnv,stdio:'inherit',signal:browserAbort.signal},browserEngineTimeout);
