@@ -70,8 +70,11 @@ test('K01 Sammelausgabe nichtmodal Escape Tab und Fokus',async({page,context})=>
  const trigger=page.getByRole('button',{name:'Mobil ausgeben ⌄',exact:true});
  const panel=page.getByRole('dialog',{name:'Serviceaufträge mobil ausgeben',exact:true});
  await test.step('Oeffnen und Escape geben den Fokus zurueck',async()=>{
-  await expect(trigger).toBeEnabled();await trigger.focus();await page.keyboard.press('Enter');
-  await expect(panel.getByRole('button').first()).toBeFocused();await page.keyboard.press('Escape');
+  await expect(trigger).toBeEnabled();
+  await trigger.press('Enter');
+  await expect(trigger).toHaveAttribute('aria-expanded','true');
+  await expect(panel.getByRole('button',{name:'Alle Serviceaufträge heute ausgeben',exact:true})).toBeFocused();
+  await page.keyboard.press('Escape');
   await expect(panel).toBeHidden();await expect(trigger).toBeFocused();
  });
  await test.step('Bestaetigung fokussiert Zurueck und Escape schliesst',async()=>{
@@ -678,7 +681,16 @@ test('E27 Serviceauftrag betont Fokusfelder und erhaelt Beschreibung sowie Planu
  test.setTimeout(90000);await authenticate(context);const order='sim-order-1',long='Serviceauftrag telefonisch gemeldet. Störung/Auftragsbeschreibung: '+('Fiktive Prüfung der Heizungsanlage mit vollständiger Dokumentation. '.repeat(12))+'Ihre Auftragsnummer: FIKTIV-27';
  await page.route('**/api/service?*',async route=>{const url=new URL(route.request().url());if(url.searchParams.get('id')!==order)return route.continue();const response=await route.fetch(),value=await response.json(),incidents=url.searchParams.get('part')==='base'?value.incidents:value.extras?.incidents;if(incidents?.[0])incidents[0].work=long;await route.fulfill({response,json:value});});
  await enter(page,'/servicehub?ansicht=orders&akte=order&id='+order);const file=page.getByRole('complementary',{name:'Akte',exact:true}),incident=file.getByRole('region',{name:'Einsatz 1 · Heizungsanlage',exact:true});await expect(file.getByRole('heading',{name:'SIM-SA-10001',exact:true})).toBeVisible();await expect(file.getByText(/Musterweg 12, 00000 Demostadt/).first()).toBeVisible();await expect(incident.locator('[data-focus="appointment"]').getByText('Nicht geplant',{exact:true})).toBeVisible();await expect(incident.locator('[data-focus="team"]').getByText('Nicht zugeordnet',{exact:true})).toBeVisible();
- const description=incident.locator('details').filter({has:page.locator(':scope > summary',{hasText:'Auftragsbeschreibung'})});await expect(description.getByText(long,{exact:true})).not.toBeVisible();await description.locator('summary').focus();await page.keyboard.press('Enter');await expect(description.getByText(long,{exact:true})).toBeVisible();await description.locator('summary').focus();await page.keyboard.press('Enter');await expect(description.getByText(long,{exact:true})).not.toBeVisible();
+ await test.step('Auftragsbeschreibung mit Enter öffnen und schließen',async()=>{
+  await expect(file.getByRole('heading',{name:'SIM-SA-10001',exact:true})).toBeFocused();
+  const description=incident.locator('details').filter({has:page.locator(':scope > summary',{hasText:'Auftragsbeschreibung'})});
+  const summary=description.locator(':scope > summary');
+  await expect(description.getByText(long,{exact:true})).not.toBeVisible();
+  await summary.press('Enter');
+  await expect(description.getByText(long,{exact:true})).toBeVisible();
+  await summary.press('Enter');
+  await expect(description.getByText(long,{exact:true})).not.toBeVisible();
+ });
  const plan=file.getByRole('button',{name:'Einsatz planen',exact:true});await expect(plan).toHaveText('');await expect(plan.locator('svg')).toBeVisible();await plan.click();await expect(page.getByRole('dialog',{name:'Termin vergeben',exact:true})).toBeVisible();await page.getByRole('dialog',{name:'Termin vergeben',exact:true}).getByRole('button',{name:'Abbrechen',exact:true}).click();await expect(page.getByRole('dialog',{name:'Termin vergeben',exact:true})).toHaveCount(0);await expect(file.getByRole('button',{name:'Terminbestätigung',exact:true})).toBeDisabled();
  await file.locator('details').filter({has:page.locator(':scope > summary',{hasText:'Einsatzmappe'})}).locator(':scope > summary').click();await expect(file.getByRole('button',{name:'Dokumente auswählen',exact:true})).toBeVisible();await openRow(page,'Material & Leistungen');await expect(file.getByRole('region',{name:'Material- und Leistungsliste',exact:true})).toBeVisible();
  for(const theme of ['light','dark']){await page.locator('html').evaluate((el,value)=>el.dataset.theme=value,theme);for(const width of [390,1280]){await page.setViewportSize({width,height:900});await incident.scrollIntoViewIfNeeded();expect(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth)).toBe(false);await expect(incident.locator('[data-focus="team"]')).toBeVisible();await axe(page,'order-focus-'+browserName+'-'+theme+'-'+width);}await incident.scrollIntoViewIfNeeded();await page.screenshot({path:join(artifacts,'order-focus-'+browserName+'-'+theme+'.png')});}
